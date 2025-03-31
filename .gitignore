@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# IDE
+.vs/
+*.code-workspace
+
+# CMake
+out/
+build/
+CMakeUserPresets.json
