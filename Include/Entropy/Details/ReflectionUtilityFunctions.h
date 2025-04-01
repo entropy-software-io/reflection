@@ -20,6 +20,17 @@ inline constexpr int InvokeMemberOffsetOfFunction(int offset, AttributeTypeColle
     return -1;
 }
 
+#ifdef ENTROPY_REFLECTION_RUNTIME_ENABLED
+
+#else
+
+template <typename TClass, typename TMember>
+struct MemberVariableHelper
+{
+};
+
+#endif
+
 } // namespace details
 
 } // namespace Entropy
