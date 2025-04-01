@@ -29,25 +29,24 @@
 
 #define ENTROPY_DECLARE_UNARY_MEMBER_OPERATOR_FUNCTION                                                                 \
     template <int TCounter, typename TDummy = void>                                                                    \
-    struct UnaryMemberOperatorExists : std::bool_constant<false>                                                       \
+    struct __UnaryMemberOperatorExists : std::bool_constant<false>                                                     \
     {                                                                                                                  \
     };                                                                                                                 \
-    template <template <typename, typename...> typename TFunc, typename TThisType, int TCounter,                       \
-              typename... TAdditionalArgs>                                                                             \
-    struct UnaryMemberOperator                                                                                         \
+    template <typename TThisType, typename TFunc, int TCounter>                                                        \
+    struct __UnaryMemberOperator                                                                                       \
     {                                                                                                                  \
-        static void Execute(TThisType& src, TAdditionalArgs&&... additionalArgs) {}                                    \
+        static void Execute(TThisType&& src, TFunc&& callbackObj) {}                                                   \
     };
 
 #define ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION(...)                                                                    \
     template <typename TDummy>                                                                                         \
-    struct UnaryMemberOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                   \
+    struct __UnaryMemberOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                 \
     {                                                                                                                  \
     };                                                                                                                 \
-    template <template <typename, typename...> typename TFunc, typename TThisType, typename... TAdditionalArgs>        \
-    struct UnaryMemberOperator<TFunc, TThisType, ENTROPY_GET_COUNTER_VALUE(), TAdditionalArgs...>                      \
+    template <typename TThisType, typename TFunc>                                                                      \
+    struct __UnaryMemberOperator<TThisType, TFunc, ENTROPY_GET_COUNTER_VALUE()>                                        \
     {                                                                                                                  \
-        static void Execute(TThisType& src, TAdditionalArgs&&... additionalArgs) { __VA_ARGS__ }                       \
+        static void Execute(TThisType&& src, TFunc&& callbackObj) { __VA_ARGS__ }                                      \
     };
 
 #define ENTROPY_DECLARE_BINARY_MEMBER_OPERATOR_FUNCTION                                                                \
@@ -55,7 +54,7 @@
     struct BinaryMemberOperatorExists : std::bool_constant<false>                                                      \
     {                                                                                                                  \
     };                                                                                                                 \
-    template <typename TOtherClass, template <typename, typename, typename...> typename TFunc, int TCounter,           \
+    template <typename TOtherClass, template <typename, typename, typename...> class TFunc, int TCounter,              \
               typename... TAdditionalArgs>                                                                             \
     struct BinaryMemberOperator                                                                                        \
     {                                                                                                                  \
@@ -67,7 +66,7 @@
     struct BinaryMemberOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                  \
     {                                                                                                                  \
     };                                                                                                                 \
-    template <typename TOtherClass, template <typename, typename, typename...> typename TFunc,                         \
+    template <typename TOtherClass, template <typename, typename, typename...> class TFunc,                            \
               typename... TAdditionalArgs>                                                                             \
     struct BinaryMemberOperator<TOtherClass, TFunc, ENTROPY_GET_COUNTER_VALUE(), TAdditionalArgs...>                   \
     {                                                                                                                  \
@@ -97,17 +96,6 @@
     struct MemberOffsetOf<ENTROPY_GET_COUNTER_VALUE(), TFunc, TThisType>                                               \
     {                                                                                                                  \
         static constexpr int Execute() { return -1; }                                                                  \
-    };
-
-#define ENTROPY_MEMBER_OFFSET_OF_FUNCTION(...)                                                                         \
-    template <typename TDummy>                                                                                         \
-    struct MemberOffsetOfExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                        \
-    {                                                                                                                  \
-    };                                                                                                                 \
-    template <typename TFunc, typename TThisType>                                                                      \
-    struct MemberOffsetOf<ENTROPY_GET_COUNTER_VALUE(), TFunc, TThisType>                                               \
-    {                                                                                                                  \
-        static constexpr int Execute() { __VA_ARGS__ }                                                                 \
     };
 
 #define ENTROPY_START_CLASS_REFLECTION_REGISTRATION(className, ...)                                                    \
@@ -158,6 +146,12 @@
     static const char* GetClassName() { return #className; }
 #endif
 
+#ifndef ENTROPY_REFLECT_CLASS_WITH_BASE
+#define ENTROPY_REFLECT_CLASS_WITH_BASE(className, baseClassName, ...)                                                 \
+    ENTROPY_REFLECT_CLASS(className)                                                                                   \
+    using EntropySuper = baseClassName;
+#endif
+
 #ifndef ENTROPY_REFLECT_MEMBER
 #define ENTROPY_REFLECT_MEMBER(memberName, ...)                                                                        \
     ENTROPY_DEFINE_LINE_MARKER                                                                                         \
@@ -176,20 +170,15 @@
     })                                                                                                                 \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION({                                                                           \
         /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
-        ::Entropy::details::InvokeUnaryMemberFunction<TFunc, decltype((src.memberName))>(                              \
-            ::Entropy::MakeReflectionMemberMetaData(StringView(#memberName), ##__VA_ARGS__), src.memberName,           \
-            std::forward<TAdditionalArgs>(additionalArgs)...);                                                         \
+        ::Entropy::details::InvokeUnaryMemberFunction<decltype((src.memberName)), TFunc>(                              \
+            ::Entropy::details::MakeReflectionMemberMetaData(#memberName, ##__VA_ARGS__), src.memberName,              \
+            std::forward<TFunc>(callbackObj));                                                                         \
     })                                                                                                                 \
     ENTROPY_BINARY_MEMBER_OPERATOR_FUNCTION({                                                                          \
         /* Note: the extra parens around src/dest.memberName preserve the current const-ness of this object */         \
         ::Entropy::InvokeBinaryMemberFunction<TFunc, decltype((src.memberName)), decltype((dest.memberName))>(         \
             ::Entropy::StringView(#memberName), src.memberName, dest.memberName,                                       \
             std::forward<TAdditionalArgs>(additionalArgs)...);                                                         \
-    })                                                                                                                 \
-    ENTROPY_MEMBER_OFFSET_OF_FUNCTION({                                                                                \
-        /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
-        return ::Entropy::details::InvokeMemberOffsetOfFunction<TFunc, decltype(memberName)>(                          \
-            offsetof(ThisReflectedType, memberName), ::Entropy::details::MakeAttributeCollection(__VA_ARGS__));        \
     })
 #endif
 

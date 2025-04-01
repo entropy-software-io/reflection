@@ -6,5 +6,6 @@
 
 #include "Entropy/Details/AttributeCollection.h"
 #include "Entropy/Details/ClassCounter.h"
+#include "Entropy/Details/MemberEnumeration.h"
 #include "Entropy/Details/ReflectionMacros.h"
 #include "Entropy/Details/ReflectionUtilityFunctions.h"
