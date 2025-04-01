@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "Entropy/Details/AttributeCollection.h"
-#include "Entropy/Details/Defines.h"
-#include "Entropy/Details/TypeTraits.h"
+#include "Entropy/Reflection/Details/AttributeCollection.h"
+#include "Entropy/Reflection/Details/TypeTraits.h"
 
 namespace Entropy
 {

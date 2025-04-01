@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Entropy/Details/AttributeCollection.h"
-#include "Entropy/Details/ClassCounter.h"
-#include "Entropy/Details/MemberEnumeration.h"
-#include "Entropy/Details/ReflectionMacros.h"
-#include "Entropy/Details/ReflectionUtilityFunctions.h"
+#include "Entropy/Reflection/Details/AttributeCollection.h"
+#include "Entropy/Reflection/Details/ClassCounter.h"
+#include "Entropy/Reflection/Details/MemberEnumeration.h"
+#include "Entropy/Reflection/Details/ReflectionMacros.h"
+#include "Entropy/Reflection/Details/ReflectionUtilityFunctions.h"

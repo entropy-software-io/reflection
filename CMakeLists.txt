@@ -14,6 +14,8 @@ target_include_directories(entropy-reflection PUBLIC
     $<INSTALL_INTERFACE:Include>
 )
 
+target_link_libraries(entropy-reflection PUBLIC entropy::core::common)
+
 if (${ENTROPY_REFLECTION_ENABLE_RUNTIME})
     target_compile_definitions(entropy-reflection PUBLIC ENTROPY_RUNTIME_REFLECTION_ENABLED)
 endif()
