@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 {
     const MyDerivedStruct myDerivedStruct;
 
-    Entropy::ForEachReflectedMember<true>(myDerivedStruct, PrintName());
+    Entropy::ForEachReflectedMember<true>(myDerivedStruct, PrintName{});
 
     return 0;
 }

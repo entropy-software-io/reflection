@@ -16,7 +16,7 @@ namespace details
 template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter, typename = void>
 struct UnaryMemberOperation
 {
-    // void operator()(TClass&& sourceObject, TFunc&& callbackObject) const;
+    // void operator()(TClass& sourceObject, TFunc callbackObject) const;
 };
 
 } // namespace details
@@ -25,19 +25,37 @@ struct UnaryMemberOperation
 /// Calls into callbackObject for each reflected member in sourceObject.
 /// </summary>
 /// <param name="callbackObject">
-/// Any callable object (lambda or struct) that can called with the following signature:
-///     (const char* memberName, TMemberType&& member)
+/// Any callable object that can called with the following (templated) signature:
+///     (const char* memberName, TMemberType& member)
 ///   OR
-///     (const char* memberName, TMemberType&& member, const Entropy::AttributeTypeCollection<TAttrTypes...>&
+///     (const char* memberName, TMemberType& member, const Entropy::AttributeTypeCollection<TAttrTypes...>&
 ///     attributes)
 /// </param>
 template <bool TIncludeSubclasses, typename TClass, typename TFunc>
-void ForEachReflectedMember(TClass&& sourceObject, TFunc&& callbackObject)
+void ForEachReflectedMember(TClass& sourceObject, TFunc callbackObject)
 {
     if ENTROPY_CONSTEXPR (Traits::IsReflectedType_v<TClass>)
     {
-        details::UnaryMemberOperation<TClass, TFunc, TIncludeSubclasses, 0>{}(std::forward<TClass>(sourceObject),
-                                                                              std::forward<TFunc>(callbackObject));
+        details::UnaryMemberOperation<TClass, TFunc, TIncludeSubclasses, 0>{}(sourceObject, callbackObject);
+    }
+}
+
+/// <summary>
+/// Calls into callbackObject for each reflected member in sourceObject.
+/// </summary>
+/// <param name="callbackObject">
+/// Any callable object that can called with the following (templated) signature:
+///     (const char* memberName, TMemberType& member)
+///   OR
+///     (const char* memberName, TMemberType& member, const Entropy::AttributeTypeCollection<TAttrTypes...>&
+///     attributes)
+/// </param>
+template <typename TFunc, bool TIncludeSubclasses, typename TClass>
+void ForEachReflectedMember(TClass& sourceObject, TFunc callbackObject)
+{
+    if ENTROPY_CONSTEXPR (Traits::IsReflectedType_v<TClass>)
+    {
+        details::UnaryMemberOperation<TClass, TFunc, TIncludeSubclasses, 0>{}(sourceObject, callbackObject);
     }
 }
 
@@ -47,24 +65,23 @@ namespace details
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline std::enable_if_t<
     Traits::IsInvocable_v<TFunc, const char*, TMember, const AttributeTypeCollection<TMemberAttrs...>&>>
-InvokeUnaryMemberFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember&& member,
-                          TFunc&& callbackObj)
+InvokeUnaryMemberFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember& member, TFunc callbackObj)
 {
-    callbackObj(metaData.memberName, std::forward<TMember>(member), metaData.attributes);
+    callbackObj(metaData.memberName, member, metaData.attributes);
 }
 
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline std::enable_if_t<Traits::IsInvocable_v<TFunc, const char*, TMember>> InvokeUnaryMemberFunction(
-    const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember&& member, TFunc&& callbackObj)
+    const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember& member, TFunc callbackObj)
 {
-    callbackObj(metaData.memberName, std::forward<TMember>(member));
+    callbackObj(metaData.memberName, member);
 }
 
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline std::enable_if_t<Traits::IsInvocable_v<TFunc, TMember>> InvokeUnaryMemberFunction(
-    const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember&& member, TFunc&& callbackObj)
+    const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember& member, TFunc callbackObj)
 {
-    callbackObj(std::forward<TMember>(member));
+    callbackObj(member);
 }
 
 // There is a reflected member for this counter
@@ -73,12 +90,11 @@ struct UnaryMemberOperation<
     TClass, TFunc, TIncludeSubclasses, TCounter,
     std::enable_if_t<ENTROPY_REMOVE_CONST_REF(TClass)::template __UnaryMemberOperatorExists<TCounter>::value>>
 {
-    inline void operator()(TClass&& sourceObject, TFunc&& callbackObject) const
+    inline void operator()(TClass& sourceObject, TFunc callbackObject) const
     {
         ENTROPY_REMOVE_CONST_REF(TClass)::template __UnaryMemberOperator<TClass, TFunc, TCounter>::Execute(
-            std::forward<TClass>(sourceObject), std::forward<TFunc>(callbackObject));
-        UnaryMemberOperation<TClass, TFunc, TIncludeSubclasses, TCounter + 1>{}(std::forward<TClass>(sourceObject),
-                                                                                std::forward<TFunc>(callbackObject));
+            sourceObject, callbackObject);
+        UnaryMemberOperation<TClass, TFunc, TIncludeSubclasses, TCounter + 1>{}(sourceObject, callbackObject);
     }
 };
 
@@ -89,10 +105,10 @@ struct UnaryMemberOperation<
     std::enable_if_t<!ENTROPY_REMOVE_CONST_REF(TClass)::template __UnaryMemberOperatorExists<TCounter>::value &&
                      Traits::HasBaseClass_v<TClass>>>
 {
-    inline void operator()(TClass&& sourceObject, TFunc&& callbackObject) const
+    inline void operator()(TClass& sourceObject, TFunc callbackObject) const
     {
         UnaryMemberOperation<Traits::BaseClassWithQualifiersOf_t<TClass>, TFunc, true /* TIncludeSubclasses */, 0>{}(
-            std::forward<TClass>(sourceObject), std::forward<TFunc>(callbackObject));
+            sourceObject, callbackObject);
     }
 };
 
@@ -103,7 +119,7 @@ struct UnaryMemberOperation<
     std::enable_if_t<!ENTROPY_REMOVE_CONST_REF(TClass)::template __UnaryMemberOperatorExists<TCounter>::value &&
                      (!TIncludeSubclasses || !Traits::HasBaseClass_v<TClass>)>>
 {
-    inline void operator()(TClass&& sourceObject, TFunc&& callbackObject) const {}
+    inline void operator()(TClass& sourceObject, TFunc callbackObject) const {}
 };
 
 } // namespace details

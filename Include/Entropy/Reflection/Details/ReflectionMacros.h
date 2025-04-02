@@ -35,7 +35,7 @@
     template <typename TThisType, typename TFunc, int TCounter>                                                        \
     struct __UnaryMemberOperator                                                                                       \
     {                                                                                                                  \
-        static void Execute(TThisType&& src, TFunc&& callbackObj) {}                                                   \
+        static void Execute(TThisType& src, TFunc callbackObj) {}                                                      \
     };
 
 #define ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION(...)                                                                    \
@@ -46,7 +46,7 @@
     template <typename TThisType, typename TFunc>                                                                      \
     struct __UnaryMemberOperator<TThisType, TFunc, ENTROPY_GET_COUNTER_VALUE()>                                        \
     {                                                                                                                  \
-        static void Execute(TThisType&& src, TFunc&& callbackObj) { __VA_ARGS__ }                                      \
+        static void Execute(TThisType& src, TFunc callbackObj) { __VA_ARGS__ }                                         \
     };
 
 #define ENTROPY_DECLARE_BINARY_MEMBER_OPERATOR_FUNCTION                                                                \
@@ -172,7 +172,7 @@
         /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
         ::Entropy::details::InvokeUnaryMemberFunction<decltype((src.memberName)), TFunc>(                              \
             ::Entropy::details::MakeReflectionMemberMetaData(#memberName, ##__VA_ARGS__), src.memberName,              \
-            std::forward<TFunc>(callbackObj));                                                                         \
+            callbackObj);                                                                                              \
     })                                                                                                                 \
     ENTROPY_BINARY_MEMBER_OPERATOR_FUNCTION({                                                                          \
         /* Note: the extra parens around src/dest.memberName preserve the current const-ness of this object */         \
