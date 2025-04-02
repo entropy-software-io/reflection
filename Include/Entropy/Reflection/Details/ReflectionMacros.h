@@ -51,29 +51,38 @@
 
 #define ENTROPY_DECLARE_BINARY_MEMBER_OPERATOR_FUNCTION                                                                \
     template <int TCounter, typename TDummy = void>                                                                    \
-    struct BinaryMemberOperatorExists : std::bool_constant<false>                                                      \
+    struct __BinaryMemberOperatorExists : std::bool_constant<false>                                                    \
     {                                                                                                                  \
     };                                                                                                                 \
-    template <typename TOtherClass, template <typename, typename, typename...> class TFunc, int TCounter,              \
-              typename... TAdditionalArgs>                                                                             \
-    struct BinaryMemberOperator                                                                                        \
+    template <typename TOtherType, int TCounter, typename = void>                                                      \
+    struct __BinaryMemberOperatorExistsOnOther : std::bool_constant<false>                                             \
     {                                                                                                                  \
-        static void Execute(const ThisReflectedType& src, TOtherClass& dest, TAdditionalArgs&&... additionalArgs) {}   \
+    };                                                                                                                 \
+    template <typename TThisType, typename TOtherType, typename TFunc, int TCounter, typename = void>                  \
+    struct __BinaryMemberOperator                                                                                      \
+    {                                                                                                                  \
+        static void Execute(TThisType& thisObj, TOtherType& otherObj, TFunc callbackObj) {}                            \
     };
 
-#define ENTROPY_BINARY_MEMBER_OPERATOR_FUNCTION(...)                                                                   \
+#define ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                \
     template <typename TDummy>                                                                                         \
-    struct BinaryMemberOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                  \
+    struct __BinaryMemberOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                \
+    {                                                                                                                  \
+    };
+
+#define ENTROPY_BINARY_MEMBER_OPERATOR_FUNCTION(memberName, ...)                                                       \
+    ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
+    template <typename TOtherType>                                                                                     \
+    struct __BinaryMemberOperatorExistsOnOther<TOtherType, ENTROPY_GET_COUNTER_VALUE(),                                \
+                                               decltype(&TOtherType::memberName, void())> : std::bool_constant<true>   \
     {                                                                                                                  \
     };                                                                                                                 \
-    template <typename TOtherClass, template <typename, typename, typename...> class TFunc,                            \
-              typename... TAdditionalArgs>                                                                             \
-    struct BinaryMemberOperator<TOtherClass, TFunc, ENTROPY_GET_COUNTER_VALUE(), TAdditionalArgs...>                   \
+    template <typename TThisType, typename TOtherType, typename TFunc>                                                 \
+    struct __BinaryMemberOperator<                                                                                     \
+        TThisType, TOtherType, TFunc, ENTROPY_GET_COUNTER_VALUE(),                                                     \
+        std::enable_if_t<__BinaryMemberOperatorExistsOnOther<TOtherType, ENTROPY_GET_COUNTER_VALUE()>::value>>         \
     {                                                                                                                  \
-        static void Execute(const ThisReflectedType& src, TOtherClass& dest, TAdditionalArgs&&... additionalArgs)      \
-        {                                                                                                              \
-            __VA_ARGS__                                                                                                \
-        }                                                                                                              \
+        static void Execute(TThisType& thisObj, TOtherType& otherObj, TFunc callbackObj) { __VA_ARGS__ }               \
     };
 
 #define ENTROPY_DECLARE_MEMBER_OFFSET_OF_FUNCTION                                                                      \
@@ -127,7 +136,7 @@
     ENTROPY_DECLARE_UNARY_MEMBER_OPERATOR_FUNCTION                                                                     \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
     ENTROPY_DECLARE_BINARY_MEMBER_OPERATOR_FUNCTION                                                                    \
-    ENTROPY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                          \
+    ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
     ENTROPY_DECLARE_MEMBER_OFFSET_OF_FUNCTION                                                                          \
     ENTROPY_NULL_MEMBER_OFFSET_OF_FUNCTION()                                                                           \
     ENTROPY_REFLECT_ON_LOAD(className)                                                                                 \
@@ -174,11 +183,11 @@
             ::Entropy::details::MakeReflectionMemberMetaData(#memberName, ##__VA_ARGS__), src.memberName,              \
             callbackObj);                                                                                              \
     })                                                                                                                 \
-    ENTROPY_BINARY_MEMBER_OPERATOR_FUNCTION({                                                                          \
-        /* Note: the extra parens around src/dest.memberName preserve the current const-ness of this object */         \
-        ::Entropy::InvokeBinaryMemberFunction<TFunc, decltype((src.memberName)), decltype((dest.memberName))>(         \
-            ::Entropy::StringView(#memberName), src.memberName, dest.memberName,                                       \
-            std::forward<TAdditionalArgs>(additionalArgs)...);                                                         \
+    ENTROPY_BINARY_MEMBER_OPERATOR_FUNCTION(memberName, {                                                              \
+        /* Note: the extra parens around thisObj/otherObj.memberName preserve the current const-ness of this object */ \
+        ::Entropy::details::InvokeBinaryMemberFunction<decltype((thisObj.memberName)),                                 \
+                                                       decltype((otherObj.memberName)), TFunc>(                        \
+            #memberName, thisObj.memberName, otherObj.memberName, callbackObj);                                        \
     })
 #endif
 
@@ -197,7 +206,7 @@
                     &ThisReflectedType::methodName)));                                                                 \
     })                                                                                                                 \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
-    ENTROPY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                          \
+    ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
     ENTROPY_NULL_MEMBER_OFFSET_OF_FUNCTION()
 #endif
 
@@ -215,6 +224,6 @@
             ::Entropy::DynamicFunction(&ThisReflectedType::methodName));                                               \
     })                                                                                                                 \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
-    ENTROPY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                          \
+    ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
     ENTROPY_NULL_MEMBER_OFFSET_OF_FUNCTION()
 #endif
