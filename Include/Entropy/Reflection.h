@@ -9,3 +9,8 @@
 #include "Entropy/Reflection/Details/MemberEnumeration.h"
 #include "Entropy/Reflection/Details/ReflectionMacros.h"
 #include "Entropy/Reflection/Details/ReflectionUtilityFunctions.h"
+
+#ifdef ENTROPY_RUNTIME_REFLECTION_ENABLED
+#include "Entropy/Reflection/RuntimeReflectionMethods.h"
+#include "Entropy/Reflection/TypeInfo.h"
+#endif

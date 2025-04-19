@@ -121,7 +121,7 @@
         }                                                                                                              \
     }
 
-#ifdef ENTROPY_RUNTIME_REFLECTION_ENABLED
+#if defined(ENTROPY_RUNTIME_REFLECTION_ENABLED) && (__cplusplus >= 201703L)
 #define ENTROPY_REFLECT_ON_LOAD(ClassName)                                                                             \
     static inline bool __sReflect##ClassName##OnLoad = ::Entropy::details::ReflectClassOnLoad<ClassName>();
 #else

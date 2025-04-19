@@ -20,7 +20,12 @@ inline constexpr int InvokeMemberOffsetOfFunction(int offset, AttributeTypeColle
     return -1;
 }
 
-#ifdef ENTROPY_REFLECTION_RUNTIME_ENABLED
+#ifdef ENTROPY_RUNTIME_REFLECTION_ENABLED
+
+template <typename TClass, typename TMember>
+struct MemberVariableHelper
+{
+};
 
 #else
 
