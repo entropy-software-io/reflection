@@ -14,6 +14,12 @@ namespace details
 {
 
 template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter, typename = void>
+struct MemberTypeOperation
+{
+    // void operator()(TFunc callbackObject) const;
+};
+
+template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter, typename = void>
 struct UnaryMemberOperation
 {
     // void operator()(TClass& sourceObject, TFunc callbackObject) const;
@@ -30,14 +36,33 @@ struct BinaryMemberOperation
 //=========================
 
 /// <summary>
+/// Calls into callbackObject for each reflected member type in sourceObject.
+/// </summary>
+/// <param name="callbackObject">
+/// Any callable object that can called with the following (templated) signature:
+///     ()
+///   OR
+///     (const char* memberName)
+///   OR
+///     (const char* memberName, const Entropy::AttributeTypeCollection<TAttrTypes...>& attributes)
+/// </param>
+template <bool TIncludeSubclasses, typename TClass, typename TFunc>
+void ForEachReflectedMemberType(TFunc callbackObject)
+{
+    if ENTROPY_CONSTEXPR (Traits::IsReflectedType_v<TClass>)
+    {
+        details::MemberTypeOperation<TClass, TFunc, TIncludeSubclasses, 0>{}(callbackObject);
+    }
+}
+
+/// <summary>
 /// Calls into callbackObject for each reflected member in sourceObject.
 /// </summary>
 /// <param name="callbackObject">
 /// Any callable object that can called with the following (templated) signature:
 ///     (const char* memberName, TMemberType& member)
 ///   OR
-///     (const char* memberName, TMemberType& member, const Entropy::AttributeTypeCollection<TAttrTypes...>&
-///     attributes)
+///     (const char* memberName, TMemberType& member, const Entropy::AttributeTypeCollection<TAttrTypes...>& attributes)
 /// </param>
 template <bool TIncludeSubclasses, typename TClass, typename TFunc>
 void ForEachReflectedMember(TClass& sourceObject, TFunc callbackObject)
@@ -70,6 +95,70 @@ void ForEachReflectedMemberInBoth(TClassA& sourceObjectA, TClassB& sourceObjectB
 
 namespace details
 {
+
+template <typename TMember, typename TFunc, typename... TMemberAttrs>
+inline std::enable_if_t<
+    Traits::IsClassMethodInvocableImpl_v<TFunc, decltype(&TFunc::template operator()<TMember>), const char*,
+                                         const AttributeTypeCollection<TMemberAttrs...>&>>
+    InvokeMemberTypeFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TFunc callbackObj)
+{
+    callbackObj.template operator()<TMember>(metaData.memberName, metaData.attributes);
+}
+
+template <typename TMember, typename TFunc, typename... TMemberAttrs>
+inline std::enable_if_t<
+    Traits::IsClassMethodInvocableImpl_v<TFunc, decltype(&TFunc::template operator()<TMember>), const char*>>
+    InvokeMemberTypeFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TFunc callbackObj)
+{
+    callbackObj(metaData.memberName);
+}
+
+template <typename TMember, typename TFunc, typename... TMemberAttrs>
+inline std::enable_if_t<Traits::IsClassMethodInvocableImpl_v<TFunc, decltype(&TFunc::template operator()<TMember>)>>
+    InvokeMemberTypeFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TFunc callbackObj)
+{
+    callbackObj();
+}
+
+// There is a reflected member for this counter
+template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter>
+struct MemberTypeOperation<
+    TClass, TFunc, TIncludeSubclasses, TCounter,
+    std::enable_if_t<ENTROPY_REMOVE_CONST_REF(TClass)::template __MemberTypeOperatorExists<TCounter>::value>>
+{
+    inline void operator()(TFunc callbackObject) const
+    {
+        ENTROPY_REMOVE_CONST_REF(TClass)::template __MemberTypeOperator<TClass, TFunc, TCounter>::Execute(
+            callbackObject);
+        MemberTypeOperation<TClass, TFunc, TIncludeSubclasses, TCounter + 1>{}(callbackObject);
+    }
+};
+
+// There are no more reflected members, but we have a base class and want to enumerate them
+template <typename TClass, typename TFunc, int TCounter>
+struct MemberTypeOperation<
+    TClass, TFunc, true /* TIncludeSubclasses */, TCounter,
+    std::enable_if_t<!ENTROPY_REMOVE_CONST_REF(TClass)::template __MemberTypeOperatorExists<TCounter>::value &&
+                     Traits::HasBaseClass_v<TClass>>>
+{
+    inline void operator()(TFunc callbackObject) const
+    {
+        MemberTypeOperation<Traits::BaseClassWithQualifiersOf_t<TClass>, TFunc, true /* TIncludeSubclasses */, 0>{}(
+            callbackObject);
+    }
+};
+
+// There are no more reflected members and we either don't want to enumerate base classes or we don't have one.
+template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter>
+struct MemberTypeOperation<
+    TClass, TFunc, TIncludeSubclasses, TCounter,
+    std::enable_if_t<!ENTROPY_REMOVE_CONST_REF(TClass)::template __MemberTypeOperatorExists<TCounter>::value &&
+                     (!TIncludeSubclasses || !Traits::HasBaseClass_v<TClass>)>>
+{
+    inline void operator()(TFunc callbackObject) const {}
+};
+
+//==================
 
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline std::enable_if_t<

@@ -27,6 +27,28 @@
         static void Execute() { __VA_ARGS__ }                                                                          \
     };
 
+#define ENTROPY_DECLARE_MEMBER_TYPE_OPERATOR_FUNCTION                                                                  \
+    template <int TCounter, typename TDummy = void>                                                                    \
+    struct __MemberTypeOperatorExists : std::bool_constant<false>                                                      \
+    {                                                                                                                  \
+    };                                                                                                                 \
+    template <typename TThisType, typename TFunc, int TCounter>                                                        \
+    struct __MemberTypeOperator                                                                                        \
+    {                                                                                                                  \
+        static void Execute(TFunc callbackObj) {}                                                                      \
+    };
+
+#define ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION(...)                                                                     \
+    template <typename TDummy>                                                                                         \
+    struct __MemberTypeOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                  \
+    {                                                                                                                  \
+    };                                                                                                                 \
+    template <typename TThisType, typename TFunc>                                                                      \
+    struct __MemberTypeOperator<TThisType, TFunc, ENTROPY_GET_COUNTER_VALUE()>                                         \
+    {                                                                                                                  \
+        static void Execute(TFunc callbackObj) { __VA_ARGS__ }                                                         \
+    };
+
 #define ENTROPY_DECLARE_UNARY_MEMBER_OPERATOR_FUNCTION                                                                 \
     template <int TCounter, typename TDummy = void>                                                                    \
     struct __UnaryMemberOperatorExists : std::bool_constant<false>                                                     \
@@ -133,6 +155,8 @@
     ENTROPY_DECLARE_COUNTER                                                                                            \
     ENTROPY_DECLARE_SINGLE_EXECUTION_META_FUNCTION()                                                                   \
     ENTROPY_SINGLE_EXECUTION_META_FUNCTION(ENTROPY_START_CLASS_REFLECTION_REGISTRATION(className, ##__VA_ARGS__))      \
+    ENTROPY_DECLARE_MEMBER_TYPE_OPERATOR_FUNCTION                                                                      \
+    ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \
     ENTROPY_DECLARE_UNARY_MEMBER_OPERATOR_FUNCTION                                                                     \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
     ENTROPY_DECLARE_BINARY_MEMBER_OPERATOR_FUNCTION                                                                    \
@@ -177,6 +201,11 @@
             GetMemberDataType<decltype(memberName)>(), #memberName##_EStr, offsetof(ThisReflectedType, memberName),    \
             sizeof(decltype(memberName)), std::move(getFn), std::move(setFn));                                         \
     })                                                                                                                 \
+    ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION({                                                                            \
+        /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
+        ::Entropy::details::InvokeMemberTypeFunction<decltype((memberName)), TFunc>(                                   \
+            ::Entropy::details::MakeReflectionMemberMetaData(#memberName, ##__VA_ARGS__), callbackObj);                \
+    })                                                                                                                 \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION({                                                                           \
         /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
         ::Entropy::details::InvokeUnaryMemberFunction<decltype((src.memberName)), TFunc>(                              \
@@ -205,6 +234,7 @@
                 static_cast<::Entropy::details::MemberFunctionType_t<ThisReflectedType, methodSig>>(                   \
                     &ThisReflectedType::methodName)));                                                                 \
     })                                                                                                                 \
+    ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
     ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
     ENTROPY_NULL_MEMBER_OFFSET_OF_FUNCTION()
@@ -223,6 +253,7 @@
                 ThisReflectedType, decltype(&ThisReflectedType::methodName)>>{}(),                                     \
             ::Entropy::DynamicFunction(&ThisReflectedType::methodName));                                               \
     })                                                                                                                 \
+    ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
     ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
     ENTROPY_NULL_MEMBER_OFFSET_OF_FUNCTION()
