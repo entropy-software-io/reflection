@@ -29,8 +29,8 @@ private:
     {
     };
 
-    template <typename T, std::size_t Index>
-    struct ModuleIndexHelper<T, std::tuple<>, Index>
+    template <typename TModule, std::size_t Index>
+    struct ModuleIndexHelper<TModule, std::tuple<>, Index>
     {
         static_assert(false, "Module type not found");
     };
