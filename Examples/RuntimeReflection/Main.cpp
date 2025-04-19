@@ -4,9 +4,14 @@
 
 #include "Entropy/Reflection.h"
 
+#include <iostream>
+
 struct MyStruct
 {
     ENTROPY_REFLECT_CLASS(MyStruct)
+
+    ENTROPY_REFLECT_MEMBER(MyIntValue)
+    int MyIntValue = 1;
 
     ENTROPY_REFLECT_MEMBER(MyFloatValue)
     float MyFloatValue = 1.23f;
@@ -15,6 +20,15 @@ struct MyStruct
 int main(int argc, char* argv[])
 {
     const Entropy::TypeInfo* typeInfo = Entropy::ReflectTypeAndGetTypeInfo<MyStruct>();
+
+    std::cout << "Member list for '" << typeInfo->GetModule<Entropy::Reflection::BasicTypeInfo>().GetTypeName()
+              << "':" << std::endl;
+    for (const auto& memberKvp : typeInfo->GetModule<Entropy::Reflection::ClassTypeInfo>().GetMembers())
+    {
+        std::cout << "   " << memberKvp.first << " ("
+                  << memberKvp.second.GetMemberType()->GetModule<Entropy::Reflection::BasicTypeInfo>().GetTypeName()
+                  << ")" << std::endl;
+    }
 
     return 0;
 }

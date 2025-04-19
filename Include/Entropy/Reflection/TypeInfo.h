@@ -12,6 +12,8 @@ namespace Entropy
 /// <summary>
 /// Holds runtime type information for any type that are accessible through different modules. The list of modules can
 /// be set by overriding the TypeInfoTraits.
+///
+/// Any C++ type can have TypeInfo - not just reflected classes.
 /// </summary>
 class TypeInfo
 {

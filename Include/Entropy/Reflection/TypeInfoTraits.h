@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include "TypeInfoModule.h"
+#include "TypeInfoModules/BasicTypeInfo.h"
+#include "TypeInfoModules/ClassTypeInfo.h"
 #include <tuple>
 
 namespace Entropy
@@ -18,7 +19,8 @@ namespace Reflection
 template <typename = void>
 struct TypeInfoTraits
 {
-    using ModuleTypes = std::tuple<BasicTypeInfo>;
+    // ModuleTypes must be an std::tuple
+    using ModuleTypes = std::tuple<BasicTypeInfo, ClassTypeInfo>;
 };
 
 } // namespace Reflection
