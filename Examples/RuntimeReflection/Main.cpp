@@ -19,15 +19,16 @@ struct MyStruct
 
 int main(int argc, char* argv[])
 {
-    const Entropy::TypeInfo* typeInfo = Entropy::ReflectTypeAndGetTypeInfo<MyStruct>();
+    using namespace Entropy;
+    using namespace Entropy::Reflection;
 
-    std::cout << "Member list for '" << typeInfo->GetModule<Entropy::Reflection::BasicTypeInfo>().GetTypeName()
-              << "':" << std::endl;
-    for (const auto& memberKvp : typeInfo->GetModule<Entropy::Reflection::ClassTypeInfo>().GetMembers())
+    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyStruct>();
+
+    std::cout << "Member list for '" << typeInfo->Get<BasicTypeInfo>().GetTypeName() << "':" << std::endl;
+    for (const auto& memberKvp : typeInfo->Get<ClassTypeInfo>().GetMembers())
     {
         std::cout << "   " << memberKvp.first << " ("
-                  << memberKvp.second.GetMemberType()->GetModule<Entropy::Reflection::BasicTypeInfo>().GetTypeName()
-                  << ")" << std::endl;
+                  << memberKvp.second.GetMemberType()->Get<BasicTypeInfo>().GetTypeName() << ")" << std::endl;
     }
 
     return 0;

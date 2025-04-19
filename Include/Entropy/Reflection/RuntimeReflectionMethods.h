@@ -27,7 +27,7 @@ struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
 {
     void operator()(TypeInfo& typeInfo) const
     {
-        Entropy::Reflection::FillReflectionInfo<TFirstModule, TType>{}(typeInfo.GetModule<TFirstModule>());
+        Entropy::Reflection::FillReflectionInfo<TFirstModule, TType>{}(typeInfo.Get<TFirstModule>());
         FillModuleTypes<TType, std::tuple<TOtherModules...>>{}(typeInfo);
     }
 };

@@ -39,14 +39,14 @@ private:
 
 public:
     template <typename TModule>
-    const TModule& GetModule() const
+    const TModule& Get() const
     {
         static constexpr std::size_t idx = ModuleIndexHelper<TModule, ModuleTypes>::value;
         return std::get<idx>(_modules);
     }
 
     template <typename TModule>
-    TModule& GetModule()
+    TModule& Get()
     {
         static constexpr std::size_t idx = ModuleIndexHelper<TModule, ModuleTypes>::value;
         return std::get<idx>(_modules);
