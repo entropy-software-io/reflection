@@ -47,7 +47,7 @@ TypeInfo MakeSingleTypeInfo()
 } // namespace details
 
 template <typename T>
-const TypeInfo* ReflectTypeAndGetTypeInfo()
+const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept
 {
     static TypeInfo typeInfo = details::MakeSingleTypeInfo<T>();
     return &typeInfo;

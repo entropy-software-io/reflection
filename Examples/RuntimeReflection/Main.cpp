@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     using namespace Entropy::Reflection;
 
     const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyStruct>();
-
+    
     std::cout << "Member list for '" << typeInfo->Get<BasicTypeInfo>().GetTypeName() << "':" << std::endl;
     for (const auto& memberKvp : typeInfo->Get<ClassTypeInfo>().GetMembers())
     {

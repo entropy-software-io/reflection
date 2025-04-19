@@ -45,7 +45,7 @@ struct HasReflectionMethod<T, std::enable_if_t<HasRawReflectionMethod<T>::value>
 
 template <typename T>
 constexpr bool IsReflectedType_v =
-    std::is_class_v<ENTROPY_REMOVE_CONST_REF(T)> && details::HasReflectionMethod<ENTROPY_REMOVE_CONST_REF(T)>::value;
+    std::is_class_v<RemoveConstRef_t<T>> && details::HasReflectionMethod<RemoveConstRef_t<T>>::value;
 
 } // namespace Traits
 
