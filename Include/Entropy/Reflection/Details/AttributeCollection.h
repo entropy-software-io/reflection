@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Entropy/Details/Defines.h"
+#include "Entropy/Core/Details/Defines.h"
 #include <type_traits>
 
 namespace Entropy
