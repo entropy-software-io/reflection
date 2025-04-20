@@ -54,12 +54,13 @@ private:
 
 public:
     void AddMember(const char* name, MemberTypeInfo&& memberInfo);
+    void SetBaseClass(const TypeInfo* baseClass);
 
+    inline const TypeInfo* GetBaseClassTypeInfo() const { return _baseClassTypeInfo; }
     inline const ContainerTraits::MapType<const char*, MemberTypeInfo>& GetMembers() const { return _members; }
 
 private:
-    bool _isReflectedClass = false;
-
+    const TypeInfo* _baseClassTypeInfo = nullptr;
     ContainerTraits::MapType<const char*, MemberTypeInfo> _members{};
 };
 
@@ -100,7 +101,13 @@ struct FillReflectionInfo<ClassTypeInfo, T, typename std::enable_if<Traits::IsRe
 
     void operator()(ClassTypeInfo& classTypeInfo) const
     {
-        ForEachReflectedMemberType<true /* IncludeSubclasses*/, T>(GatherMembers(&classTypeInfo));
+        ForEachReflectedMemberType<false /* IncludeSubclasses*/, T>(GatherMembers(&classTypeInfo));
+
+        if ENTROPY_CONSTEXPR (Traits::HasBaseClass<T>::value)
+        {
+            const TypeInfo* baseClassType = ReflectTypeAndGetTypeInfo<Traits::BaseClassOf_t<T>>();
+            classTypeInfo.SetBaseClass(baseClassType);
+        }
     }
 };
 

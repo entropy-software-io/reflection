@@ -10,6 +10,8 @@ namespace Entropy
 namespace Reflection
 {
 
+void ClassTypeInfo::SetBaseClass(const TypeInfo* baseClass) { _baseClassTypeInfo = baseClass; }
+
 void ClassTypeInfo::AddMember(const char* name, MemberTypeInfo&& memberInfo)
 {
     _members.emplace(name, std::move(memberInfo));
