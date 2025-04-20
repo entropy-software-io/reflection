@@ -19,7 +19,7 @@ namespace Entropy
 class TypeInfo
 {
 public:
-    using ModuleTypes = Reflection::TypeInfoTraits<TypeInfo>::ModuleTypes;
+    using ModuleTypes = Reflection::TypeInfoTraits<UserOverride>::ModuleTypes;
 
 private:
     template <typename TModule, typename TModuleTypes, std::size_t Index = 0>

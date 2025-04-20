@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "UserOverrideDummy.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -13,7 +14,7 @@ namespace Entropy
 namespace details
 {
 
-template <typename T>
+template <typename T, typename = void>
 struct ReflectionContainerTraits
 {
     template <typename U>

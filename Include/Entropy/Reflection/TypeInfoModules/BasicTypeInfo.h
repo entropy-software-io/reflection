@@ -18,15 +18,18 @@ namespace Reflection
 class BasicTypeInfo
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<BasicTypeInfo>;
+    using ContainerTraits = details::ReflectionContainerTraits<BasicTypeInfo, UserOverride>;
 
 public:
-    void SetClassName(ContainerTraits::StringType&& name) { _typeName = std::move(name); }
-
     inline const ContainerTraits::StringType& GetTypeName() const { return _typeName; }
 
 private:
+    void SetClassName(ContainerTraits::StringType&& name) { _typeName = std::move(name); }
+
     ContainerTraits::StringType _typeName{};
+
+    template <typename, typename, typename>
+    friend struct FillModuleTypeInfo;
 };
 
 //----------------

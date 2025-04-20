@@ -20,7 +20,7 @@ namespace Reflection
 class MemberTypeInfo
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<MemberTypeInfo>;
+    using ContainerTraits = details::ReflectionContainerTraits<MemberTypeInfo, UserOverride>;
 
 public:
     MemberTypeInfo(const char* memberName, const TypeInfo* memberType)
@@ -43,13 +43,10 @@ private:
 class ClassTypeInfo
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<ClassTypeInfo>;
+    using ContainerTraits = details::ReflectionContainerTraits<ClassTypeInfo, UserOverride>;
 
 public:
-    void AddTemplateParameter(const TypeInfo* templateParameter);
-    void SetBaseClass(const TypeInfo* baseClass);
-    void AddMember(const char* name, MemberTypeInfo&& memberInfo);
-
+    inline bool IsReflectedClass() const { return _isReflectedClass; }
     inline const ContainerTraits::VectorType<const TypeInfo*> GetTemplateParameters() const
     {
         return _templateParameters;
@@ -58,9 +55,18 @@ public:
     inline const ContainerTraits::MapType<const char*, MemberTypeInfo>& GetMembers() const { return _members; }
 
 private:
+    void AddTemplateParameter(const TypeInfo* templateParameter);
+    void SetBaseClass(const TypeInfo* baseClass);
+    void AddMember(const char* name, MemberTypeInfo&& memberInfo);
+    void SetIsReflectedClass(bool isReflectedClass) { _isReflectedClass = isReflectedClass; }
+
     const TypeInfo* _baseClassTypeInfo = nullptr;
     ContainerTraits::MapType<const char*, MemberTypeInfo> _members{};
     ContainerTraits::VectorType<const TypeInfo*> _templateParameters{};
+    bool _isReflectedClass = false;
+
+    template <typename, typename, typename>
+    friend struct FillModuleTypeInfo;
 };
 
 //----------------
@@ -71,6 +77,8 @@ private:
 template <typename T>
 struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<ClassTypeInfo>
 {
+    void HandleType(ClassTypeInfo& module) { module.SetIsReflectedClass(Traits::IsReflectedType<T>::value); }
+
     template <typename TMember, typename... TAttrTypes>
     void HandleClassMember(ClassTypeInfo& module, const char* memberName, const TypeInfo* memberTypeInfo,
                            const AttributeTypeCollection<TAttrTypes...>& memberAttr)

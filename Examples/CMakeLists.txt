@@ -5,4 +5,5 @@ add_subdirectory(TransformDataStructures)
 
 if (${ENTROPY_REFLECTION_ENABLE_RUNTIME})
     add_subdirectory(RuntimeReflection)
+    add_subdirectory(CustomTypeInfoModule)
 endif()
