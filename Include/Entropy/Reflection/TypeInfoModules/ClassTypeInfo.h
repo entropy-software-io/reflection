@@ -7,7 +7,6 @@
 #include "Entropy/Reflection/Details/AttributeCollection.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
-#include "Entropy/Reflection/RuntimeReflectionMethods.h"
 #include "TypeInfoModule.h"
 
 namespace Entropy
