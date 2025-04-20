@@ -10,8 +10,90 @@
 namespace Entropy
 {
 
+template <typename T>
+const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
+
 namespace details
 {
+
+template <typename TModule, typename TType, typename = void>
+struct FillModuleTypeTemplateParameters
+{
+    using ModuleHandlerType = Entropy::Reflection::FillModuleTypeInfo<TModule, TType>;
+
+    void operator()(ModuleHandlerType& handler, TModule& module) {}
+};
+
+template <typename TModule, template <typename...> class TType, typename... Tn>
+struct FillModuleTypeTemplateParameters<TModule, TType<Tn...>, typename std::enable_if<(sizeof...(Tn) > 0)>::value>
+{
+    using ModuleHandlerType = Entropy::Reflection::FillModuleTypeInfo<TModule, TType<Tn...>>;
+
+    void operator()(ModuleHandlerType& handler, TModule& module) {}
+};
+
+//===================
+
+template <typename TModule, typename TType, typename = void>
+struct FillModuleTypeBaseClass
+{
+    void operator()(Entropy::Reflection::FillModuleTypeInfo<TModule, TType>& handler, TModule& module) {}
+};
+
+template <typename TModule, typename TType>
+struct FillModuleTypeBaseClass<TModule, TType, typename std::enable_if<Traits::HasBaseClass<TType>::value>::type>
+{
+    void operator()(Entropy::Reflection::FillModuleTypeInfo<TModule, TType>& handler, TModule& module) const
+    {
+        const TypeInfo* baseClassTypeInfo = ReflectTypeAndGetTypeInfo<Traits::BaseClassOf_t<TType>>();
+
+        handler.template HandleBaseClass<Traits::BaseClassOf_t<TType>>(module, baseClassTypeInfo);
+    }
+};
+
+//===================
+
+template <typename TModule, typename TType, typename = void>
+struct FillModuleTypeClassMembers
+{
+    using ModuleHandlerType = Entropy::Reflection::FillModuleTypeInfo<TModule, TType>;
+
+    void operator()(ModuleHandlerType& handler, TModule& module) {}
+};
+
+template <typename TModule, typename TType>
+struct FillModuleTypeClassMembers<TModule, TType, typename std::enable_if<Traits::IsReflectedType<TType>::value>::type>
+{
+    using ModuleHandlerType = Entropy::Reflection::FillModuleTypeInfo<TModule, TType>;
+
+    struct HandleMember
+    {
+        HandleMember(ModuleHandlerType* handler, TModule* module)
+            : _handler(handler)
+            , _module(module)
+        {
+        }
+
+        template <typename TMember, typename... TAttrTypes>
+        void operator()(const char* memberName, const AttributeTypeCollection<TAttrTypes...>& memberAttr)
+        {
+            const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TMember>();
+
+            _handler->template HandleClassMember<TMember, TAttrTypes...>(*_module, memberName, typeInfo, memberAttr);
+        }
+
+    private:
+        ModuleHandlerType* _handler = nullptr;
+        TModule* _module            = nullptr;
+    };
+
+    void operator()(ModuleHandlerType& handler, TModule& module) const
+    {
+        ForEachReflectedMemberType<false /* IncludeSubclasses */, TType>(HandleMember(&handler, &module));
+    }
+};
+
+//===================
 
 template <typename TType, typename TModuleTypes>
 struct FillModuleTypes;
@@ -25,9 +107,27 @@ struct FillModuleTypes<TType, std::tuple<>>
 template <typename TType, typename TFirstModule, typename... TOtherModules>
 struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
 {
+    using ModuleFillerType = Entropy::Reflection::FillModuleTypeInfo<TFirstModule, TType>;
+
     void operator()(TypeInfo& typeInfo) const
     {
-        Entropy::Reflection::FillReflectionInfo<TFirstModule, TType>{}(typeInfo.Get<TFirstModule>());
+        ModuleFillerType filler;
+
+        TFirstModule& module = typeInfo.Get<TFirstModule>();
+
+        // Base Type
+        filler.HandleType(module);
+
+        // Template Parameters
+        FillModuleTypeTemplateParameters<TFirstModule, TType>{}(filler, module);
+
+        // Base Type
+        FillModuleTypeBaseClass<TFirstModule, TType>{}(filler, module);
+
+        // Members
+        FillModuleTypeClassMembers<TFirstModule, TType>{}(filler, module);
+
+        // Handle the rest of the modules
         FillModuleTypes<TType, std::tuple<TOtherModules...>>{}(typeInfo);
     }
 };

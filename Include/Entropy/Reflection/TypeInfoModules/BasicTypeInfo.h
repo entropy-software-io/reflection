@@ -35,9 +35,9 @@ private:
 /// Initializes the BasicTypeInfo module. Called once per reflected type
 /// </summary>
 template <typename T>
-struct FillReflectionInfo<BasicTypeInfo, T>
+struct FillModuleTypeInfo<BasicTypeInfo, T> : public DefaultFillModuleTypeInfo<BasicTypeInfo>
 {
-    void operator()(BasicTypeInfo& basicTypeInfo) const { basicTypeInfo.SetClassName(typeid(T).name()); }
+    void HandleType(BasicTypeInfo& module) { module.SetClassName(typeid(T).name()); }
 };
 
 } // namespace Reflection

@@ -4,19 +4,51 @@
 
 #pragma once
 
+#include "Entropy/Reflection/Details/AttributeCollection.h"
+
 namespace Entropy
 {
+
+class TypeInfo;
+
 namespace Reflection
 {
 
-/// <summary>
-/// Declare an instance of this for each type
-/// </summary>
-template <typename TModule, typename TType, typename = void>
-struct FillReflectionInfo
+template <typename TModule>
+struct DefaultFillModuleTypeInfo
 {
-    // template <typename T>
-    // void operator()(TModule& typeInfoModule) const {}
+    void HandleType(TModule& module) {}
+
+    /// <summary>
+    /// Called for each member on a reflected class. If the type is not reflected, this is never called.
+    /// </summary>
+    template <typename TMember, typename... TAttrTypes>
+    void HandleClassMember(TModule& module, const char* memberName, const TypeInfo* memberTypeInfo,
+                           const AttributeTypeCollection<TAttrTypes...>& memberAttr)
+    {
+    }
+
+    /// <summary>
+    /// Called for the reflected class's declared base class. If the type is not reflected or has no declared base
+    /// class, this is never called.
+    /// </summary>
+    template <typename TBaseClass>
+    void HandleBaseClass(TModule& module, const TypeInfo* baseClassTypeInfo)
+    {
+    }
+
+    /// <summary>
+    /// Called for each template parameter on this type. This is called even if the type is not reflected.
+    /// </summary>
+    template <typename TTemplateClass>
+    void HandleTemplateParameter(TModule& module, const TypeInfo* templateParamTypeInfo)
+    {
+    }
+};
+
+template <typename TModule, typename TType, typename = void>
+struct FillModuleTypeInfo : public DefaultFillModuleTypeInfo<TModule>
+{
 };
 
 } // namespace Reflection

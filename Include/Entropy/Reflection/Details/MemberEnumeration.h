@@ -49,10 +49,7 @@ struct BinaryMemberOperation
 template <bool TIncludeSubclasses, typename TClass, typename TFunc>
 void ForEachReflectedMemberType(TFunc callbackObject)
 {
-    if ENTROPY_CONSTEXPR (Traits::IsReflectedType<TClass>::value)
-    {
-        details::MemberTypeOperation<TClass, TFunc, TIncludeSubclasses, 0>{}(callbackObject);
-    }
+    details::MemberTypeOperation<TClass, TFunc, TIncludeSubclasses, 0>{}(callbackObject);
 }
 
 /// <summary>

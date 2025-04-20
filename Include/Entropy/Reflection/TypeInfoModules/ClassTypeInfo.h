@@ -12,12 +12,6 @@
 
 namespace Entropy
 {
-
-class TypeInfo;
-
-template <typename T>
-const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
-
 namespace Reflection
 {
 
@@ -70,44 +64,21 @@ private:
 /// Called once per type to initialize module type info.
 /// </summary>
 template <typename T>
-struct FillReflectionInfo<ClassTypeInfo, T, typename std::enable_if<!Traits::IsReflectedType<T>::value>::type>
+struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<ClassTypeInfo>
 {
-    void operator()(ClassTypeInfo& classTypeInfo) const {}
-};
-
-template <typename T>
-struct FillReflectionInfo<ClassTypeInfo, T, typename std::enable_if<Traits::IsReflectedType<T>::value>::type>
-{
-    struct GatherMembers
+    template <typename TMember, typename... TAttrTypes>
+    void HandleClassMember(ClassTypeInfo& module, const char* memberName, const TypeInfo* memberTypeInfo,
+                           const AttributeTypeCollection<TAttrTypes...>& memberAttr)
     {
-        GatherMembers(ClassTypeInfo* classTypeInfo)
-            : _classTypeInfo(classTypeInfo)
-        {
-        }
+        MemberTypeInfo memberInfo(memberName, memberTypeInfo);
 
-        template <typename TMemberType, typename... TAttrTypes>
-        void operator()(const char* memberName, const Entropy::AttributeTypeCollection<TAttrTypes...>& attributes)
-        {
-            const TypeInfo* memberTypeInfo = ReflectTypeAndGetTypeInfo<TMemberType>();
+        module.AddMember(memberName, std::move(memberInfo));
+    }
 
-            MemberTypeInfo memberInfo(memberName, memberTypeInfo);
-
-            _classTypeInfo->AddMember(memberName, std::move(memberInfo));
-        }
-
-    private:
-        ClassTypeInfo* _classTypeInfo = nullptr;
-    };
-
-    void operator()(ClassTypeInfo& classTypeInfo) const
+    template <typename TBaseClass>
+    void HandleBaseClass(ClassTypeInfo& module, const TypeInfo* baseClassTypeInfo)
     {
-        ForEachReflectedMemberType<false /* IncludeSubclasses*/, T>(GatherMembers(&classTypeInfo));
-
-        if ENTROPY_CONSTEXPR (Traits::HasBaseClass<T>::value)
-        {
-            const TypeInfo* baseClassType = ReflectTypeAndGetTypeInfo<Traits::BaseClassOf_t<T>>();
-            classTypeInfo.SetBaseClass(baseClassType);
-        }
+        module.SetBaseClass(baseClassTypeInfo);
     }
 };
 
