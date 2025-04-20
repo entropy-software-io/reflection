@@ -34,7 +34,9 @@ private:
     template <typename TModule, std::size_t Index>
     struct ModuleIndexHelper<TModule, std::tuple<>, Index>
     {
+#if __cplusplus >= 201300
         static_assert(false, "Module type not found");
+#endif
     };
 
 public:

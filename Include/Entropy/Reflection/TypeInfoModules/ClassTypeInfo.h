@@ -12,7 +12,11 @@
 
 namespace Entropy
 {
+
 class TypeInfo;
+
+template <typename T>
+const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
 
 namespace Reflection
 {
@@ -65,13 +69,13 @@ private:
 /// Called once per type to initialize module type info.
 /// </summary>
 template <typename T>
-struct FillReflectionInfo<ClassTypeInfo, T, std::enable_if_t<!Traits::IsReflectedType_v<T>>>
+struct FillReflectionInfo<ClassTypeInfo, T, typename std::enable_if<!Traits::IsReflectedType<T>::value>::type>
 {
     void operator()(ClassTypeInfo& classTypeInfo) const {}
 };
 
 template <typename T>
-struct FillReflectionInfo<ClassTypeInfo, T, std::enable_if_t<Traits::IsReflectedType_v<T>>>
+struct FillReflectionInfo<ClassTypeInfo, T, typename std::enable_if<Traits::IsReflectedType<T>::value>::type>
 {
     struct GatherMembers
     {

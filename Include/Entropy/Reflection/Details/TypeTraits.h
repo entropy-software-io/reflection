@@ -36,16 +36,29 @@ struct HasReflectionMethod : public std::false_type
 };
 
 template <typename T>
-struct HasReflectionMethod<T, std::enable_if_t<HasRawReflectionMethod<T>::value>>
+struct HasReflectionMethod<T, typename std::enable_if<HasRawReflectionMethod<T>::value>::type>
 {
     static constexpr bool value = T::template SingleExecutionMetaFunctionExists<0, T>::value;
 };
 
 } // namespace details
 
+template <typename T, typename = void>
+struct IsReflectedType : std::false_type
+{
+};
+
 template <typename T>
-constexpr bool IsReflectedType_v =
-    std::is_class_v<RemoveConstRef_t<T>> && details::HasReflectionMethod<RemoveConstRef_t<T>>::value;
+struct IsReflectedType<T, typename std::enable_if<std::is_class<RemoveConstRef_t<T>>::value &&
+                                                  details::HasReflectionMethod<RemoveConstRef_t<T>>::value>::type>
+    : std::true_type
+{
+};
+
+#if __cplusplus >= 201300
+template <typename T>
+constexpr bool IsReflectedType_v = IsReflectedType<T>::value;
+#endif
 
 } // namespace Traits
 

@@ -17,7 +17,7 @@ struct MyStruct
 };
 
 // Sanity checks
-static_assert(Entropy::Traits::IsReflectedType_v<MyStruct>, "MyStruct is not reflected");
+static_assert(Entropy::Traits::IsReflectedType<MyStruct>::value, "MyStruct is not reflected");
 
 struct MyDerivedStruct : public MyStruct
 {
@@ -28,9 +28,9 @@ struct MyDerivedStruct : public MyStruct
 };
 
 // Sanity checks
-static_assert(Entropy::Traits::IsReflectedType_v<MyDerivedStruct>, "MyDerivedStruct is not reflected");
-static_assert(Entropy::Traits::HasBaseClass_v<MyDerivedStruct>, "MyDerivedStruct has no defined base class");
-static_assert(std::is_same_v<MyStruct, Entropy::Traits::BaseClassOf_t<MyDerivedStruct>>,
+static_assert(Entropy::Traits::IsReflectedType<MyDerivedStruct>::value, "MyDerivedStruct is not reflected");
+static_assert(Entropy::Traits::HasBaseClass<MyDerivedStruct>::value, "MyDerivedStruct has no defined base class");
+static_assert(std::is_same<MyStruct, Entropy::Traits::BaseClassOf_t<MyDerivedStruct>>::value,
               "Incorrect defined base class of MyDerivedStruct");
 
 struct PrintName

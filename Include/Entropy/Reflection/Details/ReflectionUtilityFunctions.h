@@ -10,16 +10,6 @@ namespace Entropy
 namespace details
 {
 
-template <typename TFunc, typename TMember, typename... TAttrs>
-inline constexpr int InvokeMemberOffsetOfFunction(int offset, AttributeTypeCollection<TAttrs...> attrs)
-{
-    if (TFunc{}.template operator()<TMember>(attrs))
-    {
-        return offset;
-    }
-    return -1;
-}
-
 #ifdef ENTROPY_RUNTIME_REFLECTION_ENABLED
 
 template <typename TClass, typename TMember>

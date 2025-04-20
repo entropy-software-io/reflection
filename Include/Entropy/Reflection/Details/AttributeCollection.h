@@ -17,7 +17,7 @@ private:
     template <typename TType, typename TThisType>
     static ENTROPY_CONSTEXPR bool IsSameTypeImpl()
     {
-        return std::is_same_v<TType, TThisType>;
+        return std::is_same<TType, TThisType>::value;
     }
 
     template <typename TType>

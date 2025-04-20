@@ -6,7 +6,7 @@
 
 #define ENTROPY_DECLARE_SINGLE_EXECUTION_META_FUNCTION()                                                               \
     template <int _TCounter, typename _TClass, typename _TDummy = void>                                                \
-    struct SingleExecutionMetaFunctionExists : std::bool_constant<false>                                               \
+    struct SingleExecutionMetaFunctionExists : std::false_type                                                         \
     {                                                                                                                  \
     };                                                                                                                 \
     template <int _TCounter, typename _TClass, typename _TDummy = void>                                                \
@@ -17,8 +17,7 @@
 
 #define ENTROPY_SINGLE_EXECUTION_META_FUNCTION(...)                                                                    \
     template <typename _TDummy>                                                                                        \
-    struct SingleExecutionMetaFunctionExists<ENTROPY_GET_COUNTER_VALUE(), ThisReflectedType, _TDummy>                  \
-        : std::bool_constant<true>                                                                                     \
+    struct SingleExecutionMetaFunctionExists<ENTROPY_GET_COUNTER_VALUE(), ThisReflectedType, _TDummy> : std::true_type \
     {                                                                                                                  \
     };                                                                                                                 \
     template <typename _TDummy>                                                                                        \
@@ -29,7 +28,7 @@
 
 #define ENTROPY_DECLARE_MEMBER_TYPE_OPERATOR_FUNCTION                                                                  \
     template <int TCounter, typename TDummy = void>                                                                    \
-    struct __MemberTypeOperatorExists : std::bool_constant<false>                                                      \
+    struct __MemberTypeOperatorExists : std::false_type                                                                \
     {                                                                                                                  \
     };                                                                                                                 \
     template <typename TThisType, typename TFunc, int TCounter>                                                        \
@@ -40,7 +39,7 @@
 
 #define ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION(...)                                                                     \
     template <typename TDummy>                                                                                         \
-    struct __MemberTypeOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                  \
+    struct __MemberTypeOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::true_type                            \
     {                                                                                                                  \
     };                                                                                                                 \
     template <typename TThisType, typename TFunc>                                                                      \
@@ -51,7 +50,7 @@
 
 #define ENTROPY_DECLARE_UNARY_MEMBER_OPERATOR_FUNCTION                                                                 \
     template <int TCounter, typename TDummy = void>                                                                    \
-    struct __UnaryMemberOperatorExists : std::bool_constant<false>                                                     \
+    struct __UnaryMemberOperatorExists : std::false_type                                                               \
     {                                                                                                                  \
     };                                                                                                                 \
     template <typename TThisType, typename TFunc, int TCounter>                                                        \
@@ -62,7 +61,7 @@
 
 #define ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION(...)                                                                    \
     template <typename TDummy>                                                                                         \
-    struct __UnaryMemberOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                 \
+    struct __UnaryMemberOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::true_type                           \
     {                                                                                                                  \
     };                                                                                                                 \
     template <typename TThisType, typename TFunc>                                                                      \
@@ -73,11 +72,11 @@
 
 #define ENTROPY_DECLARE_BINARY_MEMBER_OPERATOR_FUNCTION                                                                \
     template <int TCounter, typename TDummy = void>                                                                    \
-    struct __BinaryMemberOperatorExists : std::bool_constant<false>                                                    \
+    struct __BinaryMemberOperatorExists : std::false_type                                                              \
     {                                                                                                                  \
     };                                                                                                                 \
     template <typename TOtherType, int TCounter, typename = void>                                                      \
-    struct __BinaryMemberOperatorExistsOnOther : std::bool_constant<false>                                             \
+    struct __BinaryMemberOperatorExistsOnOther : std::false_type                                                       \
     {                                                                                                                  \
     };                                                                                                                 \
     template <typename TThisType, typename TOtherType, typename TFunc, int TCounter, typename = void>                  \
@@ -88,7 +87,7 @@
 
 #define ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                \
     template <typename TDummy>                                                                                         \
-    struct __BinaryMemberOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                \
+    struct __BinaryMemberOperatorExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::true_type                          \
     {                                                                                                                  \
     };
 
@@ -96,20 +95,20 @@
     ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
     template <typename TOtherType>                                                                                     \
     struct __BinaryMemberOperatorExistsOnOther<TOtherType, ENTROPY_GET_COUNTER_VALUE(),                                \
-                                               decltype(&TOtherType::memberName, void())> : std::bool_constant<true>   \
+                                               decltype(&TOtherType::memberName, void())> : std::true_type             \
     {                                                                                                                  \
     };                                                                                                                 \
     template <typename TThisType, typename TOtherType, typename TFunc>                                                 \
-    struct __BinaryMemberOperator<                                                                                     \
-        TThisType, TOtherType, TFunc, ENTROPY_GET_COUNTER_VALUE(),                                                     \
-        std::enable_if_t<__BinaryMemberOperatorExistsOnOther<TOtherType, ENTROPY_GET_COUNTER_VALUE()>::value>>         \
+    struct __BinaryMemberOperator<TThisType, TOtherType, TFunc, ENTROPY_GET_COUNTER_VALUE(),                           \
+                                  typename std::enable_if<__BinaryMemberOperatorExistsOnOther<                         \
+                                      TOtherType, ENTROPY_GET_COUNTER_VALUE()>::value>::type>                          \
     {                                                                                                                  \
         static void Execute(TThisType& thisObj, TOtherType& otherObj, TFunc callbackObj) { __VA_ARGS__ }               \
     };
 
 #define ENTROPY_DECLARE_MEMBER_OFFSET_OF_FUNCTION                                                                      \
     template <int TCounter, typename TDummy = void>                                                                    \
-    struct MemberOffsetOfExists : std::bool_constant<false>                                                            \
+    struct MemberOffsetOfExists : std::false_type                                                                      \
     {                                                                                                                  \
     };                                                                                                                 \
     template <int TCounter, typename TFunc, typename TThisType>                                                        \
@@ -120,7 +119,7 @@
 
 #define ENTROPY_NULL_MEMBER_OFFSET_OF_FUNCTION()                                                                       \
     template <typename TDummy>                                                                                         \
-    struct MemberOffsetOfExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::bool_constant<true>                        \
+    struct MemberOffsetOfExists<ENTROPY_GET_COUNTER_VALUE(), TDummy> : std::true_type                                  \
     {                                                                                                                  \
     };                                                                                                                 \
     template <typename TFunc, typename TThisType>                                                                      \
@@ -129,19 +128,7 @@
         static constexpr int Execute() { return -1; }                                                                  \
     };
 
-#define ENTROPY_START_CLASS_REFLECTION_REGISTRATION(className, ...)                                                    \
-    {                                                                                                                  \
-        ::Entropy::ReflectAndAddAttributes(__VA_ARGS__);                                                               \
-        ::Entropy::details::SetReflectedClassAttributes(Traits::GetObjectClassId<ThisReflectedType>{}());              \
-        if constexpr (::Entropy::details::HasBaseClass_v<className>)                                                   \
-        {                                                                                                              \
-            ::Entropy::ReflectClass<Entropy::details::ObjectBaseClass_t<className>>();                                 \
-            ::Entropy::details::SetReflectedClassBase(                                                                 \
-                ::Entropy::Traits::GetObjectClassId<className>{}(),                                                    \
-                ::Entropy::Traits::GetObjectClassId<Entropy::details::ObjectBaseClass_t<className>>{}(),               \
-                ::Entropy::details::ObjectBaseClass<className>::GetPointerHandler());                                  \
-        }                                                                                                              \
-    }
+#define ENTROPY_START_CLASS_REFLECTION_REGISTRATION(className, ...)
 
 #if defined(ENTROPY_RUNTIME_REFLECTION_ENABLED) && (__cplusplus >= 201703L)
 #define ENTROPY_REFLECT_ON_LOAD(ClassName)                                                                             \
@@ -188,19 +175,7 @@
 #ifndef ENTROPY_REFLECT_MEMBER
 #define ENTROPY_REFLECT_MEMBER(memberName, ...)                                                                        \
     ENTROPY_DEFINE_LINE_MARKER                                                                                         \
-    ENTROPY_SINGLE_EXECUTION_META_FUNCTION({                                                                           \
-        ::Entropy::ReflectClass<decltype(memberName)>();                                                               \
-        ::Entropy::ReflectAndAddAttributes(__VA_ARGS__);                                                               \
-        ::Entropy::Function<const decltype(memberName)&(const ThisReflectedType* classObj)> getFn =                    \
-            [](const ThisReflectedType* classObj) -> const decltype(memberName)& { return classObj->memberName; };     \
-        ::Entropy::Function<void(ThisReflectedType * classObj, const decltype(memberName)& val)> setFn =               \
-            ::Entropy::details::MemberVariableHelper<ThisReflectedType, decltype(memberName)>{}.GetSetterFunction(     \
-                &ThisReflectedType::memberName);                                                                       \
-        ::Entropy::details::AddReflectedClassMember(                                                                   \
-            Traits::GetObjectClassId<ThisReflectedType>{}(), Traits::GetObjectClassId<decltype(memberName)>{}(),       \
-            GetMemberDataType<decltype(memberName)>(), #memberName##_EStr, offsetof(ThisReflectedType, memberName),    \
-            sizeof(decltype(memberName)), std::move(getFn), std::move(setFn));                                         \
-    })                                                                                                                 \
+    ENTROPY_SINGLE_EXECUTION_META_FUNCTION()                                                                           \
     ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION({                                                                            \
         /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
         ::Entropy::details::InvokeMemberTypeFunction<decltype((memberName)), TFunc>(                                   \
@@ -223,17 +198,7 @@
 #ifndef ENTROPY_REFLECT_METHOD_SIGNATURE
 #define ENTROPY_REFLECT_METHOD_SIGNATURE(methodName, methodSig, ...)                                                   \
     ENTROPY_DEFINE_LINE_MARKER                                                                                         \
-    ENTROPY_SINGLE_EXECUTION_META_FUNCTION({                                                                           \
-        ::Entropy::ReflectClass<::Entropy::details::MemberReturnValueType_t<ThisReflectedType, methodSig>>();          \
-        ::Entropy::ReflectAndAddAttributes(__VA_ARGS__);                                                               \
-        ::Entropy::details::AddReflectedClassMethod(                                                                   \
-            ::Entropy::Traits::GetObjectClassId<ThisReflectedType>{}(), #methodName##_EStr,                            \
-            ::Entropy::Traits::GetObjectClassId<                                                                       \
-                ::Entropy::details::MemberReturnValueType_t<ThisReflectedType, methodSig>>{}(),                        \
-            ::Entropy::DynamicFunction(                                                                                \
-                static_cast<::Entropy::details::MemberFunctionType_t<ThisReflectedType, methodSig>>(                   \
-                    &ThisReflectedType::methodName)));                                                                 \
-    })                                                                                                                 \
+    ENTROPY_SINGLE_EXECUTION_META_FUNCTION()                                                                           \
     ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
     ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
@@ -243,16 +208,7 @@
 #ifndef ENTROPY_REFLECT_METHOD
 #define ENTROPY_REFLECT_METHOD(methodName, ...)                                                                        \
     ENTROPY_DEFINE_LINE_MARKER                                                                                         \
-    ENTROPY_SINGLE_EXECUTION_META_FUNCTION({                                                                           \
-        ::Entropy::ReflectClass<::Entropy::details::MemberReturnValueType_t<                                           \
-            ThisReflectedType, decltype(&ThisReflectedType::methodName)>>();                                           \
-        ::Entropy::ReflectAndAddAttributes(__VA_ARGS__);                                                               \
-        ::Entropy::details::AddReflectedClassMethod(                                                                   \
-            ::Entropy::Traits::GetObjectClassId<ThisReflectedType>{}(), #methodName##_EStr,                            \
-            ::Entropy::Traits::GetObjectClassId<::Entropy::details::MemberReturnValueType_t<                           \
-                ThisReflectedType, decltype(&ThisReflectedType::methodName)>>{}(),                                     \
-            ::Entropy::DynamicFunction(&ThisReflectedType::methodName));                                               \
-    })                                                                                                                 \
+    ENTROPY_SINGLE_EXECUTION_META_FUNCTION()                                                                           \
     ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
     ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
