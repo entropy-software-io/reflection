@@ -4,6 +4,35 @@
 
 #pragma once
 
+// We can override the storage containers used by type info as long as it conforms to the stl API
+#include "Entropy/Reflection/Details/ContainerTypes.h"
+
+#include <list>
+#include <map>
+
+namespace Entropy
+{
+namespace details
+{
+
+template <typename T>
+struct ReflectionContainerTraits<T>
+{
+    template <typename U>
+    using Allocator = std::allocator<U>;
+
+    template <typename TKey, typename TValue>
+    using MapType = std::map<TKey, TValue, std::less<TKey>, Allocator<std::pair<const TKey, TValue>>>;
+
+    template <typename TValue>
+    using VectorType = std::list<TValue, Allocator<TValue>>;
+
+    using StringType = std::string;
+};
+
+} // namespace details
+} // namespace Entropy
+
 // We need to override the traits used by TypeInfo
 
 #include "CustomTypeInfoModule.h"
@@ -15,7 +44,7 @@ namespace Reflection
 {
 
 template <>
-struct TypeInfoTraits<UserOverride>
+struct TypeInfoTraits<void>
 {
     // ModuleTypes must be an std::tuple
     using ModuleTypes = std::tuple<BasicTypeInfo, ClassTypeInfo, CustomTypeInfo>;

@@ -18,7 +18,7 @@ namespace Reflection
 class BasicTypeInfo
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<BasicTypeInfo, UserOverride>;
+    using ContainerTraits = details::ReflectionContainerTraits<BasicTypeInfo>;
 
 public:
     inline const ContainerTraits::StringType& GetTypeName() const { return _typeName; }

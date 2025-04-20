@@ -7,13 +7,15 @@
 
 #pragma once
 
-#include "Entropy/Reflection/Details/UserOverrideDummy.h"
 #include "TypeInfoModules/BasicTypeInfo.h"
 #include "TypeInfoModules/ClassTypeInfo.h"
 #include <tuple>
 
 namespace Entropy
 {
+
+class TypeInfo;
+
 namespace Reflection
 {
 

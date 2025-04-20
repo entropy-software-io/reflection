@@ -20,7 +20,7 @@ namespace Reflection
 class MemberTypeInfo
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<MemberTypeInfo, UserOverride>;
+    using ContainerTraits = details::ReflectionContainerTraits<MemberTypeInfo>;
 
 public:
     MemberTypeInfo(const char* memberName, const TypeInfo* memberType)
@@ -43,7 +43,7 @@ private:
 class ClassTypeInfo
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<ClassTypeInfo, UserOverride>;
+    using ContainerTraits = details::ReflectionContainerTraits<ClassTypeInfo>;
 
 public:
     inline bool IsReflectedClass() const { return _isReflectedClass; }
