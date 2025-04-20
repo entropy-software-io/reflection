@@ -16,7 +16,7 @@ const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
 namespace details
 {
 
-template <typename TModule, typename TType, typename = void>
+template <typename TModule, typename TType>
 struct FillModuleTypeTemplateParameters
 {
     using ModuleHandlerType = Entropy::Reflection::FillModuleTypeInfo<TModule, TType>;
@@ -25,11 +25,26 @@ struct FillModuleTypeTemplateParameters
 };
 
 template <typename TModule, template <typename...> class TType, typename... Tn>
-struct FillModuleTypeTemplateParameters<TModule, TType<Tn...>, typename std::enable_if<(sizeof...(Tn) > 0)>::value>
+struct FillModuleTypeTemplateParameters<TModule, TType<Tn...>>
 {
     using ModuleHandlerType = Entropy::Reflection::FillModuleTypeInfo<TModule, TType<Tn...>>;
 
-    void operator()(ModuleHandlerType& handler, TModule& module) {}
+    template <typename U>
+    void HandleTemplateParameters(ModuleHandlerType& handler, TModule& module)
+    {
+        const TypeInfo* templateParamTypeInfo = ReflectTypeAndGetTypeInfo<U>();
+        handler.template HandleTemplateParameter<U>(module, templateParamTypeInfo);
+    }
+
+    template <typename U1, typename U2, typename... Un>
+    void HandleTemplateParameters(ModuleHandlerType& handler, TModule& module)
+    {
+        HandleTemplateParameters<U1>(handler, module);
+
+        HandleTemplateParameters<U2, Un...>(handler, module);
+    }
+
+    void operator()(ModuleHandlerType& handler, TModule& module) { HandleTemplateParameters<Tn...>(handler, module); }
 };
 
 //===================

@@ -47,15 +47,21 @@ private:
     using ContainerTraits = details::ReflectionContainerTraits<ClassTypeInfo>;
 
 public:
-    void AddMember(const char* name, MemberTypeInfo&& memberInfo);
+    void AddTemplateParameter(const TypeInfo* templateParameter);
     void SetBaseClass(const TypeInfo* baseClass);
+    void AddMember(const char* name, MemberTypeInfo&& memberInfo);
 
+    inline const ContainerTraits::VectorType<const TypeInfo*> GetTemplateParameters() const
+    {
+        return _templateParameters;
+    }
     inline const TypeInfo* GetBaseClassTypeInfo() const { return _baseClassTypeInfo; }
     inline const ContainerTraits::MapType<const char*, MemberTypeInfo>& GetMembers() const { return _members; }
 
 private:
     const TypeInfo* _baseClassTypeInfo = nullptr;
     ContainerTraits::MapType<const char*, MemberTypeInfo> _members{};
+    ContainerTraits::VectorType<const TypeInfo*> _templateParameters{};
 };
 
 //----------------
@@ -79,6 +85,12 @@ struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<C
     void HandleBaseClass(ClassTypeInfo& module, const TypeInfo* baseClassTypeInfo)
     {
         module.SetBaseClass(baseClassTypeInfo);
+    }
+
+    template <typename TTemplateClass>
+    void HandleTemplateParameter(ClassTypeInfo& module, const TypeInfo* templateParamTypeInfo)
+    {
+        module.AddTemplateParameter(templateParamTypeInfo);
     }
 };
 

@@ -10,6 +10,11 @@ namespace Entropy
 namespace Reflection
 {
 
+void ClassTypeInfo::AddTemplateParameter(const TypeInfo* templateParameter)
+{
+    _templateParameters.push_back(templateParameter);
+}
+
 void ClassTypeInfo::SetBaseClass(const TypeInfo* baseClass) { _baseClassTypeInfo = baseClass; }
 
 void ClassTypeInfo::AddMember(const char* name, MemberTypeInfo&& memberInfo)

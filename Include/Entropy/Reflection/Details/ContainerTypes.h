@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 namespace Entropy
 {
@@ -21,6 +21,9 @@ struct ReflectionContainerTraits
     template <typename TKey, typename TValue>
     using MapType = std::unordered_map<TKey, TValue, std::hash<TKey>, std::equal_to<TKey>,
                                        Allocator<std::pair<const TKey, TValue>>>;
+
+    template <typename TValue>
+    using VectorType = std::vector<TValue, Allocator<TValue>>;
 
     using StringType = std::string;
 };

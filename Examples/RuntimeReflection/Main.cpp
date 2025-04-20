@@ -28,6 +28,15 @@ struct MyStruct : public MyBaseStruct
     float MyFloatValue = 1.23f;
 };
 
+template <typename T1, typename T2>
+struct MyTemplateStruct
+{
+    ENTROPY_REFLECT_CLASS(MyTemplateStruct)
+
+    ENTROPY_REFLECT_MEMBER(MyIntValue)
+    int MyIntValue = 1;
+};
+
 void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 {
     using namespace Entropy;
@@ -45,6 +54,25 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
                       << memberKvp.second.GetMemberType()->Get<BasicTypeInfo>().GetTypeName() << ")" << std::endl;
         }
 
+        const auto& templateParams = classInfo.GetTemplateParameters();
+        if (templateParams.size() > 0)
+        {
+            std::cout << "Template Parameters Types: ";
+
+            for (int i = 0, count = (int)templateParams.size(); i < count; ++i)
+            {
+                std::cout << templateParams[i]->Get<BasicTypeInfo>().GetTypeName();
+                if (i < templateParams.size() - 1)
+                {
+                    std::cout << ", ";
+                }
+                else
+                {
+                    std::cout << std::endl;
+                }
+            }
+        }
+
         if (classInfo.GetBaseClassTypeInfo())
         {
             std::cout << "Base class: '" << classInfo.GetBaseClassTypeInfo()->Get<BasicTypeInfo>().GetTypeName() << "'"
@@ -60,8 +88,17 @@ int main(int argc, char* argv[])
     using namespace Entropy;
     using namespace Entropy::Reflection;
 
-    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyStruct>();
-    PrintClassInfo(typeInfo);
+    {
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyStruct>();
+        PrintClassInfo(typeInfo);
+    }
+
+    std::cout << std::endl;
+
+    {
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyTemplateStruct<double, char>>();
+        PrintClassInfo(typeInfo);
+    }
 
     return 0;
 }
