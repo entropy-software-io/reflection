@@ -168,7 +168,7 @@
 
 #ifndef ENTROPY_REFLECT_CLASS_WITH_BASE
 #define ENTROPY_REFLECT_CLASS_WITH_BASE(className, baseClassName, ...)                                                 \
-    ENTROPY_REFLECT_CLASS(className)                                                                                   \
+    ENTROPY_REFLECT_CLASS(className, ##__VA_ARGS__)                                                                    \
     using EntropySuper = baseClassName;
 #endif
 
