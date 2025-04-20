@@ -24,6 +24,21 @@ DataObject::DataObject(const TypeInfo* typeInfo, void* data)
     }
 }
 
+DataObject::DataObject(const DataObject& other)
+    : _container(other._container)
+{
+    if (_container != nullptr)
+    {
+        ++_container->_refCount;
+    }
+}
+
+DataObject::DataObject(DataObject&& other)
+    : _container(other._container)
+{
+    other._container = nullptr;
+}
+
 DataObject::~DataObject() { Release(); }
 
 void DataObject::Release()
@@ -51,6 +66,20 @@ inline bool DataObject::IsType() const
         return _container->_typeInfo == ReflectTypeAndGetTypeInfo<T>();
     }
     return false;
+}
+
+inline DataObject& DataObject::operator=(const DataObject& other)
+{
+    Release();
+    new (this) DataObject(other);
+    return *this;
+}
+
+inline DataObject& DataObject::operator=(DataObject&& other)
+{
+    Release();
+    new (this) DataObject(std::move(other));
+    return *this;
 }
 
 } // namespace Entropy

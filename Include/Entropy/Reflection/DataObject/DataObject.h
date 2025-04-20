@@ -39,6 +39,9 @@ private:
     void Release();
 
 public:
+    DataObject(const DataObject& other);
+    DataObject(DataObject&& other);
+
     ~DataObject();
 
     /// <summary>
@@ -74,6 +77,9 @@ public:
     inline bool IsType() const;
 
     inline bool operator==(std::nullptr_t) const { return (_container == nullptr); }
+
+    inline DataObject& operator=(const DataObject& other);
+    inline DataObject& operator=(DataObject&& other);
 
 private:
     DataObjectContainer* _container{};
