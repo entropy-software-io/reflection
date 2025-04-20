@@ -17,7 +17,7 @@ namespace Reflection
 template <typename TModule>
 struct DefaultFillModuleTypeInfo
 {
-    void HandleType(TModule& module) {}
+    void HandleType(TModule& module, const TypeInfo* thisTypeInfo) {}
 
     /// <summary>
     /// Called for each member on a reflected class. If the type is not reflected, this is never called.

@@ -131,7 +131,7 @@ struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
         TFirstModule& module = typeInfo.Get<TFirstModule>();
 
         // Base Type
-        filler.HandleType(module);
+        filler.HandleType(module, &typeInfo);
 
         // Template Parameters
         FillModuleTypeTemplateParameters<TFirstModule, TType>{}(filler, module);

@@ -2,8 +2,7 @@
 // This file is licensed under the MIT License.
 // See the LICENSE file in the project root for more information.
 
-// Code normally in a cpp file is inlined because we need to ensure the correct TypeInfo layout, which can be
-// manipulated externally.
+// Code normally in a cpp file is inlined because member types can be changed via type traits by the user.
 
 namespace Entropy
 {

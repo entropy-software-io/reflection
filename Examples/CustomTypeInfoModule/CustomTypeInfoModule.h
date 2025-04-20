@@ -40,7 +40,7 @@ private:
 template <typename T>
 struct FillModuleTypeInfo<CustomTypeInfo, T> : public DefaultFillModuleTypeInfo<CustomTypeInfo>
 {
-    void HandleType(CustomTypeInfo& module)
+    void HandleType(CustomTypeInfo& module, const TypeInfo* thisTypeInfo)
     {
         module.SetIsMyCustomType(std::is_same<T, MyCustomType>::value);
         module.SetIsAssignableToMyCustomType(std::is_assignable<MyCustomType, T>::value);

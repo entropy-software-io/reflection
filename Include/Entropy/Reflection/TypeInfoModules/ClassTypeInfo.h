@@ -20,7 +20,7 @@ namespace Reflection
 class MemberTypeInfo
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<MemberTypeInfo>;
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<MemberTypeInfo>;
 
 public:
     MemberTypeInfo(const char* memberName, const TypeInfo* memberType)
@@ -43,7 +43,7 @@ private:
 class ClassTypeInfo
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<ClassTypeInfo>;
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<ClassTypeInfo>;
 
 public:
     inline bool IsReflectedClass() const { return _isReflectedClass; }
@@ -77,7 +77,7 @@ private:
 template <typename T>
 struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<ClassTypeInfo>
 {
-    void HandleType(ClassTypeInfo& module) { module.SetIsReflectedClass(Traits::IsReflectedType<T>::value); }
+    void HandleType(ClassTypeInfo& module, const TypeInfo* thisTypeInfo) { module.SetIsReflectedClass(Traits::IsReflectedType<T>::value); }
 
     template <typename TMember, typename... TAttrTypes>
     void HandleClassMember(ClassTypeInfo& module, const char* memberName, const TypeInfo* memberTypeInfo,

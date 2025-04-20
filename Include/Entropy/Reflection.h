@@ -13,4 +13,7 @@
 #ifdef ENTROPY_RUNTIME_REFLECTION_ENABLED
 #include "Entropy/Reflection/RuntimeReflectionMethods.h"
 #include "Entropy/Reflection/TypeInfo.h"
+
+// These must be included after TypeInfo.h
+#include "Entropy/Reflection/DataObject/DataObject.inl"
 #endif

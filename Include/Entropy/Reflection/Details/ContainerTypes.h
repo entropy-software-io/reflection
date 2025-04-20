@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <functional>
 
 namespace Entropy
 {
@@ -27,6 +28,9 @@ struct ReflectionContainerTraits
     using VectorType = std::vector<TValue, Allocator<TValue>>;
 
     using StringType = std::string;
+
+    template <typename TFn>
+    using FunctionType = std::function<TFn>;
 };
 
 } // namespace details
