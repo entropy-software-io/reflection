@@ -147,24 +147,24 @@ struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
     }
 };
 
-//---------------
-
-template <typename T>
-TypeInfo MakeSingleTypeInfo()
-{
-    TypeInfo typeInfo{};
-
-    FillModuleTypes<T, TypeInfo::ModuleTypes>{}(typeInfo);
-
-    return typeInfo;
-}
-
 } // namespace details
 
 template <typename T>
 const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept
 {
-    static TypeInfo typeInfo = details::MakeSingleTypeInfo<T>();
+    // We cannot make the allocation and initialization one step because re-entrancy will cause a hang.
+    // Consider the declaration:
+    //     struct Derived : public Base<Derived> { ENTROPY_REFLECT_CLASS_WITH_BASE(Derived, Base<Derived>) };
+    // While processing Derived's base class' type info, we will again be trying to grab Derive's type info during
+    // template parameter processing. By separating the allocation from the initialization, we avoid the hang during
+    // this re-entrant call. Instead of a hang, the base type will be given a partially initialized Derived type info as
+    // the template parameter.
+
+    static TypeInfo typeInfo{};
+    if (ENTROPY_UNLIKELY(typeInfo.RequireInitialization()))
+    {
+        details::FillModuleTypes<T, TypeInfo::ModuleTypes>{}(typeInfo);
+    }
     return &typeInfo;
 }
 

@@ -37,6 +37,19 @@ struct MyTemplateStruct
     int MyIntValue = 1;
 };
 
+// Reflecting this type is interesting because the template parameters reference the type we are reflecting, so we end
+// up with a re-entrant call. During the processing of the template parameters, MyRecursiveTemplateStruct's type info
+// will only be partially initialized, and will be passed itself as the type info pointer.
+struct MyRecursiveTemplateStruct : public MyTemplateStruct<MyRecursiveTemplateStruct, MyRecursiveTemplateStruct>
+{
+    ENTROPY_REFLECT_CLASS_WITH_BASE(
+        MyRecursiveTemplateStruct,
+        ENTROPY_LITERAL(MyTemplateStruct<MyRecursiveTemplateStruct, MyRecursiveTemplateStruct>))
+
+    ENTROPY_REFLECT_MEMBER(MyIntValue)
+    int MyIntValue = 1;
+};
+
 void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 {
     using namespace Entropy;
@@ -97,6 +110,13 @@ int main(int argc, char* argv[])
 
     {
         const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyTemplateStruct<double, char>>();
+        PrintClassInfo(typeInfo);
+    }
+
+    std::cout << std::endl;
+
+    {
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyRecursiveTemplateStruct>();
         PrintClassInfo(typeInfo);
     }
 

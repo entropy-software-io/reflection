@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Entropy/Reflection/TypeInfoTraits.h"
+#include <atomic>
 
 namespace Entropy
 {
@@ -51,8 +52,17 @@ public:
         return std::get<idx>(_modules);
     }
 
+    inline bool RequireInitialization()
+    {
+        bool required = true;
+
+        // Returns "exchanged = true" exactly once when we flip from the value from true -> false
+        return _requireInitialization.compare_exchange_strong(required, false);
+    }
+
 private:
     ModuleTypes _modules;
+    std::atomic_bool _requireInitialization{true};
 };
 
 } // namespace Entropy
