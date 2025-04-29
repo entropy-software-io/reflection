@@ -16,6 +16,49 @@ const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
 namespace details
 {
 
+template <typename TModule, typename TType, typename = void>
+struct FillModuleTypeClass
+{
+    void operator()(Entropy::Reflection::FillModuleTypeInfo<TModule, TType>& handler, TModule& module,
+                    const TypeInfo* typeInfo)
+    {
+    }
+};
+
+template <typename TModule, typename TType>
+struct FillModuleTypeClass<TModule, TType, typename std::enable_if<Traits::IsReflectedType<TType>::value>::type>
+{
+    using ModuleHandlerType = Entropy::Reflection::FillModuleTypeInfo<TModule, TType>;
+
+    struct HandleClass
+    {
+        HandleClass(ModuleHandlerType* handler, TModule* module, const TypeInfo* typeInfo)
+            : _handler(handler)
+            , _module(module)
+            , _typeInfo(typeInfo)
+        {
+        }
+
+        template <typename TClass, typename... TAttrTypes>
+        void operator()(const AttributeTypeCollection<TAttrTypes...>& classAttr)
+        {
+            _handler->template HandleClass<TAttrTypes...>(*_module, _typeInfo, classAttr);
+        }
+
+    private:
+        ModuleHandlerType* _handler = nullptr;
+        TModule* _module            = nullptr;
+        const TypeInfo* _typeInfo   = nullptr;
+    };
+
+    void operator()(ModuleHandlerType& handler, TModule& module, const TypeInfo* typeInfo) const
+    {
+        ForEachReflectedClass<false /* IncludeSubclasses */, TType>(HandleClass(&handler, &module, typeInfo));
+    }
+};
+
+//===========================
+
 template <typename TModule, typename TType>
 struct FillModuleTypeTemplateParameters
 {
@@ -133,10 +176,13 @@ struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
         // Base Type
         filler.HandleType(module, &typeInfo);
 
+        // Class Type
+        FillModuleTypeClass<TFirstModule, TType>{}(filler, module, &typeInfo);
+
         // Template Parameters
         FillModuleTypeTemplateParameters<TFirstModule, TType>{}(filler, module);
 
-        // Base Type
+        // Class Base Type
         FillModuleTypeBaseClass<TFirstModule, TType>{}(filler, module);
 
         // Members

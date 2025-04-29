@@ -4,26 +4,11 @@
 
 #pragma once
 
-#define ENTROPY_DECLARE_SINGLE_EXECUTION_META_FUNCTION()                                                               \
-    template <int _TCounter, typename _TClass, typename _TDummy = void>                                                \
-    struct SingleExecutionMetaFunctionExists : std::false_type                                                         \
+#define ENTROPY_CLASS_TYPE_OPERATOR_FUNCTION(...)                                                                      \
+    template <typename TThisType, typename TFunc, typename _TDummy = void>                                             \
+    struct __ClassTypeOperator                                                                                         \
     {                                                                                                                  \
-    };                                                                                                                 \
-    template <int _TCounter, typename _TClass, typename _TDummy = void>                                                \
-    struct SingleExecutionMetaFunction                                                                                 \
-    {                                                                                                                  \
-        static void Execute() {}                                                                                       \
-    };
-
-#define ENTROPY_SINGLE_EXECUTION_META_FUNCTION(...)                                                                    \
-    template <typename _TDummy>                                                                                        \
-    struct SingleExecutionMetaFunctionExists<ENTROPY_GET_COUNTER_VALUE(), ThisReflectedType, _TDummy> : std::true_type \
-    {                                                                                                                  \
-    };                                                                                                                 \
-    template <typename _TDummy>                                                                                        \
-    struct SingleExecutionMetaFunction<ENTROPY_GET_COUNTER_VALUE(), ThisReflectedType, _TDummy>                        \
-    {                                                                                                                  \
-        static void Execute() { __VA_ARGS__ }                                                                          \
+        static void Execute(TFunc callbackObj) { __VA_ARGS__ }                                                         \
     };
 
 #define ENTROPY_DECLARE_MEMBER_TYPE_OPERATOR_FUNCTION                                                                  \
@@ -140,8 +125,11 @@
 #define ENTROPY_REFLECT_OBJECT_CLASS(className, ...)                                                                   \
     using ThisReflectedType = className;                                                                               \
     ENTROPY_DECLARE_COUNTER                                                                                            \
-    ENTROPY_DECLARE_SINGLE_EXECUTION_META_FUNCTION()                                                                   \
-    ENTROPY_SINGLE_EXECUTION_META_FUNCTION(ENTROPY_START_CLASS_REFLECTION_REGISTRATION(className, ##__VA_ARGS__))      \
+    ENTROPY_CLASS_TYPE_OPERATOR_FUNCTION({                                                                             \
+        /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
+        ::Entropy::details::InvokeClassTypeFunction<ThisReflectedType, TFunc>(                                         \
+            ::Entropy::details::MakeAttributeCollection(##__VA_ARGS__), callbackObj);                                  \
+    })                                                                                                                 \
     ENTROPY_DECLARE_MEMBER_TYPE_OPERATOR_FUNCTION                                                                      \
     ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \
     ENTROPY_DECLARE_UNARY_MEMBER_OPERATOR_FUNCTION                                                                     \
@@ -175,7 +163,6 @@
 #ifndef ENTROPY_REFLECT_MEMBER
 #define ENTROPY_REFLECT_MEMBER(memberName, ...)                                                                        \
     ENTROPY_DEFINE_LINE_MARKER                                                                                         \
-    ENTROPY_SINGLE_EXECUTION_META_FUNCTION()                                                                           \
     ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION({                                                                            \
         /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
         ::Entropy::details::InvokeMemberTypeFunction<decltype((memberName)), TFunc>(                                   \
@@ -198,7 +185,6 @@
 #ifndef ENTROPY_REFLECT_METHOD_SIGNATURE
 #define ENTROPY_REFLECT_METHOD_SIGNATURE(methodName, methodSig, ...)                                                   \
     ENTROPY_DEFINE_LINE_MARKER                                                                                         \
-    ENTROPY_SINGLE_EXECUTION_META_FUNCTION()                                                                           \
     ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
     ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \
@@ -208,7 +194,6 @@
 #ifndef ENTROPY_REFLECT_METHOD
 #define ENTROPY_REFLECT_METHOD(methodName, ...)                                                                        \
     ENTROPY_DEFINE_LINE_MARKER                                                                                         \
-    ENTROPY_SINGLE_EXECUTION_META_FUNCTION()                                                                           \
     ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \
     ENTROPY_UNARY_MEMBER_OPERATOR_FUNCTION()                                                                           \
     ENTROPY_EMPTY_BINARY_MEMBER_OPERATOR_FUNCTION()                                                                    \

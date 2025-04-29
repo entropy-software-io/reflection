@@ -60,14 +60,22 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
         auto& basicInfo = typeInfo->Get<BasicTypeInfo>();
         auto& classInfo = typeInfo->Get<ClassTypeInfo>();
 
+        if (!classInfo.IsReflectedClass())
+        {
+            std::cout << basicInfo.GetTypeName() << " is not a reflected class" << std::endl;
+            return;
+        }
+
+        const ClassDescription* classDesc = classInfo.GetClassDescription();
+
         std::cout << "Member list for '" << basicInfo.GetTypeName() << "':" << std::endl;
-        for (const auto& memberKvp : classInfo.GetMembers())
+        for (const auto& memberKvp : classDesc->GetMembers())
         {
             std::cout << "   " << memberKvp.first << " ("
                       << memberKvp.second.GetMemberType()->Get<BasicTypeInfo>().GetTypeName() << ")" << std::endl;
         }
 
-        const auto& templateParams = classInfo.GetTemplateParameters();
+        const auto& templateParams = classDesc->GetTemplateParameters();
         if (templateParams.size() > 0)
         {
             std::cout << "Template Parameters Types: ";
@@ -86,12 +94,12 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
             }
         }
 
-        if (classInfo.GetBaseClassTypeInfo())
+        if (classDesc->GetBaseClassTypeInfo())
         {
-            std::cout << "Base class: '" << classInfo.GetBaseClassTypeInfo()->Get<BasicTypeInfo>().GetTypeName() << "'"
+            std::cout << "Base class: '" << classDesc->GetBaseClassTypeInfo()->Get<BasicTypeInfo>().GetTypeName() << "'"
                       << std::endl;
 
-            PrintClassInfo(classInfo.GetBaseClassTypeInfo());
+            PrintClassInfo(classDesc->GetBaseClassTypeInfo());
         }
     }
 }

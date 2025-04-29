@@ -13,6 +13,12 @@ namespace Entropy
 namespace details
 {
 
+template <typename TClass, typename TFunc, bool TIncludeSubclasses, typename = void>
+struct ClassTypeOperation
+{
+    // void operator()(TFunc callbackObject) const;
+};
+
 template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter, typename = void>
 struct MemberTypeOperation
 {
@@ -34,6 +40,21 @@ struct BinaryMemberOperation
 } // namespace details
 
 //=========================
+
+/// <summary>
+/// Calls into callbackObject if the type is a reflected class
+/// </summary>
+/// <param name="callbackObject">
+/// Any callable object that can called with the following (templated) signature:
+///     ()
+///   OR
+///     (const Entropy::AttributeTypeCollection<TAttrTypes...>& attributes)
+/// </param>
+template <bool TIncludeSubclasses, typename TClass, typename TFunc>
+void ForEachReflectedClass(TFunc callbackObject)
+{
+    details::ClassTypeOperation<TClass, TFunc, TIncludeSubclasses>{}(callbackObject);
+}
 
 /// <summary>
 /// Calls into callbackObject for each reflected member type in sourceObject.
@@ -92,6 +113,56 @@ void ForEachReflectedMemberInBoth(TClassA& sourceObjectA, TClassB& sourceObjectB
 
 namespace details
 {
+
+template <typename TClass, typename TFunc, typename... TClassAttrs>
+inline typename std::enable_if<Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TClass>),
+                                                              const AttributeTypeCollection<TClassAttrs...>&>::value>::
+    type InvokeClassTypeFunction(const AttributeTypeCollection<TClassAttrs...>& attrs, TFunc callbackObj)
+{
+    callbackObj.template operator()<TClass>(attrs);
+}
+
+template <typename TClass, typename TFunc, typename... TClassAttrs>
+inline typename std::enable_if<
+    Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TClass>)>::value>::
+    type InvokeClassTypeFunction(const AttributeTypeCollection<TClassAttrs...>& attrs, TFunc callbackObj)
+{
+    callbackObj();
+}
+
+// This is a reflected class and we have no reflected base class or we don't want to process it
+template <typename TClass, typename TFunc, bool TIncludeSubclasses>
+struct ClassTypeOperation<TClass, TFunc, TIncludeSubclasses,
+                          typename std::enable_if<Traits::IsReflectedType<TClass>::value>::type>
+{
+    inline void operator()(TFunc callbackObject) const
+    {
+        Traits::RemoveConstRef_t<TClass>::template __ClassTypeOperator<TClass, TFunc>::Execute(callbackObject);
+    }
+};
+
+// This is a reflected class and we have a reflected base class we want to process
+template <typename TClass, typename TFunc>
+struct ClassTypeOperation<
+    TClass, TFunc, true,
+    typename std::enable_if<Traits::IsReflectedType<TClass>::value && Traits::HasBaseClass<TClass>::value>::type>
+{
+    inline void operator()(TFunc callbackObject) const
+    {
+        Traits::RemoveConstRef_t<TClass>::template __ClassTypeOperator<TClass, TFunc>::Execute(callbackObject);
+        ClassTypeOperation<Traits::BaseClassOf_t<TClass>, TFunc, true>{}(callbackObject);
+    }
+};
+
+// This is not a reflected class
+template <typename TClass, typename TFunc, bool TIncludeSubclasses>
+struct ClassTypeOperation<TClass, TFunc, TIncludeSubclasses,
+                          typename std::enable_if<!Traits::IsReflectedType<TClass>::value>::type>
+{
+    inline void operator()(TFunc callbackObject) const {}
+};
+
+//==================
 
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline typename std::enable_if<

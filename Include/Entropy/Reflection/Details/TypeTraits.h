@@ -17,10 +17,14 @@ namespace details
 {
 
 template <typename T>
-class HasRawReflectionMethod
+class HasReflectionMethod
 {
+    struct TDummyFunc
+    {
+    };
+
     template <typename TClass>
-    static std::true_type Exists(typename TClass::template SingleExecutionMetaFunctionExists<0, TClass>*);
+    static std::true_type Exists(typename TClass::template __ClassTypeOperator<TClass, TDummyFunc>*);
     template <typename>
     static std::false_type Exists(...);
 
@@ -28,17 +32,6 @@ class HasRawReflectionMethod
 
 public:
     static constexpr bool value = ResultType::value;
-};
-
-template <typename T, typename = void>
-struct HasReflectionMethod : public std::false_type
-{
-};
-
-template <typename T>
-struct HasReflectionMethod<T, typename std::enable_if<HasRawReflectionMethod<T>::value>::type>
-{
-    static constexpr bool value = T::template SingleExecutionMetaFunctionExists<0, T>::value;
 };
 
 } // namespace details

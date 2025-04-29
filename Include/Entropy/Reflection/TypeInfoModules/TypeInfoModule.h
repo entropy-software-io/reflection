@@ -20,6 +20,15 @@ struct DefaultFillModuleTypeInfo
     void HandleType(TModule& module, const TypeInfo* thisTypeInfo) {}
 
     /// <summary>
+    /// Called if the type is a reflected class. If the type is not reflected, this is never called.
+    /// </summary>
+    template <typename... TAttrTypes>
+    void HandleClass(TModule& module, const TypeInfo* thisTypeInfo,
+                     const AttributeTypeCollection<TAttrTypes...>& classAttr)
+    {
+    }
+
+    /// <summary>
     /// Called for each member on a reflected class. If the type is not reflected, this is never called.
     /// </summary>
     template <typename TMember, typename... TAttrTypes>

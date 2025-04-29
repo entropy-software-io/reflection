@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/AttributeCollection.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
+#include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
 #include "TypeInfoModule.h"
 
@@ -14,16 +16,73 @@ namespace Entropy
 namespace Reflection
 {
 
+struct AttributeData
+{
+    AttributeData(DataObject&& dataObj);
+
+    AttributeData(const AttributeData&) = default;
+    AttributeData(AttributeData&&)      = default;
+
+    const TypeInfo* GetTypeInfo() const { return _dataObj.GetTypeInfo(); }
+
+    template <typename T>
+    bool IsType() const
+    {
+        return _dataObj.IsType<T>();
+    }
+
+    template <typename T>
+    const T* TryGetData() const
+    {
+        if (IsType<T>())
+        {
+            return &_dataObj.GetData<T>();
+        }
+
+        return nullptr;
+    }
+
+    template <typename T>
+    const T* GetData() const
+    {
+        return &_dataObj.GetData<T>();
+    }
+
+    AttributeData& operator=(const AttributeData& other) = default;
+    AttributeData& operator=(AttributeData&& other)      = default;
+
+    bool operator==(const AttributeData& other) const { return _dataObj.GetTypeInfo() == other._dataObj.GetTypeInfo(); }
+
+private:
+    DataObject _dataObj;
+};
+
+class AttributeContainer
+{
+private:
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<AttributeContainer>;
+
+public:
+private:
+    template <typename... TAttrTypes>
+    inline void AddAttributes(const AttributeTypeCollection<TAttrTypes...>& attr);
+
+    ContainerTraits::MapType<TypeId, AttributeData> _attributes;
+
+    template <typename, typename, typename>
+    friend struct FillModuleTypeInfo;
+};
+
 /// <summary>
 /// Member information. Accessible through class type info
 /// </summary>
-class MemberTypeInfo
+class MemberDescription : public AttributeContainer
 {
 private:
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<MemberTypeInfo>;
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<MemberDescription>;
 
 public:
-    MemberTypeInfo(const char* memberName, const TypeInfo* memberType)
+    MemberDescription(const char* memberName, const TypeInfo* memberType)
         : _memberName(memberName)
         , _memberType(memberType)
     {
@@ -40,10 +99,10 @@ private:
 /// <summary>
 /// Contains class hierarchy and member information
 /// </summary>
-class ClassTypeInfo
+class ClassDescription : public AttributeContainer
 {
 private:
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<ClassTypeInfo>;
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<ClassDescription>;
 
 public:
     inline bool IsReflectedClass() const { return _isReflectedClass; }
@@ -52,18 +111,41 @@ public:
         return _templateParameters;
     }
     inline const TypeInfo* GetBaseClassTypeInfo() const { return _baseClassTypeInfo; }
-    inline const ContainerTraits::MapType<const char*, MemberTypeInfo>& GetMembers() const { return _members; }
+    inline const ContainerTraits::MapType<const char*, MemberDescription>& GetMembers() const { return _members; }
 
 private:
     void AddTemplateParameter(const TypeInfo* templateParameter);
     void SetBaseClass(const TypeInfo* baseClass);
-    void AddMember(const char* name, MemberTypeInfo&& memberInfo);
+    void AddMember(const char* name, MemberDescription&& memberInfo);
     void SetIsReflectedClass(bool isReflectedClass) { _isReflectedClass = isReflectedClass; }
 
     const TypeInfo* _baseClassTypeInfo = nullptr;
-    ContainerTraits::MapType<const char*, MemberTypeInfo> _members{};
+    ContainerTraits::MapType<const char*, MemberDescription> _members{};
     ContainerTraits::VectorType<const TypeInfo*> _templateParameters{};
     bool _isReflectedClass = false;
+
+    template <typename, typename, typename>
+    friend struct FillModuleTypeInfo;
+};
+
+/// <summary>
+/// Contains class hierarchy and member information
+/// </summary>
+class ClassTypeInfo
+{
+private:
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<ClassTypeInfo>;
+
+public:
+    ~ClassTypeInfo();
+
+    inline bool IsReflectedClass() const { return (_classDesc != nullptr); }
+    inline const ClassDescription* GetClassDescription() const { return _classDesc; }
+
+private:
+    inline ClassDescription* GetOrAddClassDescription();
+
+    ClassDescription* _classDesc = nullptr;
 
     template <typename, typename, typename>
     friend struct FillModuleTypeInfo;
@@ -77,27 +159,35 @@ private:
 template <typename T>
 struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<ClassTypeInfo>
 {
-    void HandleType(ClassTypeInfo& module, const TypeInfo* thisTypeInfo) { module.SetIsReflectedClass(Traits::IsReflectedType<T>::value); }
+    void HandleType(ClassTypeInfo& module, const TypeInfo* thisTypeInfo) {}
+
+    template <typename... TAttrTypes>
+    void HandleClass(ClassTypeInfo& module, const TypeInfo* thisTypeInfo,
+                     const AttributeTypeCollection<TAttrTypes...>& classAttr)
+    {
+        module.GetOrAddClassDescription()->AddAttributes(classAttr);
+    }
 
     template <typename TMember, typename... TAttrTypes>
     void HandleClassMember(ClassTypeInfo& module, const char* memberName, const TypeInfo* memberTypeInfo,
                            const AttributeTypeCollection<TAttrTypes...>& memberAttr)
     {
-        MemberTypeInfo memberInfo(memberName, memberTypeInfo);
+        MemberDescription memberInfo(memberName, memberTypeInfo);
+        memberInfo.AddAttributes(memberAttr);
 
-        module.AddMember(memberName, std::move(memberInfo));
+        module.GetOrAddClassDescription()->AddMember(memberName, std::move(memberInfo));
     }
 
     template <typename TBaseClass>
     void HandleBaseClass(ClassTypeInfo& module, const TypeInfo* baseClassTypeInfo)
     {
-        module.SetBaseClass(baseClassTypeInfo);
+        module.GetOrAddClassDescription()->SetBaseClass(baseClassTypeInfo);
     }
 
     template <typename TTemplateClass>
     void HandleTemplateParameter(ClassTypeInfo& module, const TypeInfo* templateParamTypeInfo)
     {
-        module.AddTemplateParameter(templateParamTypeInfo);
+        module.GetOrAddClassDescription()->AddTemplateParameter(templateParamTypeInfo);
     }
 };
 
