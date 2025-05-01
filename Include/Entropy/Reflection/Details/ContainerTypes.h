@@ -38,7 +38,9 @@ struct ReflectionContainerTraits
 template <typename TString>
 struct StringOps
 {
-    // TString Replace(const TString& str, const char* find, const char* replacement);
+    // static const char* GetStr(const TString& str);
+    // static int GetLength(const TString& str);
+    // static void Replace(TString& str, const TString& find, const TString& replacement);
 };
 
 template <>
@@ -46,10 +48,18 @@ struct StringOps<std::string>
 {
     static const char* GetStr(const std::string& str) { return str.c_str(); }
     static int GetLength(const std::string& str) { return (int)str.length(); }
-    static std::string Replace(const std::string& str, const char* find, const char* replacement)
+    static void Replace(std::string& str, const std::string& find, const std::string& replacement)
     {
-        // TODO: Implement
-        return str;
+        if (GetLength(find) != 0)
+        {
+            auto pos = str.find(find, 0);
+            while (pos != std::string::npos)
+            {
+                str.replace(pos, find.length(), replacement);
+
+                pos = str.find(find, pos + replacement.length());
+            }
+        }
     }
 };
 

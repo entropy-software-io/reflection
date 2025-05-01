@@ -23,10 +23,10 @@ ReflectionContainerTraits<TypeId>::StringType MakeTypeName(const char* rawTypeNa
 
 #ifdef ENTROPY_MSVC
     ContainerTraits::StringType ret = rawTypeName;
-    ret                             = StrOps::Replace(ret, "struct ", "");
-    ret                             = StrOps::Replace(ret, "class ", "");
-    ret                             = StrOps::Replace(ret, "enum ", "");
-    ret                             = StrOps::Replace(ret, " >", ">");
+    StrOps::Replace(ret, "struct ", "");
+    StrOps::Replace(ret, "class ", "");
+    StrOps::Replace(ret, "enum ", "");
+    StrOps::Replace(ret, " >", ">");
     return ret;
 #else
     int status;
