@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Entropy/Core/Details/StrongAlias.h"
+#include "Entropy/Reflection/Details/ContainerTypes.h"
 
 namespace Entropy
 {
@@ -14,9 +15,23 @@ ENTROPY_DEFINE_STRONG_ALIAS(TypeId, unsigned int)
 namespace details
 {
 
-TypeId MakeTypeIdFromTypeName(const char* typeName);
+ReflectionContainerTraits<TypeId>::StringType MakeTypeName(const char* rawTypeName);
 
+template <typename T>
+ReflectionContainerTraits<TypeId>::StringType MakeTypeName()
+{
+    return MakeTypeName(typeid(T).name());
 }
+
+TypeId MakeTypeIdFromTypeName(const char* rawTypeName);
+
+template <typename T>
+TypeId MakeTypeIdFromTypeName()
+{
+    return MakeTypeIdFromTypeName(typeid(T).name());
+}
+
+} // namespace details
 
 namespace Traits
 {
@@ -26,7 +41,7 @@ struct TypeId
 {
     inline TypeId operator()() const
     {
-        static TypeId id = Entropy::details::MakeTypeIdFromTypeName(typeid(T).name());
+        static TypeId id = Entropy::details::MakeTypeIdFromTypeName<T>();
         return id;
     }
 };

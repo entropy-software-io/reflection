@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
 #include "TypeInfo.h"
 
@@ -234,7 +235,7 @@ struct FillCommonTypeInfo
 {
     void operator()(TypeInfo* typeInfo) const
     {
-        typeInfo->SetTypeName(typeid(TType).name());
+        typeInfo->SetTypeName(MakeTypeName<TType>());
 
         HandleIsConstructible<TType>{}(typeInfo);
     }

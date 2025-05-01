@@ -16,5 +16,6 @@
 
 // These must be included after TypeInfo.h
 #include "Entropy/Reflection/DataObject/DataObject.inl"
+#include "Entropy/Reflection/Details/TypeId.inl"
 #include "Entropy/Reflection/TypeInfo.inl"
 #endif

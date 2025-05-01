@@ -4,10 +4,10 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <functional>
 
 namespace Entropy
 {
@@ -31,6 +31,26 @@ struct ReflectionContainerTraits
 
     template <typename TFn>
     using FunctionType = std::function<TFn>;
+};
+
+//--------------
+
+template <typename TString>
+struct StringOps
+{
+    // TString Replace(const TString& str, const char* find, const char* replacement);
+};
+
+template <>
+struct StringOps<std::string>
+{
+    static const char* GetStr(const std::string& str) { return str.c_str(); }
+    static int GetLength(const std::string& str) { return (int)str.length(); }
+    static std::string Replace(const std::string& str, const char* find, const char* replacement)
+    {
+        // TODO: Implement
+        return str;
+    }
 };
 
 } // namespace details
