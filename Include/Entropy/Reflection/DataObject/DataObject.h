@@ -12,6 +12,10 @@ namespace Entropy
 {
 
 class TypeInfo;
+class DataObject;
+
+template <typename T, typename... TArgs>
+DataObject CreateDataObject(TArgs&&...);
 
 /// <summary>
 /// Wraps an arbitrary data object through type info. This can be treated like a smart pointer.
@@ -80,6 +84,9 @@ private:
     DataObjectContainer* _container{};
 
     friend class Entropy::TypeInfo;
+
+    template <typename T, typename... TArgs>
+    friend DataObject CreateDataObject(TArgs&&...);
 };
 
 } // namespace Entropy

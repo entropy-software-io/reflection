@@ -22,6 +22,36 @@ DataObject TypeInfo::Construct() const
     return nullptr;
 }
 
+bool TypeInfo::CanCopyConstruct() const { return (_copyConstructionFn != nullptr); }
+
+DataObject TypeInfo::DangerousCopyConstruct(const void* src) const
+{
+    if (ENTROPY_LIKELY(CanCopyConstruct()))
+    {
+        void* data = _copyConstructionFn(src);
+        if (ENTROPY_LIKELY(data))
+        {
+            return DataObject(this, data);
+        }
+    }
+    return nullptr;
+}
+
+bool TypeInfo::CanMoveConstruct() const { return (_moveConstructionFn != nullptr); }
+
+DataObject TypeInfo::DangerousMoveConstruct(void* src) const
+{
+    if (ENTROPY_LIKELY(CanMoveConstruct()))
+    {
+        void* data = _moveConstructionFn(src);
+        if (ENTROPY_LIKELY(data))
+        {
+            return DataObject(this, data);
+        }
+    }
+    return nullptr;
+}
+
 void TypeInfo::Destruct(void* dataPtr) const
 {
     if (ENTROPY_LIKELY(_destructionFn != nullptr))
@@ -31,6 +61,16 @@ void TypeInfo::Destruct(void* dataPtr) const
 }
 
 void TypeInfo::SetConstructionHandler(ConstructionHandler&& handler) { _constructionFn = std::move(handler); }
+
+void TypeInfo::SetCopyConstructionHandler(CopyConstructionHandler&& handler)
+{
+    _copyConstructionFn = std::move(handler);
+}
+
+void TypeInfo::SetMoveConstructionHandler(MoveConstructionHandler&& handler)
+{
+    _moveConstructionFn = std::move(handler);
+}
 
 void TypeInfo::SetDestructionHandler(DestructionHandler&& handler) { _destructionFn = std::move(handler); }
 

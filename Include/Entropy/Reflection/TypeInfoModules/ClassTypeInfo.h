@@ -196,5 +196,3 @@ struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<C
 
 } // namespace Reflection
 } // namespace Entropy
-
-#include "ClassTypeInfo.inl"

@@ -35,9 +35,12 @@ public:
     using ModuleTypes = Reflection::TypeInfoTraits<>::ModuleTypes;
 
 private:
-    using ContainerTraits     = Entropy::details::ReflectionContainerTraits<TypeInfo>;
-    using ConstructionHandler = ContainerTraits::FunctionType<void*()>;
-    using DestructionHandler  = ContainerTraits::FunctionType<void(void*)>;
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<TypeInfo>;
+
+    using ConstructionHandler     = ContainerTraits::FunctionType<void*()>;
+    using CopyConstructionHandler = ContainerTraits::FunctionType<void*(const void*)>;
+    using MoveConstructionHandler = ContainerTraits::FunctionType<void*(void*)>;
+    using DestructionHandler      = ContainerTraits::FunctionType<void(void*)>;
 
     template <typename TModule, typename TModuleTypes, std::size_t Index = 0>
     struct ModuleIndexHelper;
@@ -80,11 +83,32 @@ public:
     }
 
     bool CanConstruct() const;
-    inline DataObject Construct() const;
+    DataObject Construct() const;
+
+    bool CanCopyConstruct() const;
+    /// <summary>
+    /// src _must_ be the same type as what is being represented by this type info.
+    /// </summary>
+    /// <remarks>
+    /// Use CreateDataObject<> for the safe version
+    /// </remarks>
+    DataObject DangerousCopyConstruct(const void* src) const;
+
+    bool CanMoveConstruct() const;
+    /// <summary>
+    /// src _must_ be the same type as what is being represented by this type info.
+    /// </summary>
+    /// <remarks>
+    /// Use CreateDataObject<> for the safe version
+    /// </remarks>
+    DataObject DangerousMoveConstruct(void* src) const;
 
 private:
     void SetTypeName(ContainerTraits::StringType&& name);
+
     void SetConstructionHandler(ConstructionHandler&& handler);
+    void SetCopyConstructionHandler(CopyConstructionHandler&& handler);
+    void SetMoveConstructionHandler(MoveConstructionHandler&& handler);
     void SetDestructionHandler(DestructionHandler&& handler);
 
     inline void Destruct(void* dataPtr) const;
@@ -92,6 +116,8 @@ private:
     ContainerTraits::StringType _typeName{};
 
     ConstructionHandler _constructionFn{};
+    CopyConstructionHandler _copyConstructionFn{};
+    MoveConstructionHandler _moveConstructionFn{};
     DestructionHandler _destructionFn{};
 
     ModuleTypes _modules;
