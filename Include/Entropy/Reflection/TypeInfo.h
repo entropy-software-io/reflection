@@ -4,11 +4,24 @@
 
 #pragma once
 
+#include "Entropy/Reflection/DataObject/DataObject.h"
+#include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/TypeInfoTraits.h"
 #include <atomic>
 
 namespace Entropy
 {
+
+namespace details
+{
+template <typename>
+struct FillCommonTypeInfo;
+
+template <typename, typename>
+struct HandleIsConstructible;
+} // namespace details
+
+class DataObject;
 
 /// <summary>
 /// Holds runtime type information for any type that are accessible through different modules. The list of modules can
@@ -22,6 +35,10 @@ public:
     using ModuleTypes = Reflection::TypeInfoTraits<>::ModuleTypes;
 
 private:
+    using ContainerTraits     = Entropy::details::ReflectionContainerTraits<TypeInfo>;
+    using ConstructionHandler = ContainerTraits::FunctionType<void*()>;
+    using DestructionHandler  = ContainerTraits::FunctionType<void(void*)>;
+
     template <typename TModule, typename TModuleTypes, std::size_t Index = 0>
     struct ModuleIndexHelper;
 
@@ -38,6 +55,8 @@ private:
     };
 
 public:
+    inline const ContainerTraits::StringType& GetTypeName() const { return _typeName; }
+
     template <typename TModule>
     const TModule& Get() const
     {
@@ -60,9 +79,34 @@ public:
         return _requireInitialization.compare_exchange_strong(required, false);
     }
 
+    bool CanConstruct() const;
+    inline DataObject Construct() const;
+
 private:
+    void SetTypeName(ContainerTraits::StringType&& name);
+    void SetConstructionHandler(ConstructionHandler&& handler);
+    void SetDestructionHandler(DestructionHandler&& handler);
+
+    inline void Destruct(void* dataPtr) const;
+
+    ContainerTraits::StringType _typeName{};
+
+    ConstructionHandler _constructionFn{};
+    DestructionHandler _destructionFn{};
+
     ModuleTypes _modules;
+
     std::atomic_bool _requireInitialization{true};
+
+    //-----
+
+    template <typename>
+    friend struct details::FillCommonTypeInfo;
+
+    template <typename, typename>
+    friend struct details::HandleIsConstructible;
+
+    friend class DataObject;
 };
 
 } // namespace Entropy

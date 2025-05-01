@@ -23,16 +23,16 @@ struct AttributeData
     AttributeData(const AttributeData&) = default;
     AttributeData(AttributeData&&)      = default;
 
-    const TypeInfo* GetTypeInfo() const { return _dataObj.GetTypeInfo(); }
+    inline const TypeInfo* GetTypeInfo() const { return _dataObj.GetTypeInfo(); }
 
     template <typename T>
-    bool IsType() const
+    inline bool IsType() const
     {
         return _dataObj.IsType<T>();
     }
 
     template <typename T>
-    const T* TryGetData() const
+    inline const T* TryGetData() const
     {
         if (IsType<T>())
         {
@@ -43,7 +43,7 @@ struct AttributeData
     }
 
     template <typename T>
-    const T* GetData() const
+    inline const T* GetData() const
     {
         return &_dataObj.GetData<T>();
     }
@@ -51,7 +51,10 @@ struct AttributeData
     AttributeData& operator=(const AttributeData& other) = default;
     AttributeData& operator=(AttributeData&& other)      = default;
 
-    bool operator==(const AttributeData& other) const { return _dataObj.GetTypeInfo() == other._dataObj.GetTypeInfo(); }
+    inline bool operator==(const AttributeData& other) const
+    {
+        return _dataObj.GetTypeInfo() == other._dataObj.GetTypeInfo();
+    }
 
 private:
     DataObject _dataObj;

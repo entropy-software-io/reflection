@@ -50,7 +50,7 @@ template <>
 struct TypeInfoTraits<void>
 {
     // ModuleTypes must be an std::tuple
-    using ModuleTypes = std::tuple<BasicTypeInfo, ClassTypeInfo, CustomTypeInfo>;
+    using ModuleTypes = std::tuple<ClassTypeInfo, CustomTypeInfo>;
 };
 
 } // namespace Reflection

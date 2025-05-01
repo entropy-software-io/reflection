@@ -11,11 +11,6 @@
 namespace Entropy
 {
 
-namespace Reflection
-{
-class BasicTypeInfo;
-}
-
 class TypeInfo;
 
 /// <summary>
@@ -84,7 +79,7 @@ public:
 private:
     DataObjectContainer* _container{};
 
-    friend class Entropy::Reflection::BasicTypeInfo;
+    friend class Entropy::TypeInfo;
 };
 
 } // namespace Entropy

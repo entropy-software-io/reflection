@@ -57,22 +57,21 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 
     if (typeInfo)
     {
-        auto& basicInfo = typeInfo->Get<BasicTypeInfo>();
         auto& classInfo = typeInfo->Get<ClassTypeInfo>();
 
         if (!classInfo.IsReflectedClass())
         {
-            std::cout << basicInfo.GetTypeName() << " is not a reflected class" << std::endl;
+            std::cout << typeInfo->GetTypeName() << " is not a reflected class" << std::endl;
             return;
         }
 
         const ClassDescription* classDesc = classInfo.GetClassDescription();
 
-        std::cout << "Member list for '" << basicInfo.GetTypeName() << "':" << std::endl;
+        std::cout << "Member list for '" << typeInfo->GetTypeName() << "':" << std::endl;
         for (const auto& memberKvp : classDesc->GetMembers())
         {
-            std::cout << "   " << memberKvp.first << " ("
-                      << memberKvp.second.GetMemberType()->Get<BasicTypeInfo>().GetTypeName() << ")" << std::endl;
+            std::cout << "   " << memberKvp.first << " (" << memberKvp.second.GetMemberType()->GetTypeName() << ")"
+                      << std::endl;
         }
 
         const auto& templateParams = classDesc->GetTemplateParameters();
@@ -82,7 +81,7 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 
             for (int i = 0, count = (int)templateParams.size(); i < count; ++i)
             {
-                std::cout << templateParams[i]->Get<BasicTypeInfo>().GetTypeName();
+                std::cout << templateParams[i]->GetTypeName();
                 if (i < templateParams.size() - 1)
                 {
                     std::cout << ", ";
@@ -96,7 +95,7 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 
         if (classDesc->GetBaseClassTypeInfo())
         {
-            std::cout << "Base class: '" << classDesc->GetBaseClassTypeInfo()->Get<BasicTypeInfo>().GetTypeName() << "'"
+            std::cout << "Base class: '" << classDesc->GetBaseClassTypeInfo()->GetTypeName() << "'"
                       << std::endl;
 
             PrintClassInfo(classDesc->GetBaseClassTypeInfo());

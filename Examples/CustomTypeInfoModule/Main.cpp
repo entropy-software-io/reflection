@@ -21,7 +21,7 @@ void PrintTypeInfo(const Entropy::TypeInfo* typeInfo)
     using namespace Entropy;
     using namespace Entropy::Reflection;
 
-    std::cout << "Type Name: " << typeInfo->Get<BasicTypeInfo>().GetTypeName() << std::endl;
+    std::cout << "Type Name: " << typeInfo->GetTypeName() << std::endl;
     std::cout << "  Is MyCustomType: " << (typeInfo->Get<CustomTypeInfo>().IsMyCustomType() ? "True" : "False")
               << std::endl;
     std::cout << "  Is Assignable To MyCustomType: "

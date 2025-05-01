@@ -11,4 +11,26 @@ namespace Entropy
 
 ENTROPY_DEFINE_STRONG_ALIAS(TypeId, unsigned int)
 
+namespace details
+{
+
+TypeId MakeTypeIdFromTypeName(const char* typeName);
+
 }
+
+namespace Traits
+{
+
+template <typename T, typename = void>
+struct TypeId
+{
+    inline TypeId operator()() const
+    {
+        static TypeId id = Entropy::details::MakeTypeIdFromTypeName(typeid(T).name());
+        return id;
+    }
+};
+
+} // namespace Traits
+
+} // namespace Entropy

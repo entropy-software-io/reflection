@@ -193,6 +193,53 @@ struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
     }
 };
 
+//------------------------
+
+template <typename T, typename = void>
+struct HandleIsConstructible
+{
+    inline void operator()(TypeInfo* typeInfo) const {}
+};
+
+template <typename T>
+struct HandleIsConstructible<T, typename std::enable_if<std::is_default_constructible<T>::value>::type>
+{
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
+
+    inline void operator()(TypeInfo* typeInfo) const
+    {
+        typeInfo->SetConstructionHandler([]() {
+            typename ContainerTraits::template Allocator<T> alloc;
+            T* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
+            if (ENTROPY_LIKELY(obj != nullptr))
+            {
+                std::allocator_traits<decltype(alloc)>::construct(alloc, obj);
+            }
+            return obj;
+        });
+
+        typeInfo->SetDestructionHandler([](void* dataPtr) {
+            if (ENTROPY_LIKELY(dataPtr != nullptr))
+            {
+                typename ContainerTraits::template Allocator<T> alloc;
+                std::allocator_traits<decltype(alloc)>::destroy(alloc, reinterpret_cast<T*>(dataPtr));
+                std::allocator_traits<decltype(alloc)>::deallocate(alloc, reinterpret_cast<T*>(dataPtr), 1);
+            }
+        });
+    }
+};
+
+template <typename TType>
+struct FillCommonTypeInfo
+{
+    void operator()(TypeInfo* typeInfo) const
+    {
+        typeInfo->SetTypeName(typeid(TType).name());
+
+        HandleIsConstructible<TType>{}(typeInfo);
+    }
+};
+
 } // namespace details
 
 template <typename T>
@@ -209,6 +256,7 @@ const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept
     static TypeInfo typeInfo{};
     if (ENTROPY_UNLIKELY(typeInfo.RequireInitialization()))
     {
+        details::FillCommonTypeInfo<T>{}(&typeInfo);
         details::FillModuleTypes<T, TypeInfo::ModuleTypes>{}(typeInfo);
     }
     return &typeInfo;

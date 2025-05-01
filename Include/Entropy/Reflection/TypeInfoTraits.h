@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "TypeInfoModules/BasicTypeInfo.h"
 #include "TypeInfoModules/ClassTypeInfo.h"
 #include <tuple>
 
@@ -23,7 +22,7 @@ template <typename = void>
 struct TypeInfoTraits
 {
     // ModuleTypes must be an std::tuple
-    using ModuleTypes = std::tuple<BasicTypeInfo, ClassTypeInfo>;
+    using ModuleTypes = std::tuple<ClassTypeInfo>;
 };
 
 } // namespace Reflection

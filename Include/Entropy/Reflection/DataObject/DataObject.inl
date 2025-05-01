@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Entropy/Reflection/RuntimeReflectionMethods.h"
+#include "Entropy/Reflection/TypeInfo.h"
 
 namespace Entropy
 {
@@ -47,7 +48,7 @@ void DataObject::Release()
     {
         if (--_container->_refCount == 0)
         {
-            _container->_typeInfo->Get<Reflection::BasicTypeInfo>().Destruct(_container->_data);
+            _container->_typeInfo->Destruct(_container->_data);
 
             ContainerTraits::Allocator<DataObjectContainer> alloc;
             std::allocator_traits<decltype(alloc)>::destroy(alloc, _container);

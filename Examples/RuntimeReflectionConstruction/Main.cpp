@@ -27,13 +27,13 @@ int main(int argc, char* argv[])
     // Construct an instance of an object from some type info we are given
     auto typeInfo = GetTypeInfo();
 
-    if (!typeInfo->Get<BasicTypeInfo>().CanConstruct())
+    if (!typeInfo->CanConstruct())
     {
         std::cerr << "Type is not constructible" << std::endl;
         return 1;
     }
 
-    DataObject dataObj = typeInfo->Get<BasicTypeInfo>().Construct();
+    DataObject dataObj = typeInfo->Construct();
     if (dataObj == nullptr)
     {
         std::cerr << "Failed to construct object" << std::endl;
