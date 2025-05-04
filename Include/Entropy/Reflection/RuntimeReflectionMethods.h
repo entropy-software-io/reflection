@@ -41,9 +41,9 @@ struct FillModuleTypeClass<TModule, TType, typename std::enable_if<Traits::IsRef
         }
 
         template <typename TClass, typename... TAttrTypes>
-        void operator()(const AttributeCollection<TAttrTypes...>& classAttr)
+        void operator()(AttributeCollection<TAttrTypes...>&& classAttr)
         {
-            _handler->template HandleClass<TAttrTypes...>(*_module, _typeInfo, classAttr);
+            _handler->template HandleClass<TAttrTypes...>(*_module, _typeInfo, std::move(classAttr));
         }
 
     private:
@@ -134,11 +134,12 @@ struct FillModuleTypeClassMembers<TModule, TType, typename std::enable_if<Traits
         }
 
         template <typename TMember, typename... TAttrTypes>
-        void operator()(const char* memberName, const AttributeCollection<TAttrTypes...>& memberAttr)
+        void operator()(const char* memberName, AttributeCollection<TAttrTypes...>&& memberAttr)
         {
             const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TMember>();
 
-            _handler->template HandleClassMember<TMember, TAttrTypes...>(*_module, memberName, typeInfo, memberAttr);
+            _handler->template HandleClassMember<TMember, TAttrTypes...>(*_module, memberName, typeInfo,
+                                                                         std::move(memberAttr));
         }
 
     private:
@@ -239,7 +240,8 @@ struct HandleIsCopyConstructible
 };
 
 template <typename T>
-struct HandleIsCopyConstructible<T, typename std::enable_if<std::is_copy_constructible<T>::value && !std::is_reference<T>::value>::type>
+struct HandleIsCopyConstructible<
+    T, typename std::enable_if<std::is_copy_constructible<T>::value && !std::is_reference<T>::value>::type>
 {
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
 
@@ -275,7 +277,8 @@ struct HandleIsMoveConstructible
 };
 
 template <typename T>
-struct HandleIsMoveConstructible<T, typename std::enable_if<std::is_move_constructible<T>::value && !std::is_reference<T>::value>::type>
+struct HandleIsMoveConstructible<
+    T, typename std::enable_if<std::is_move_constructible<T>::value && !std::is_reference<T>::value>::type>
 {
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
 

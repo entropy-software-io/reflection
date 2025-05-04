@@ -48,7 +48,7 @@ struct BinaryMemberOperation
 /// Any callable object that can called with the following (templated) signature:
 ///     ()
 ///   OR
-///     (const Entropy::AttributeCollection<TAttrTypes...>& attributes)
+///     (Entropy::AttributeCollection<TAttrTypes...>&& attributes)
 /// </param>
 template <bool TIncludeSubclasses, typename TClass, typename TFunc>
 void ForEachReflectedClass(TFunc callbackObject)
@@ -65,7 +65,7 @@ void ForEachReflectedClass(TFunc callbackObject)
 ///   OR
 ///     (const char* memberName)
 ///   OR
-///     (const char* memberName, const Entropy::AttributeCollection<TAttrTypes...>& attributes)
+///     (const char* memberName, Entropy::AttributeCollection<TAttrTypes...>&& attributes)
 /// </param>
 template <bool TIncludeSubclasses, typename TClass, typename TFunc>
 void ForEachReflectedMemberType(TFunc callbackObject)
@@ -80,7 +80,7 @@ void ForEachReflectedMemberType(TFunc callbackObject)
 /// Any callable object that can called with the following (templated) signature:
 ///     (const char* memberName, TMemberType& member)
 ///   OR
-///     (const char* memberName, TMemberType& member, const Entropy::AttributeCollection<TAttrTypes...>& attributes)
+///     (const char* memberName, TMemberType& member, Entropy::AttributeCollection<TAttrTypes...>&& attributes)
 /// </param>
 template <bool TIncludeSubclasses, typename TClass, typename TFunc>
 void ForEachReflectedMember(TClass& sourceObject, TFunc callbackObject)
@@ -116,17 +116,16 @@ namespace details
 
 template <typename TClass, typename TFunc, typename... TClassAttrs>
 inline typename std::enable_if<Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TClass>),
-                                                              const AttributeCollection<TClassAttrs...>&>::value>::
-    type InvokeClassTypeFunction(const AttributeCollection<TClassAttrs...>& attrs, TFunc callbackObj)
+                                                              AttributeCollection<TClassAttrs...>&&>::value>::
+    type InvokeClassTypeFunction(AttributeCollection<TClassAttrs...>&& attrs, TFunc callbackObj)
 {
-    callbackObj.template operator()<TClass>(attrs);
+    callbackObj.template operator()<TClass>(std::move(attrs));
 }
 
 template <typename TClass, typename TFunc, typename... TClassAttrs>
-inline
-    typename std::enable_if<Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TClass>)>::
-                                value>::type InvokeClassTypeFunction(const AttributeCollection<TClassAttrs...>& attrs,
-                                                                     TFunc callbackObj)
+inline typename std::enable_if<Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TClass>)>::
+                                   value>::type InvokeClassTypeFunction(AttributeCollection<TClassAttrs...>&& attrs,
+                                                                        TFunc callbackObj)
 {
     callbackObj();
 }
@@ -168,16 +167,16 @@ struct ClassTypeOperation<TClass, TFunc, TIncludeSubclasses,
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline typename std::enable_if<
     Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TMember>), const char*,
-                                   const AttributeCollection<TMemberAttrs...>&>::value>::
-    type InvokeMemberTypeFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TFunc callbackObj)
+                                   AttributeCollection<TMemberAttrs...>&&>::value>::
+    type InvokeMemberTypeFunction(ReflectionMemberMetaData<TMemberAttrs...>&& metaData, TFunc callbackObj)
 {
-    callbackObj.template operator()<TMember>(metaData.memberName, metaData.attributes);
+    callbackObj.template operator()<TMember>(metaData.memberName, std::move(metaData.attributes));
 }
 
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline typename std::enable_if<
     Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TMember>), const char*>::value>::
-    type InvokeMemberTypeFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TFunc callbackObj)
+    type InvokeMemberTypeFunction(ReflectionMemberMetaData<TMemberAttrs...>&& metaData, TFunc callbackObj)
 {
     callbackObj(metaData.memberName);
 }
@@ -185,7 +184,7 @@ inline typename std::enable_if<
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline typename std::enable_if<
     Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TMember>)>::value>::
-    type InvokeMemberTypeFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TFunc callbackObj)
+    type InvokeMemberTypeFunction(ReflectionMemberMetaData<TMemberAttrs...>&& metaData, TFunc callbackObj)
 {
     callbackObj();
 }
@@ -232,22 +231,22 @@ struct MemberTypeOperation<
 
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline typename std::enable_if<
-    Traits::IsInvocable<TFunc, const char*, TMember, const AttributeCollection<TMemberAttrs...>&>::value>::type
-InvokeUnaryMemberFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember& member, TFunc callbackObj)
+    Traits::IsInvocable<TFunc, const char*, TMember, AttributeCollection<TMemberAttrs...>&&>::value>::type
+InvokeUnaryMemberFunction(ReflectionMemberMetaData<TMemberAttrs...>&& metaData, TMember& member, TFunc callbackObj)
 {
-    callbackObj(metaData.memberName, member, metaData.attributes);
+    callbackObj(metaData.memberName, member, std::move(metaData.attributes));
 }
 
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline typename std::enable_if<Traits::IsInvocable<TFunc, const char*, TMember>::value>::type InvokeUnaryMemberFunction(
-    const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember& member, TFunc callbackObj)
+    ReflectionMemberMetaData<TMemberAttrs...>&& metaData, TMember& member, TFunc callbackObj)
 {
     callbackObj(metaData.memberName, member);
 }
 
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline typename std::enable_if<Traits::IsInvocable<TFunc, TMember>::value>::type InvokeUnaryMemberFunction(
-    const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember& member, TFunc callbackObj)
+    ReflectionMemberMetaData<TMemberAttrs...>&& metaData, TMember& member, TFunc callbackObj)
 {
     callbackObj(member);
 }

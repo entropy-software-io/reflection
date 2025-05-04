@@ -72,16 +72,16 @@ public:
 private:
     template <std::size_t Idx = 0, typename... TAttrTypes>
     inline typename std::enable_if<Idx == sizeof...(TAttrTypes), void>::type AddAttribute(
-        const AttributeCollection<TAttrTypes...>&)
+        AttributeCollection<TAttrTypes...>&)
     {
     }
 
     template <std::size_t Idx = 0, typename... TAttrTypes>
     inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type AddAttribute(
-        const AttributeCollection<TAttrTypes...>&);
+        AttributeCollection<TAttrTypes...>&);
 
     template <typename... TAttrTypes>
-    inline void AddAttributes(const AttributeCollection<TAttrTypes...>& attr);
+    inline void AddAttributes(AttributeCollection<TAttrTypes...>&& attr);
 
     ContainerTraits::MapType<TypeId, AttributeData> _attributes;
 
@@ -179,17 +179,17 @@ struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<C
 
     template <typename... TAttrTypes>
     void HandleClass(ClassTypeInfo& module, const TypeInfo* thisTypeInfo,
-                     const AttributeCollection<TAttrTypes...>& classAttr)
+                     AttributeCollection<TAttrTypes...>&& classAttr)
     {
-        module.GetOrAddClassDescription()->AddAttributes(classAttr);
+        module.GetOrAddClassDescription()->AddAttributes(std::move(classAttr));
     }
 
     template <typename TMember, typename... TAttrTypes>
     void HandleClassMember(ClassTypeInfo& module, const char* memberName, const TypeInfo* memberTypeInfo,
-                           const AttributeCollection<TAttrTypes...>& memberAttr)
+                           AttributeCollection<TAttrTypes...>&& memberAttr)
     {
         MemberDescription memberInfo(memberName, memberTypeInfo);
-        memberInfo.AddAttributes(memberAttr);
+        memberInfo.AddAttributes(std::move(memberAttr));
 
         module.GetOrAddClassDescription()->AddMember(memberName, std::move(memberInfo));
     }
