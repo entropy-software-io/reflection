@@ -48,7 +48,7 @@ struct BinaryMemberOperation
 /// Any callable object that can called with the following (templated) signature:
 ///     ()
 ///   OR
-///     (const Entropy::AttributeTypeCollection<TAttrTypes...>& attributes)
+///     (const Entropy::AttributeCollection<TAttrTypes...>& attributes)
 /// </param>
 template <bool TIncludeSubclasses, typename TClass, typename TFunc>
 void ForEachReflectedClass(TFunc callbackObject)
@@ -65,7 +65,7 @@ void ForEachReflectedClass(TFunc callbackObject)
 ///   OR
 ///     (const char* memberName)
 ///   OR
-///     (const char* memberName, const Entropy::AttributeTypeCollection<TAttrTypes...>& attributes)
+///     (const char* memberName, const Entropy::AttributeCollection<TAttrTypes...>& attributes)
 /// </param>
 template <bool TIncludeSubclasses, typename TClass, typename TFunc>
 void ForEachReflectedMemberType(TFunc callbackObject)
@@ -80,7 +80,7 @@ void ForEachReflectedMemberType(TFunc callbackObject)
 /// Any callable object that can called with the following (templated) signature:
 ///     (const char* memberName, TMemberType& member)
 ///   OR
-///     (const char* memberName, TMemberType& member, const Entropy::AttributeTypeCollection<TAttrTypes...>& attributes)
+///     (const char* memberName, TMemberType& member, const Entropy::AttributeCollection<TAttrTypes...>& attributes)
 /// </param>
 template <bool TIncludeSubclasses, typename TClass, typename TFunc>
 void ForEachReflectedMember(TClass& sourceObject, TFunc callbackObject)
@@ -116,16 +116,17 @@ namespace details
 
 template <typename TClass, typename TFunc, typename... TClassAttrs>
 inline typename std::enable_if<Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TClass>),
-                                                              const AttributeTypeCollection<TClassAttrs...>&>::value>::
-    type InvokeClassTypeFunction(const AttributeTypeCollection<TClassAttrs...>& attrs, TFunc callbackObj)
+                                                              const AttributeCollection<TClassAttrs...>&>::value>::
+    type InvokeClassTypeFunction(const AttributeCollection<TClassAttrs...>& attrs, TFunc callbackObj)
 {
     callbackObj.template operator()<TClass>(attrs);
 }
 
 template <typename TClass, typename TFunc, typename... TClassAttrs>
-inline typename std::enable_if<
-    Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TClass>)>::value>::
-    type InvokeClassTypeFunction(const AttributeTypeCollection<TClassAttrs...>& attrs, TFunc callbackObj)
+inline
+    typename std::enable_if<Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TClass>)>::
+                                value>::type InvokeClassTypeFunction(const AttributeCollection<TClassAttrs...>& attrs,
+                                                                     TFunc callbackObj)
 {
     callbackObj();
 }
@@ -167,7 +168,7 @@ struct ClassTypeOperation<TClass, TFunc, TIncludeSubclasses,
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline typename std::enable_if<
     Traits::IsClassMethodInvocable<TFunc, decltype(&TFunc::template operator()<TMember>), const char*,
-                                   const AttributeTypeCollection<TMemberAttrs...>&>::value>::
+                                   const AttributeCollection<TMemberAttrs...>&>::value>::
     type InvokeMemberTypeFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TFunc callbackObj)
 {
     callbackObj.template operator()<TMember>(metaData.memberName, metaData.attributes);
@@ -231,7 +232,7 @@ struct MemberTypeOperation<
 
 template <typename TMember, typename TFunc, typename... TMemberAttrs>
 inline typename std::enable_if<
-    Traits::IsInvocable<TFunc, const char*, TMember, const AttributeTypeCollection<TMemberAttrs...>&>::value>::type
+    Traits::IsInvocable<TFunc, const char*, TMember, const AttributeCollection<TMemberAttrs...>&>::value>::type
 InvokeUnaryMemberFunction(const ReflectionMemberMetaData<TMemberAttrs...>& metaData, TMember& member, TFunc callbackObj)
 {
     callbackObj(metaData.memberName, member, metaData.attributes);

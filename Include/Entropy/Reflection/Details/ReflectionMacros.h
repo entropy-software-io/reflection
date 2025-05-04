@@ -128,7 +128,7 @@
     ENTROPY_CLASS_TYPE_OPERATOR_FUNCTION({                                                                             \
         /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
         ::Entropy::details::InvokeClassTypeFunction<ThisReflectedType, TFunc>(                                         \
-            ::Entropy::details::MakeAttributeCollection(##__VA_ARGS__), callbackObj);                                  \
+            ::Entropy::details::MakeAttributeCollection(__VA_ARGS__), callbackObj);                                  \
     })                                                                                                                 \
     ENTROPY_DECLARE_MEMBER_TYPE_OPERATOR_FUNCTION                                                                      \
     ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \

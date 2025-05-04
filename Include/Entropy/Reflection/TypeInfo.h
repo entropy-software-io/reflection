@@ -19,6 +19,12 @@ struct FillCommonTypeInfo;
 
 template <typename, typename>
 struct HandleIsConstructible;
+
+template <typename, typename>
+struct HandleIsCopyConstructible;
+
+template <typename, typename>
+struct HandleIsMoveConstructible;
 } // namespace details
 
 class DataObject;
@@ -131,6 +137,12 @@ private:
 
     template <typename, typename>
     friend struct details::HandleIsConstructible;
+
+    template <typename, typename>
+    friend struct details::HandleIsCopyConstructible;
+
+    template <typename, typename>
+    friend struct details::HandleIsMoveConstructible;
 
     friend class DataObject;
 };

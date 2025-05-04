@@ -6,9 +6,19 @@
 
 #include <iostream>
 
+struct MyAttribute
+{
+    MyAttribute(int val)
+        : value(val)
+    {
+    }
+
+    int value = 0;
+};
+
 struct MyBaseStruct
 {
-    ENTROPY_REFLECT_CLASS(MyBaseStruct)
+    ENTROPY_REFLECT_CLASS(MyBaseStruct, MyAttribute(1))
 
     ENTROPY_REFLECT_MEMBER(MyBaseIntValue)
     int MyBaseIntValue = 1;
@@ -24,7 +34,7 @@ struct MyStruct : public MyBaseStruct
     ENTROPY_REFLECT_MEMBER(MyIntValue)
     int MyIntValue = 1;
 
-    ENTROPY_REFLECT_MEMBER(MyFloatValue)
+    ENTROPY_REFLECT_MEMBER(MyFloatValue, MyAttribute(2))
     float MyFloatValue = 1.23f;
 };
 
@@ -67,11 +77,31 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 
         const ClassDescription* classDesc = classInfo.GetClassDescription();
 
+        const auto& classAttrs = classDesc->GetAllAttributes();
+        if (classAttrs.size() > 0)
+        {
+            std::cout << "Attribute list for '" << typeInfo->GetTypeName() << "':" << std::endl;
+            for (const auto& kvp : classAttrs)
+            {
+                std::cout << "   Type: " << kvp.second.GetTypeInfo()->GetTypeName() << std::endl;
+            }
+        }
+
         std::cout << "Member list for '" << typeInfo->GetTypeName() << "':" << std::endl;
         for (const auto& memberKvp : classDesc->GetMembers())
         {
             std::cout << "   " << memberKvp.first << " (" << memberKvp.second.GetMemberType()->GetTypeName() << ")"
                       << std::endl;
+
+            const auto& memberAttrs = memberKvp.second.GetAllAttributes();
+            if (memberAttrs.size() > 0)
+            {
+                std::cout << "   Attribute list for member '" << memberKvp.first << "':" << std::endl;
+                for (const auto& kvp : memberAttrs)
+                {
+                    std::cout << "      Type: " << kvp.second.GetTypeInfo()->GetTypeName() << std::endl;
+                }
+            }
         }
 
         const auto& templateParams = classDesc->GetTemplateParameters();
@@ -95,8 +125,7 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 
         if (classDesc->GetBaseClassTypeInfo())
         {
-            std::cout << "Base class: '" << classDesc->GetBaseClassTypeInfo()->GetTypeName() << "'"
-                      << std::endl;
+            std::cout << "Base class: '" << classDesc->GetBaseClassTypeInfo()->GetTypeName() << "'" << std::endl;
 
             PrintClassInfo(classDesc->GetBaseClassTypeInfo());
         }

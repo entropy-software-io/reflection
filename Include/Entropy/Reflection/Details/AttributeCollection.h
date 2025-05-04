@@ -5,13 +5,14 @@
 #pragma once
 
 #include "Entropy/Core/Details/Defines.h"
+#include <tuple>
 #include <type_traits>
 
 namespace Entropy
 {
 
 template <typename... TAttrTypes>
-struct AttributeTypeCollection
+struct AttributeCollection
 {
 private:
     template <typename TType, typename TThisType>
@@ -40,19 +41,28 @@ private:
     }
 
 public:
-    constexpr AttributeTypeCollection() {}
-
-    template <typename TType>
-    ENTROPY_CONSTEXPR bool HasType() const
+    template <typename... UAttrTypes>
+    constexpr AttributeCollection(UAttrTypes&&... attrs)
+        : _attrs(std::forward<UAttrTypes>(attrs)...)
     {
-        return HasTypeImpl<TType, TAttrTypes...>();
     }
 
-    template <typename TType>
-    static ENTROPY_CONSTEXPR bool HasAttributeOfType()
+    constexpr AttributeCollection() {}
+
+    template <std::size_t Idx>
+    auto GetAt()
     {
-        return HasTypeImpl<TType, TAttrTypes...>();
+        return std::get<Idx>(_attrs);
     }
+
+    template <std::size_t Idx>
+    auto GetAt() const
+    {
+        return std::get<Idx>(_attrs);
+    }
+
+private:
+    std::tuple<TAttrTypes...> _attrs;
 };
 
 template <typename... TAttrTypes>
@@ -68,7 +78,7 @@ struct ReflectionMemberMetaData
     {
     }
 
-    constexpr ReflectionMemberMetaData(const char* memberName, AttributeTypeCollection<TAttrTypes...>&& attrs)
+    constexpr ReflectionMemberMetaData(const char* memberName, AttributeCollection<TAttrTypes...>&& attrs)
         : memberName(memberName)
         , attributes(std::move(attrs))
     {
@@ -77,27 +87,26 @@ struct ReflectionMemberMetaData
     template <typename TType>
     constexpr static bool HasAttributeOfType()
     {
-        return AttributeTypeCollection<TAttrTypes...>::template HasAttributeOfType<TType>();
+        return AttributeCollection<TAttrTypes...>::template HasAttributeOfType<TType>();
     }
 
     const char* memberName = nullptr;
-    AttributeTypeCollection<TAttrTypes...> attributes;
+    AttributeCollection<TAttrTypes...> attributes;
 };
 
 namespace details
 {
 
 template <typename... TTypes>
-constexpr AttributeTypeCollection<TTypes...> MakeAttributeCollection(const TTypes&...)
+constexpr AttributeCollection<TTypes...> MakeAttributeCollection(TTypes&&... vals)
 {
-    return AttributeTypeCollection<TTypes...>();
+    return AttributeCollection<TTypes...>(std::forward<TTypes>(vals)...);
 }
 
 template <typename... TTypes>
-constexpr ReflectionMemberMetaData<TTypes...> MakeReflectionMemberMetaData(const char* memberName,
-                                                                           const TTypes&... types)
+constexpr ReflectionMemberMetaData<TTypes...> MakeReflectionMemberMetaData(const char* memberName, TTypes&&... types)
 {
-    return ReflectionMemberMetaData<TTypes...>(memberName, MakeAttributeCollection(types...));
+    return ReflectionMemberMetaData<TTypes...>(memberName, MakeAttributeCollection(std::forward<TTypes>(types)...));
 }
 
 } // namespace details

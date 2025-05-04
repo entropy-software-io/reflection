@@ -32,12 +32,13 @@ private:
         std::atomic_int _refCount{1};
     };
 
-    DataObject(std::nullptr_t);
     DataObject(const TypeInfo* typeInfo, void* data);
 
     void Release();
 
 public:
+    DataObject() = default;
+    DataObject(std::nullptr_t);
     DataObject(const DataObject& other);
     DataObject(DataObject&& other);
 
@@ -76,6 +77,8 @@ public:
     inline bool IsType() const;
 
     inline bool operator==(std::nullptr_t) const { return (_container == nullptr); }
+    inline bool operator!=(std::nullptr_t) const { return (_container != nullptr); }
+    inline operator bool() const { return _container != nullptr; }
 
     inline DataObject& operator=(const DataObject& other);
     inline DataObject& operator=(DataObject&& other);
@@ -85,8 +88,14 @@ private:
 
     friend class Entropy::TypeInfo;
 
-    template <typename T, typename... TArgs>
-    friend DataObject CreateDataObject(TArgs&&...);
+    template <typename T>
+    friend DataObject CreateDataObject();
+
+    template <typename T>
+    friend DataObject CreateDataObject(const T&);
+
+    template <typename T>
+    friend DataObject CreateDataObject(T&&);
 };
 
 } // namespace Entropy

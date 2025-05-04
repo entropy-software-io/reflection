@@ -41,7 +41,7 @@ struct FillModuleTypeClass<TModule, TType, typename std::enable_if<Traits::IsRef
         }
 
         template <typename TClass, typename... TAttrTypes>
-        void operator()(const AttributeTypeCollection<TAttrTypes...>& classAttr)
+        void operator()(const AttributeCollection<TAttrTypes...>& classAttr)
         {
             _handler->template HandleClass<TAttrTypes...>(*_module, _typeInfo, classAttr);
         }
@@ -134,7 +134,7 @@ struct FillModuleTypeClassMembers<TModule, TType, typename std::enable_if<Traits
         }
 
         template <typename TMember, typename... TAttrTypes>
-        void operator()(const char* memberName, const AttributeTypeCollection<TAttrTypes...>& memberAttr)
+        void operator()(const char* memberName, const AttributeCollection<TAttrTypes...>& memberAttr)
         {
             const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TMember>();
 
@@ -230,6 +230,78 @@ struct HandleIsConstructible<T, typename std::enable_if<std::is_default_construc
     }
 };
 
+//------------------------
+
+template <typename T, typename = void>
+struct HandleIsCopyConstructible
+{
+    inline void operator()(TypeInfo* typeInfo) const {}
+};
+
+template <typename T>
+struct HandleIsCopyConstructible<T, typename std::enable_if<std::is_copy_constructible<T>::value && !std::is_reference<T>::value>::type>
+{
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
+
+    inline void operator()(TypeInfo* typeInfo) const
+    {
+        typeInfo->SetCopyConstructionHandler([](const void* data) {
+            typename ContainerTraits::template Allocator<T> alloc;
+            T* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
+            if (ENTROPY_LIKELY(obj != nullptr))
+            {
+                std::allocator_traits<decltype(alloc)>::construct(alloc, obj, *reinterpret_cast<const T*>(data));
+            }
+            return obj;
+        });
+
+        typeInfo->SetDestructionHandler([](void* dataPtr) {
+            if (ENTROPY_LIKELY(dataPtr != nullptr))
+            {
+                typename ContainerTraits::template Allocator<T> alloc;
+                std::allocator_traits<decltype(alloc)>::destroy(alloc, reinterpret_cast<T*>(dataPtr));
+                std::allocator_traits<decltype(alloc)>::deallocate(alloc, reinterpret_cast<T*>(dataPtr), 1);
+            }
+        });
+    }
+};
+
+//------------------------
+
+template <typename T, typename = void>
+struct HandleIsMoveConstructible
+{
+    inline void operator()(TypeInfo* typeInfo) const {}
+};
+
+template <typename T>
+struct HandleIsMoveConstructible<T, typename std::enable_if<std::is_move_constructible<T>::value && !std::is_reference<T>::value>::type>
+{
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
+
+    inline void operator()(TypeInfo* typeInfo) const
+    {
+        typeInfo->SetMoveConstructionHandler([](void* data) {
+            typename ContainerTraits::template Allocator<T> alloc;
+            T* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
+            if (ENTROPY_LIKELY(obj != nullptr))
+            {
+                std::allocator_traits<decltype(alloc)>::construct(alloc, obj, std::move(*reinterpret_cast<T*>(data)));
+            }
+            return obj;
+        });
+
+        typeInfo->SetDestructionHandler([](void* dataPtr) {
+            if (ENTROPY_LIKELY(dataPtr != nullptr))
+            {
+                typename ContainerTraits::template Allocator<T> alloc;
+                std::allocator_traits<decltype(alloc)>::destroy(alloc, reinterpret_cast<T*>(dataPtr));
+                std::allocator_traits<decltype(alloc)>::deallocate(alloc, reinterpret_cast<T*>(dataPtr), 1);
+            }
+        });
+    }
+};
+
 template <typename TType>
 struct FillCommonTypeInfo
 {
@@ -238,6 +310,8 @@ struct FillCommonTypeInfo
         typeInfo->SetTypeName(MakeTypeName<TType>());
 
         HandleIsConstructible<TType>{}(typeInfo);
+        HandleIsCopyConstructible<TType>{}(typeInfo);
+        HandleIsMoveConstructible<TType>{}(typeInfo);
     }
 };
 

@@ -9,9 +9,37 @@ namespace Entropy
 namespace Reflection
 {
 
-template <typename... TAttrTypes>
-void AttributeContainer::AddAttributes(const AttributeTypeCollection<TAttrTypes...>& attr)
+AttributeData::AttributeData(DataObject&& dataObj)
+    : _dataObj(std::move(dataObj))
 {
+}
+
+//=======================
+
+template <std::size_t Idx, typename... TAttrTypes>
+inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type AttributeContainer::AddAttribute(
+    const AttributeCollection<TAttrTypes...>& attr)
+{
+    using TAttr = Entropy::Traits::UnqualifiedType_t<decltype(attr.template GetAt<Idx>())>;
+
+    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TAttr>();
+
+    if (typeInfo && typeInfo->CanCopyConstruct())
+    {
+        DataObject obj = CreateDataObject<TAttr>(attr.template GetAt<Idx>());
+        if (ENTROPY_LIKELY(obj != nullptr))
+        {
+            _attributes[Entropy::Traits::TypeId<TAttr>{}()] = AttributeData(std::move(obj));
+        }
+    }
+
+    AddAttribute<Idx + 1>(attr);
+}
+
+template <typename... TAttrTypes>
+void AttributeContainer::AddAttributes(const AttributeCollection<TAttrTypes...>& attr)
+{
+    AddAttribute<0>(attr);
 }
 
 //=======================

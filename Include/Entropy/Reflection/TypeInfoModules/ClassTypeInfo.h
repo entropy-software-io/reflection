@@ -18,6 +18,7 @@ namespace Reflection
 
 struct AttributeData
 {
+    AttributeData() {}
     AttributeData(DataObject&& dataObj);
 
     AttributeData(const AttributeData&) = default;
@@ -66,9 +67,21 @@ private:
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<AttributeContainer>;
 
 public:
+    inline const ContainerTraits::MapType<TypeId, AttributeData>& GetAllAttributes() const { return _attributes; }
+
 private:
+    template <std::size_t Idx = 0, typename... TAttrTypes>
+    inline typename std::enable_if<Idx == sizeof...(TAttrTypes), void>::type AddAttribute(
+        const AttributeCollection<TAttrTypes...>&)
+    {
+    }
+
+    template <std::size_t Idx = 0, typename... TAttrTypes>
+    inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type AddAttribute(
+        const AttributeCollection<TAttrTypes...>&);
+
     template <typename... TAttrTypes>
-    inline void AddAttributes(const AttributeTypeCollection<TAttrTypes...>& attr);
+    inline void AddAttributes(const AttributeCollection<TAttrTypes...>& attr);
 
     ContainerTraits::MapType<TypeId, AttributeData> _attributes;
 
@@ -166,14 +179,14 @@ struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<C
 
     template <typename... TAttrTypes>
     void HandleClass(ClassTypeInfo& module, const TypeInfo* thisTypeInfo,
-                     const AttributeTypeCollection<TAttrTypes...>& classAttr)
+                     const AttributeCollection<TAttrTypes...>& classAttr)
     {
         module.GetOrAddClassDescription()->AddAttributes(classAttr);
     }
 
     template <typename TMember, typename... TAttrTypes>
     void HandleClassMember(ClassTypeInfo& module, const char* memberName, const TypeInfo* memberTypeInfo,
-                           const AttributeTypeCollection<TAttrTypes...>& memberAttr)
+                           const AttributeCollection<TAttrTypes...>& memberAttr)
     {
         MemberDescription memberInfo(memberName, memberTypeInfo);
         memberInfo.AddAttributes(memberAttr);

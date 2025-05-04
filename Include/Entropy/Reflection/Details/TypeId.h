@@ -39,9 +39,9 @@ namespace Traits
 template <typename T, typename = void>
 struct TypeId
 {
-    inline TypeId operator()() const
+    inline Entropy::TypeId operator()() const
     {
-        static TypeId id = Entropy::details::MakeTypeIdFromTypeName<T>();
+        static Entropy::TypeId id = Entropy::details::MakeTypeIdFromTypeName<T>();
         return id;
     }
 };
