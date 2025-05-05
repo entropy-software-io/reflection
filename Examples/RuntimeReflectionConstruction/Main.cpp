@@ -17,7 +17,7 @@ struct MyStruct
     float MyFloatValue = 1.23f;
 };
 
-const Entropy::TypeInfo* GetTypeInfo() { return Entropy::ReflectTypeAndGetTypeInfo<MyStruct>(); }
+Entropy::TypeInfoPtr GetTypeInfo() { return Entropy::ReflectTypeAndGetTypeInfo<MyStruct>(); }
 
 int main(int argc, char* argv[])
 {

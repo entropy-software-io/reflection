@@ -5,7 +5,51 @@
 namespace Entropy
 {
 
+namespace details
+{
+
+TypeInfo* CreateTypeInfo() noexcept
+{
+    using ContainerTraits = ReflectionContainerTraits<TypeInfo>;
+
+    ContainerTraits::Allocator<TypeInfo> alloc;
+    TypeInfo* typeInfo = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
+    if (ENTROPY_LIKELY(typeInfo))
+    {
+        std::allocator_traits<decltype(alloc)>::construct(alloc, typeInfo);
+    }
+
+    return typeInfo;
+}
+
+void DestroyTypeInfo(const TypeInfo* typeInfo) noexcept
+{
+    using ContainerTraits = ReflectionContainerTraits<TypeInfo>;
+
+    if (ENTROPY_LIKELY(typeInfo))
+    {
+        ContainerTraits::Allocator<TypeInfo> alloc;
+        std::allocator_traits<decltype(alloc)>::destroy(alloc, typeInfo);
+        std::allocator_traits<decltype(alloc)>::deallocate(alloc, const_cast<TypeInfo*>(typeInfo), 1);
+    }
+}
+
+} // namespace details
+
+//================
+
 TypeInfo::~TypeInfo() { _modules.~ModuleTypes(); }
+
+void TypeInfo::AddRef() const { ++_refCount; }
+
+void TypeInfo::Release() const
+{
+    int count = --_refCount;
+    if (count == 0)
+    {
+        details::DestroyTypeInfo(this);
+    }
+}
 
 void TypeInfo::SetTypeName(ContainerTraits::StringType&& name) { _typeName = std::move(name); }
 

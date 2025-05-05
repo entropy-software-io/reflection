@@ -20,4 +20,5 @@
 #include "Entropy/Reflection/Details/TypeId.inl"
 #include "Entropy/Reflection/TypeInfo.inl"
 #include "Entropy/Reflection/TypeInfoModules/ClassTypeInfo.inl"
+#include "Entropy/Reflection/TypeInfoPtr.inl"
 #endif

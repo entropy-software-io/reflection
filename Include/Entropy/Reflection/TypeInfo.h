@@ -6,6 +6,7 @@
 
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
+#include "Entropy/Reflection/TypeInfoPtr.h"
 #include "Entropy/Reflection/TypeInfoTraits.h"
 #include <atomic>
 
@@ -31,6 +32,7 @@ struct HandleIsDestructible;
 } // namespace details
 
 class DataObject;
+class TypeInfoPtr;
 
 /// <summary>
 /// Holds runtime type information for any type that are accessible through different modules. The list of modules can
@@ -115,6 +117,9 @@ public:
     DataObject DangerousMoveConstruct(void* src) const;
 
 private:
+    void AddRef() const;
+    void Release() const;
+
     void SetTypeName(ContainerTraits::StringType&& name);
 
     void SetConstructionHandler(ConstructionHandler&& handler);
@@ -133,9 +138,14 @@ private:
 
     ModuleTypes _modules;
 
+    mutable std::atomic_int _refCount{1};
+
     std::atomic_bool _requireInitialization{true};
 
     //-----
+
+    template <typename>
+    friend TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept;
 
     template <typename>
     friend struct details::FillCommonTypeInfo;
@@ -153,6 +163,7 @@ private:
     friend struct details::HandleIsDestructible;
 
     friend class DataObject;
+    friend class TypeInfoPtr;
 };
 
 } // namespace Entropy

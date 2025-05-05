@@ -13,7 +13,7 @@ namespace Entropy
 template <typename T>
 inline DataObject CreateDataObject()
 {
-    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
+    TypeInfoPtr typeInfo = ReflectTypeAndGetTypeInfo<T>();
     if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanConstruct()))
     {
         return nullptr;
@@ -25,7 +25,7 @@ inline DataObject CreateDataObject()
 template <typename T>
 inline DataObject CreateDataObject(const T& copy)
 {
-    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
+    TypeInfoPtr typeInfo = ReflectTypeAndGetTypeInfo<T>();
     if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanCopyConstruct()))
     {
         return nullptr;
@@ -37,7 +37,7 @@ inline DataObject CreateDataObject(const T& copy)
 template <typename T>
 inline DataObject CreateDataObject(T&& move)
 {
-    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
+    TypeInfoPtr typeInfo = ReflectTypeAndGetTypeInfo<T>();
     if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanMoveConstruct()))
     {
         return nullptr;

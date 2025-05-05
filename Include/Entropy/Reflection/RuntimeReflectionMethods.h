@@ -12,16 +12,18 @@ namespace Entropy
 {
 
 template <typename T>
-const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
+TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept;
 
 namespace details
 {
+
+TypeInfo* CreateTypeInfo() noexcept;
 
 template <typename TModule, typename TType, typename = void>
 struct FillModuleTypeClass
 {
     void operator()(Entropy::Reflection::FillModuleTypeInfo<TModule, TType>& handler, TModule& module,
-                    const TypeInfo* typeInfo)
+                    TypeInfoPtr typeInfo)
     {
     }
 };
@@ -33,7 +35,7 @@ struct FillModuleTypeClass<TModule, TType, typename std::enable_if<Traits::IsRef
 
     struct HandleClass
     {
-        HandleClass(ModuleHandlerType* handler, TModule* module, const TypeInfo* typeInfo)
+        HandleClass(ModuleHandlerType* handler, TModule* module, TypeInfoPtr typeInfo)
             : _handler(handler)
             , _module(module)
             , _typeInfo(typeInfo)
@@ -49,10 +51,10 @@ struct FillModuleTypeClass<TModule, TType, typename std::enable_if<Traits::IsRef
     private:
         ModuleHandlerType* _handler = nullptr;
         TModule* _module            = nullptr;
-        const TypeInfo* _typeInfo   = nullptr;
+        TypeInfoPtr _typeInfo   = nullptr;
     };
 
-    void operator()(ModuleHandlerType& handler, TModule& module, const TypeInfo* typeInfo) const
+    void operator()(ModuleHandlerType& handler, TModule& module, TypeInfoPtr typeInfo) const
     {
         ForEachReflectedClass<false /* IncludeSubclasses */, TType>(HandleClass(&handler, &module, typeInfo));
     }
@@ -76,7 +78,7 @@ struct FillModuleTypeTemplateParameters<TModule, TType<Tn...>>
     template <typename U>
     void HandleTemplateParameters(ModuleHandlerType& handler, TModule& module)
     {
-        const TypeInfo* templateParamTypeInfo = ReflectTypeAndGetTypeInfo<U>();
+        TypeInfoPtr templateParamTypeInfo = ReflectTypeAndGetTypeInfo<U>();
         handler.template HandleTemplateParameter<U>(module, templateParamTypeInfo);
     }
 
@@ -104,7 +106,7 @@ struct FillModuleTypeBaseClass<TModule, TType, typename std::enable_if<Traits::H
 {
     void operator()(Entropy::Reflection::FillModuleTypeInfo<TModule, TType>& handler, TModule& module) const
     {
-        const TypeInfo* baseClassTypeInfo = ReflectTypeAndGetTypeInfo<Traits::BaseClassOf_t<TType>>();
+        TypeInfoPtr baseClassTypeInfo = ReflectTypeAndGetTypeInfo<Traits::BaseClassOf_t<TType>>();
 
         handler.template HandleBaseClass<Traits::BaseClassOf_t<TType>>(module, baseClassTypeInfo);
     }
@@ -136,7 +138,7 @@ struct FillModuleTypeClassMembers<TModule, TType, typename std::enable_if<Traits
         template <typename TMember, typename... TAttrTypes>
         void operator()(const char* memberName, AttributeCollection<TAttrTypes...>&& memberAttr)
         {
-            const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TMember>();
+            TypeInfoPtr typeInfo = ReflectTypeAndGetTypeInfo<TMember>();
 
             _handler->template HandleClassMember<TMember, TAttrTypes...>(*_module, memberName, typeInfo,
                                                                          std::move(memberAttr));
@@ -278,7 +280,6 @@ struct HandleIsMoveConstructible<
     }
 };
 
-
 //------------------------
 
 template <typename T, typename = void>
@@ -325,7 +326,7 @@ struct FillCommonTypeInfo
 } // namespace details
 
 template <typename T>
-const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept
+TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept
 {
     // We cannot make the allocation and initialization one step because re-entrancy will cause a hang.
     // Consider the declaration:
@@ -335,13 +336,16 @@ const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept
     // this re-entrant call. Instead of a hang, the base type will be given a partially initialized Derived type info as
     // the template parameter.
 
-    static TypeInfo typeInfo{};
-    if (ENTROPY_UNLIKELY(typeInfo.RequireInitialization()))
+    static TypeInfo* typeInfo = details::CreateTypeInfo();
+
+    TypeInfoPtr ret(typeInfo);
+    if (ENTROPY_UNLIKELY(typeInfo->RequireInitialization()))
     {
-        details::FillCommonTypeInfo<T>{}(&typeInfo);
-        details::FillModuleTypes<T, TypeInfo::ModuleTypes>{}(typeInfo);
+        details::FillCommonTypeInfo<T>{}(typeInfo);
+        details::FillModuleTypes<T, TypeInfo::ModuleTypes>{}(*typeInfo);
+        typeInfo->Release();
     }
-    return &typeInfo;
+    return ret;
 }
 
 template <typename T>

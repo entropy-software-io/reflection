@@ -6,12 +6,12 @@
 
 #include "Entropy/Core/Details/Defines.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
+#include "Entropy/Reflection/TypeInfoPtr.h"
 #include <atomic>
 
 namespace Entropy
 {
 
-class TypeInfo;
 class DataObject;
 
 template <typename T, typename... TArgs>
@@ -27,12 +27,12 @@ private:
 
     struct DataObjectContainer
     {
-        const TypeInfo* _typeInfo{};
+        TypeInfoPtr _typeInfo{};
         void* _data{};
         std::atomic_int _refCount{1};
     };
 
-    DataObject(const TypeInfo* typeInfo, void* data);
+    DataObject(TypeInfoPtr typeInfo, void* data);
 
     void Release();
 
@@ -64,7 +64,7 @@ public:
         return *reinterpret_cast<T*>(_container->_data);
     }
 
-    inline const TypeInfo* GetTypeInfo() const
+    inline TypeInfoPtr GetTypeInfo() const
     {
         if (ENTROPY_LIKELY(_container))
         {
