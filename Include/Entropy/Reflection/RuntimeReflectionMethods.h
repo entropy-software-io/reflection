@@ -219,15 +219,6 @@ struct HandleIsConstructible<T, typename std::enable_if<std::is_default_construc
             }
             return obj;
         });
-
-        typeInfo->SetDestructionHandler([](void* dataPtr) {
-            if (ENTROPY_LIKELY(dataPtr != nullptr))
-            {
-                typename ContainerTraits::template Allocator<T> alloc;
-                std::allocator_traits<decltype(alloc)>::destroy(alloc, reinterpret_cast<T*>(dataPtr));
-                std::allocator_traits<decltype(alloc)>::deallocate(alloc, reinterpret_cast<T*>(dataPtr), 1);
-            }
-        });
     }
 };
 
@@ -255,15 +246,6 @@ struct HandleIsCopyConstructible<
                 std::allocator_traits<decltype(alloc)>::construct(alloc, obj, *reinterpret_cast<const T*>(data));
             }
             return obj;
-        });
-
-        typeInfo->SetDestructionHandler([](void* dataPtr) {
-            if (ENTROPY_LIKELY(dataPtr != nullptr))
-            {
-                typename ContainerTraits::template Allocator<T> alloc;
-                std::allocator_traits<decltype(alloc)>::destroy(alloc, reinterpret_cast<T*>(dataPtr));
-                std::allocator_traits<decltype(alloc)>::deallocate(alloc, reinterpret_cast<T*>(dataPtr), 1);
-            }
         });
     }
 };
@@ -293,7 +275,28 @@ struct HandleIsMoveConstructible<
             }
             return obj;
         });
+    }
+};
 
+
+//------------------------
+
+template <typename T, typename = void>
+struct HandleIsDestructible
+{
+    inline void operator()(TypeInfo* typeInfo) const {}
+};
+
+template <typename T>
+struct HandleIsDestructible<
+    T, typename std::enable_if<std::is_default_constructible<T>::value ||
+                               (std::is_copy_constructible<T>::value && !std::is_reference<T>::value) ||
+                               (std::is_copy_constructible<T>::value && !std::is_reference<T>::value)>::type>
+{
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
+
+    inline void operator()(TypeInfo* typeInfo) const
+    {
         typeInfo->SetDestructionHandler([](void* dataPtr) {
             if (ENTROPY_LIKELY(dataPtr != nullptr))
             {
@@ -315,6 +318,7 @@ struct FillCommonTypeInfo
         HandleIsConstructible<TType>{}(typeInfo);
         HandleIsCopyConstructible<TType>{}(typeInfo);
         HandleIsMoveConstructible<TType>{}(typeInfo);
+        HandleIsDestructible<TType>{}(typeInfo);
     }
 };
 

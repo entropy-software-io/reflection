@@ -25,6 +25,9 @@ struct HandleIsCopyConstructible;
 
 template <typename, typename>
 struct HandleIsMoveConstructible;
+
+template <typename, typename>
+struct HandleIsDestructible;
 } // namespace details
 
 class DataObject;
@@ -35,7 +38,7 @@ class DataObject;
 ///
 /// Any C++ type can have TypeInfo - not just reflected classes.
 /// </summary>
-class TypeInfo
+class TypeInfo final
 {
 public:
     using ModuleTypes = Reflection::TypeInfoTraits<>::ModuleTypes;
@@ -64,6 +67,8 @@ private:
     };
 
 public:
+    ~TypeInfo();
+
     inline const ContainerTraits::StringType& GetTypeName() const { return _typeName; }
 
     template <typename TModule>
@@ -143,6 +148,9 @@ private:
 
     template <typename, typename>
     friend struct details::HandleIsMoveConstructible;
+
+    template <typename, typename>
+    friend struct details::HandleIsDestructible;
 
     friend class DataObject;
 };

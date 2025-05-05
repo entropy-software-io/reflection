@@ -5,6 +5,8 @@
 namespace Entropy
 {
 
+TypeInfo::~TypeInfo() { _modules.~ModuleTypes(); }
+
 void TypeInfo::SetTypeName(ContainerTraits::StringType&& name) { _typeName = std::move(name); }
 
 bool TypeInfo::CanConstruct() const { return (_constructionFn != nullptr); }
