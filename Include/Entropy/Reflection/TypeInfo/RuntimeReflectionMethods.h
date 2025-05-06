@@ -208,13 +208,14 @@ struct HandleIsConstructible
 template <typename T>
 struct HandleIsConstructible<T, typename std::enable_if<std::is_default_constructible<T>::value>::type>
 {
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
+    using NonConstT       = std::remove_const_t<T>;
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
         typeInfo->SetConstructionHandler([]() {
-            typename ContainerTraits::template Allocator<T> alloc;
-            T* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
+            typename ContainerTraits::template Allocator<NonConstT> alloc;
+            NonConstT* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
             if (ENTROPY_LIKELY(obj != nullptr))
             {
                 std::allocator_traits<decltype(alloc)>::construct(alloc, obj);
@@ -236,13 +237,14 @@ template <typename T>
 struct HandleIsCopyConstructible<
     T, typename std::enable_if<std::is_copy_constructible<T>::value && !std::is_reference<T>::value>::type>
 {
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
+    using NonConstT       = std::remove_const_t<T>;
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
         typeInfo->SetCopyConstructionHandler([](const void* data) {
-            typename ContainerTraits::template Allocator<T> alloc;
-            T* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
+            typename ContainerTraits::template Allocator<NonConstT> alloc;
+            NonConstT* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
             if (ENTROPY_LIKELY(obj != nullptr))
             {
                 std::allocator_traits<decltype(alloc)>::construct(alloc, obj, *reinterpret_cast<const T*>(data));
@@ -264,16 +266,18 @@ template <typename T>
 struct HandleIsMoveConstructible<
     T, typename std::enable_if<std::is_move_constructible<T>::value && !std::is_reference<T>::value>::type>
 {
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
+    using NonConstT       = std::remove_const_t<T>;
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
         typeInfo->SetMoveConstructionHandler([](void* data) {
-            typename ContainerTraits::template Allocator<T> alloc;
-            T* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
+            typename ContainerTraits::template Allocator<NonConstT> alloc;
+            NonConstT* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
             if (ENTROPY_LIKELY(obj != nullptr))
             {
-                std::allocator_traits<decltype(alloc)>::construct(alloc, obj, std::move(*reinterpret_cast<T*>(data)));
+                std::allocator_traits<decltype(alloc)>::construct(alloc, obj,
+                                                                  std::move(*reinterpret_cast<NonConstT*>(data)));
             }
             return obj;
         });
@@ -294,16 +298,17 @@ struct HandleIsDestructible<
                                (std::is_copy_constructible<T>::value && !std::is_reference<T>::value) ||
                                (std::is_copy_constructible<T>::value && !std::is_reference<T>::value)>::type>
 {
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<T>;
+    using NonConstT       = std::remove_const_t<T>;
+    using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
         typeInfo->SetDestructionHandler([](void* dataPtr) {
             if (ENTROPY_LIKELY(dataPtr != nullptr))
             {
-                typename ContainerTraits::template Allocator<T> alloc;
-                std::allocator_traits<decltype(alloc)>::destroy(alloc, reinterpret_cast<T*>(dataPtr));
-                std::allocator_traits<decltype(alloc)>::deallocate(alloc, reinterpret_cast<T*>(dataPtr), 1);
+                typename ContainerTraits::template Allocator<NonConstT> alloc;
+                std::allocator_traits<decltype(alloc)>::destroy(alloc, reinterpret_cast<NonConstT*>(dataPtr));
+                std::allocator_traits<decltype(alloc)>::deallocate(alloc, reinterpret_cast<NonConstT*>(dataPtr), 1);
             }
         });
     }
