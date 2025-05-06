@@ -173,16 +173,15 @@ private:
 template <typename T>
 struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<ClassTypeInfo>
 {
-    void HandleType(ClassTypeInfo& module, TypeInfoPtr thisTypeInfo) {}
-
     template <typename... TAttrTypes>
-    void HandleClass(ClassTypeInfo& module, TypeInfoPtr thisTypeInfo, AttributeCollection<TAttrTypes...>&& classAttr)
+    void HandleClass(ClassTypeInfo& module, const TypeInfoPtr& thisTypeInfo,
+                     AttributeCollection<TAttrTypes...>&& classAttr)
     {
         module.GetOrAddClassDescription()->AddAttributes(std::move(classAttr));
     }
 
     template <typename TMember, typename... TAttrTypes>
-    void HandleClassMember(ClassTypeInfo& module, const char* memberName, TypeInfoPtr memberTypeInfo,
+    void HandleClassMember(ClassTypeInfo& module, const char* memberName, const TypeInfoPtr& memberTypeInfo,
                            AttributeCollection<TAttrTypes...>&& memberAttr)
     {
         MemberDescription memberInfo(memberName, memberTypeInfo);
@@ -192,13 +191,13 @@ struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<C
     }
 
     template <typename TBaseClass>
-    void HandleBaseClass(ClassTypeInfo& module, TypeInfoPtr baseClassTypeInfo)
+    void HandleBaseClass(ClassTypeInfo& module, const TypeInfoPtr& baseClassTypeInfo)
     {
         module.GetOrAddClassDescription()->SetBaseClass(baseClassTypeInfo);
     }
 
     template <typename TTemplateClass>
-    void HandleTemplateParameter(ClassTypeInfo& module, TypeInfoPtr templateParamTypeInfo)
+    void HandleTemplateParameter(ClassTypeInfo& module, const TypeInfoPtr& templateParamTypeInfo)
     {
         module.GetOrAddClassDescription()->AddTemplateParameter(templateParamTypeInfo);
     }

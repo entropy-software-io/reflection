@@ -57,7 +57,7 @@ void AttributeContainer::AddAttributes(AttributeCollection<TAttrTypes...>&& attr
 
 void ClassDescription::AddTemplateParameter(TypeInfoPtr templateParameter)
 {
-    _templateParameters.push_back(templateParameter);
+    _templateParameters.push_back(std::move(templateParameter));
 }
 
 void ClassDescription::SetBaseClass(TypeInfoPtr baseClass) { _baseClassTypeInfo = baseClass; }

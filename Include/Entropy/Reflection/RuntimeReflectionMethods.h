@@ -176,12 +176,13 @@ struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
         ModuleFillerType filler;
 
         TFirstModule& module = typeInfo->Get<TFirstModule>();
+        TypeInfoPtr typeInfoPtr(typeInfo);
 
         // Base Type
         filler.HandleType(module, typeInfo);
 
         // Class Type
-        FillModuleTypeClass<TFirstModule, TType>{}(filler, module, typeInfo);
+        FillModuleTypeClass<TFirstModule, TType>{}(filler, module, typeInfoPtr);
 
         // Template Parameters
         FillModuleTypeTemplateParameters<TFirstModule, TType>{}(filler, module);
@@ -336,7 +337,7 @@ TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept
     // this re-entrant call. Instead of a hang, the base type will be given a partially initialized Derived type info as
     // the template parameter.
 
-    static TypeInfo* typeInfo      = details::CreateTypeInfo();
+    static TypeInfo* typeInfo = details::CreateTypeInfo();
     static TypeInfoPtr typeInfoPtr(typeInfo);
 
     if (ENTROPY_UNLIKELY(typeInfo->RequireInitialization()))
