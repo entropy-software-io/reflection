@@ -9,7 +9,6 @@
 #include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
-#include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
 #include "TypeInfoModule.h"
 
 namespace Entropy
@@ -110,7 +109,7 @@ public:
 
 private:
     const char* _memberName;
-    TypeInfoRef _memberType;
+    const TypeInfo* _memberType;
 };
 
 /// <summary>
@@ -123,7 +122,10 @@ private:
 
 public:
     inline bool IsReflectedClass() const { return _isReflectedClass; }
-    inline const ContainerTraits::VectorType<TypeInfoRef> GetTemplateParameters() const { return _templateParameters; }
+    inline const ContainerTraits::VectorType<const TypeInfo*> GetTemplateParameters() const
+    {
+        return _templateParameters;
+    }
     inline const TypeInfo* GetBaseClassTypeInfo() const { return _baseClassTypeInfo; }
     inline const ContainerTraits::MapType<const char*, MemberDescription>& GetMembers() const { return _members; }
 
@@ -133,9 +135,9 @@ private:
     void AddMember(const char* name, MemberDescription&& memberInfo);
     void SetIsReflectedClass(bool isReflectedClass) { _isReflectedClass = isReflectedClass; }
 
-    TypeInfoRef _baseClassTypeInfo = nullptr;
+    const TypeInfo* _baseClassTypeInfo = nullptr;
     ContainerTraits::MapType<const char*, MemberDescription> _members{};
-    ContainerTraits::VectorType<TypeInfoRef> _templateParameters{};
+    ContainerTraits::VectorType<const TypeInfo*> _templateParameters{};
     bool _isReflectedClass = false;
 
     template <typename, typename, typename>

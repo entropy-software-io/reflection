@@ -10,8 +10,8 @@ namespace Entropy
 class TypeInfo;
 
 /// <summary>
-/// Holds a reference to a type info object. It is recommended that you use this when you need a TypeInfo class member
-/// variable.
+/// Holds a reference to a type info object. This is rarely needed, but is useful when you want to ensure a type info
+/// method is available past when the type info would have normally been destroyed on app exit.
 /// </summary>
 class TypeInfoRef final
 {

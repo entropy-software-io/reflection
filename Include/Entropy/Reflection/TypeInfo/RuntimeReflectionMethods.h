@@ -51,7 +51,7 @@ struct FillModuleTypeClass<TModule, TType, typename std::enable_if<Traits::IsRef
     private:
         ModuleHandlerType* _handler = nullptr;
         TModule* _module            = nullptr;
-        TypeInfoRef _typeInfo       = nullptr;
+        const TypeInfo* _typeInfo   = nullptr;
     };
 
     void operator()(ModuleHandlerType& handler, TModule& module, const TypeInfo* typeInfo) const

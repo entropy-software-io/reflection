@@ -7,7 +7,6 @@
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeId.h"
-#include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoTraits.h"
 #include <atomic>
 
