@@ -39,7 +39,7 @@ struct ReflectionContainerTraits<T>
 // We need to override the traits used by TypeInfo
 
 #include "CustomTypeInfoModule.h"
-#include "Entropy/Reflection/TypeInfoTraits.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoTraits.h"
 
 namespace Entropy
 {

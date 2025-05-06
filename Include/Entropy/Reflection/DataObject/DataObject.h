@@ -6,7 +6,7 @@
 
 #include "Entropy/Core/Details/Defines.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
-#include "Entropy/Reflection/TypeInfoPtr.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoPtr.h"
 #include <atomic>
 
 namespace Entropy

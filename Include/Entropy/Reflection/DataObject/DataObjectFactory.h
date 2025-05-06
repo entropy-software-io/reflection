@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Entropy/Reflection/DataObject/DataObject.h"
-#include "Entropy/Reflection/RuntimeReflectionMethods.h"
+#include "Entropy/Reflection/TypeInfo/RuntimeReflectionMethods.h"
 
 namespace Entropy
 {

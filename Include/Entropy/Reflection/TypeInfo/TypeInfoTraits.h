@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "TypeInfoModules/ClassTypeInfo.h"
+#include "Entropy/Reflection/TypeInfoModules/ClassTypeInfo.h"
 #include <tuple>
 
 namespace Entropy

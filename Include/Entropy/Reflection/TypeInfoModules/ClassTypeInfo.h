@@ -9,7 +9,7 @@
 #include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
-#include "Entropy/Reflection/TypeInfoPtr.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoPtr.h"
 #include "TypeInfoModule.h"
 
 namespace Entropy

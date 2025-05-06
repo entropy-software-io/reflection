@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Entropy/Reflection/RuntimeReflectionMethods.h"
-#include "Entropy/Reflection/TypeInfo.h"
+#include "Entropy/Reflection/TypeInfo/RuntimeReflectionMethods.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfo.h"
 
 namespace Entropy
 {

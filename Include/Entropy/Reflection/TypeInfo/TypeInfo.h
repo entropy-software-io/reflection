@@ -6,8 +6,8 @@
 
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
-#include "Entropy/Reflection/TypeInfoPtr.h"
-#include "Entropy/Reflection/TypeInfoTraits.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoPtr.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoTraits.h"
 #include <atomic>
 
 namespace Entropy

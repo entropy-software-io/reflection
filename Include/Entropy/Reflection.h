@@ -12,13 +12,13 @@
 
 #ifdef ENTROPY_RUNTIME_REFLECTION_ENABLED
 #include "Entropy/Reflection/DataObject/DataObjectFactory.h"
-#include "Entropy/Reflection/RuntimeReflectionMethods.h"
-#include "Entropy/Reflection/TypeInfo.h"
+#include "Entropy/Reflection/TypeInfo/RuntimeReflectionMethods.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfo.h"
 
 // These must be included after TypeInfo.h
 #include "Entropy/Reflection/DataObject/DataObject.inl"
 #include "Entropy/Reflection/Details/TypeId.inl"
-#include "Entropy/Reflection/TypeInfo.inl"
+#include "Entropy/Reflection/TypeInfo/TypeInfo.inl"
+#include "Entropy/Reflection/TypeInfo/TypeInfoPtr.inl"
 #include "Entropy/Reflection/TypeInfoModules/ClassTypeInfo.inl"
-#include "Entropy/Reflection/TypeInfoPtr.inl"
 #endif
