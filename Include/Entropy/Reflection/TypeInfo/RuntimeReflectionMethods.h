@@ -316,6 +316,7 @@ struct FillCommonTypeInfo
     void operator()(TypeInfo* typeInfo) const
     {
         typeInfo->SetTypeName(MakeTypeName<TType>());
+        typeInfo->SetTypeId(Traits::TypeIdOf<TType>{}());
 
         HandleIsConstructible<TType>{}(typeInfo);
         HandleIsCopyConstructible<TType>{}(typeInfo);

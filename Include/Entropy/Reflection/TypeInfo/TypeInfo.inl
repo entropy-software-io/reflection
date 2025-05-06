@@ -53,6 +53,8 @@ void TypeInfo::Release() const
 
 void TypeInfo::SetTypeName(ContainerTraits::StringType&& name) { _typeName = std::move(name); }
 
+void TypeInfo::SetTypeId(TypeId typeId) { _typeId = typeId; }
+
 bool TypeInfo::CanConstruct() const { return (_constructionFn != nullptr); }
 
 DataObject TypeInfo::Construct() const

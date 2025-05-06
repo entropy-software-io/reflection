@@ -6,6 +6,7 @@
 
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
+#include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoPtr.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoTraits.h"
 #include <atomic>
@@ -72,6 +73,7 @@ public:
     ~TypeInfo();
 
     inline const ContainerTraits::StringType& GetTypeName() const { return _typeName; }
+    inline TypeId GetTypeId() const { return _typeId; }
 
     template <typename TModule>
     const TModule& Get() const
@@ -121,6 +123,7 @@ private:
     void Release() const;
 
     void SetTypeName(ContainerTraits::StringType&& name);
+    void SetTypeId(TypeId typeId);
 
     void SetConstructionHandler(ConstructionHandler&& handler);
     void SetCopyConstructionHandler(CopyConstructionHandler&& handler);
@@ -136,7 +139,9 @@ private:
     MoveConstructionHandler _moveConstructionFn{};
     DestructionHandler _destructionFn{};
 
-    ModuleTypes _modules;
+    ModuleTypes _modules{};
+
+    TypeId _typeId = cInvalidTypeId;
 
     mutable std::atomic_int _refCount{0};
 

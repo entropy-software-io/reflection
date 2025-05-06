@@ -12,6 +12,8 @@ namespace Entropy
 
 ENTROPY_DEFINE_STRONG_ALIAS(TypeId, unsigned int)
 
+static constexpr TypeId cInvalidTypeId = TypeId(0);
+
 namespace details
 {
 
@@ -37,11 +39,11 @@ namespace Traits
 {
 
 template <typename T, typename = void>
-struct TypeId
+struct TypeIdOf
 {
-    inline Entropy::TypeId operator()() const
+    inline TypeId operator()() const
     {
-        static Entropy::TypeId id = Entropy::details::MakeTypeIdFromTypeName<T>();
+        static TypeId id = Entropy::details::MakeTypeIdFromTypeName<T>();
         return id;
     }
 };
