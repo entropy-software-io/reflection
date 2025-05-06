@@ -12,7 +12,7 @@ namespace Entropy
 
 DataObject::DataObject(std::nullptr_t) {}
 
-DataObject::DataObject(const TypeInfo* typeInfo, void* data)
+DataObject::DataObject(const TypeInfo* typeInfo, void* data, bool deallocate)
 {
     ContainerTraits::Allocator<DataObjectContainer> alloc;
     _container = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
@@ -20,8 +20,9 @@ DataObject::DataObject(const TypeInfo* typeInfo, void* data)
     {
         std::allocator_traits<decltype(alloc)>::construct(alloc, _container);
 
-        _container->_typeInfo = typeInfo;
-        _container->_data     = data;
+        _container->_typeInfo  = typeInfo;
+        _container->_data      = data;
+        _container->deallocate = deallocate;
     }
 }
 
@@ -48,7 +49,10 @@ void DataObject::Release()
     {
         if (--_container->_refCount == 0)
         {
-            _container->_typeInfo->Destruct(_container->_data);
+            if (_container->deallocate)
+            {
+                _container->_typeInfo->Destruct(_container->_data);
+            }
 
             ContainerTraits::Allocator<DataObjectContainer> alloc;
             std::allocator_traits<decltype(alloc)>::destroy(alloc, _container);

@@ -28,7 +28,7 @@ inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type Attribu
     {
         if (typeInfo->CanMoveConstruct())
         {
-            DataObject obj = CreateDataObject<TAttr>(std::move(attr.template GetAt<Idx>()));
+            DataObject obj = DataObjectFactory::Create<TAttr>(std::move(attr.template GetAt<Idx>()));
             if (ENTROPY_LIKELY(obj != nullptr))
             {
                 _attributes[Entropy::Traits::TypeIdOf<TAttr>{}()] = AttributeData(std::move(obj));
@@ -36,7 +36,7 @@ inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type Attribu
         }
         else if (typeInfo->CanCopyConstruct())
         {
-            DataObject obj = CreateDataObject<TAttr>(attr.template GetAt<Idx>());
+            DataObject obj = DataObjectFactory::Create<TAttr>(attr.template GetAt<Idx>());
             if (ENTROPY_LIKELY(obj != nullptr))
             {
                 _attributes[Entropy::Traits::TypeIdOf<TAttr>{}()] = AttributeData(std::move(obj));

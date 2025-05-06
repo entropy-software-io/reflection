@@ -13,9 +13,7 @@ namespace Entropy
 {
 
 class DataObject;
-
-template <typename T, typename... TArgs>
-DataObject CreateDataObject(TArgs&&...);
+struct DataObjectFactory;
 
 /// <summary>
 /// Wraps an arbitrary data object through type info. This can be treated like a smart pointer.
@@ -30,9 +28,10 @@ private:
         TypeInfoRef _typeInfo{};
         void* _data{};
         std::atomic_int _refCount{1};
+        bool deallocate = false;
     };
 
-    DataObject(const TypeInfo* typeInfo, void* data);
+    DataObject(const TypeInfo* typeInfo, void* data, bool deallocate);
 
     void Release();
 
@@ -86,16 +85,8 @@ public:
 private:
     DataObjectContainer* _container{};
 
-    friend class Entropy::TypeInfo;
-
-    template <typename T>
-    friend DataObject CreateDataObject();
-
-    template <typename T>
-    friend DataObject CreateDataObject(const T&);
-
-    template <typename T>
-    friend DataObject CreateDataObject(T&&);
+    friend class TypeInfo;
+    friend struct DataObjectFactory;
 };
 
 } // namespace Entropy

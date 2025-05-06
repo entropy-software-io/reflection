@@ -10,40 +10,55 @@
 namespace Entropy
 {
 
-template <typename T>
-inline DataObject CreateDataObject()
+struct DataObjectFactory
 {
-    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
-    if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanConstruct()))
+    template <typename T>
+    inline static DataObject Create()
     {
-        return nullptr;
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
+        if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanConstruct()))
+        {
+            return nullptr;
+        }
+
+        return typeInfo->Construct();
     }
 
-    return typeInfo->Construct();
-}
-
-template <typename T>
-inline DataObject CreateDataObject(const T& copy)
-{
-    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
-    if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanCopyConstruct()))
+    template <typename T>
+    inline static DataObject Create(const T& copy)
     {
-        return nullptr;
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
+        if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanCopyConstruct()))
+        {
+            return nullptr;
+        }
+
+        return typeInfo->DangerousCopyConstruct(static_cast<const void*>(&copy));
     }
 
-    return typeInfo->DangerousCopyConstruct(static_cast<const void*>(&copy));
-}
-
-template <typename T>
-inline DataObject CreateDataObject(T&& move)
-{
-    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
-    if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanMoveConstruct()))
+    template <typename T>
+    inline static DataObject Create(T&& move)
     {
-        return nullptr;
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
+        if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanMoveConstruct()))
+        {
+            return nullptr;
+        }
+
+        return typeInfo->DangerousMoveConstruct(static_cast<void*>(&move));
     }
 
-    return typeInfo->DangerousMoveConstruct(static_cast<void*>(&move));
-}
+    template <typename T>
+    inline static DataObject Wrap(T* value)
+    {
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
+        if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanMoveConstruct()))
+        {
+            return nullptr;
+        }
+
+        return DataObject(typeInfo, value, false /* deallocate */);
+    }
+};
 
 } // namespace Entropy
