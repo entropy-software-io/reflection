@@ -138,7 +138,7 @@ private:
 
     ModuleTypes _modules;
 
-    mutable std::atomic_int _refCount{1};
+    mutable std::atomic_int _refCount{0};
 
     std::atomic_bool _requireInitialization{true};
 

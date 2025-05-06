@@ -51,7 +51,7 @@ struct FillModuleTypeClass<TModule, TType, typename std::enable_if<Traits::IsRef
     private:
         ModuleHandlerType* _handler = nullptr;
         TModule* _module            = nullptr;
-        TypeInfoPtr _typeInfo   = nullptr;
+        TypeInfoPtr _typeInfo       = nullptr;
     };
 
     void operator()(ModuleHandlerType& handler, TModule& module, TypeInfoPtr typeInfo) const
@@ -163,7 +163,7 @@ struct FillModuleTypes;
 template <typename TType>
 struct FillModuleTypes<TType, std::tuple<>>
 {
-    void operator()(TypeInfo& typeInfo) const {}
+    void operator()(TypeInfo* typeInfo) const {}
 };
 
 template <typename TType, typename TFirstModule, typename... TOtherModules>
@@ -171,17 +171,17 @@ struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
 {
     using ModuleFillerType = Entropy::Reflection::FillModuleTypeInfo<TFirstModule, TType>;
 
-    void operator()(TypeInfo& typeInfo) const
+    void operator()(TypeInfo* typeInfo) const
     {
         ModuleFillerType filler;
 
-        TFirstModule& module = typeInfo.Get<TFirstModule>();
+        TFirstModule& module = typeInfo->Get<TFirstModule>();
 
         // Base Type
-        filler.HandleType(module, &typeInfo);
+        filler.HandleType(module, typeInfo);
 
         // Class Type
-        FillModuleTypeClass<TFirstModule, TType>{}(filler, module, &typeInfo);
+        FillModuleTypeClass<TFirstModule, TType>{}(filler, module, typeInfo);
 
         // Template Parameters
         FillModuleTypeTemplateParameters<TFirstModule, TType>{}(filler, module);
@@ -336,16 +336,16 @@ TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept
     // this re-entrant call. Instead of a hang, the base type will be given a partially initialized Derived type info as
     // the template parameter.
 
-    static TypeInfo* typeInfo = details::CreateTypeInfo();
+    static TypeInfo* typeInfo      = details::CreateTypeInfo();
+    static TypeInfoPtr typeInfoPtr(typeInfo);
 
-    TypeInfoPtr ret(typeInfo);
     if (ENTROPY_UNLIKELY(typeInfo->RequireInitialization()))
     {
         details::FillCommonTypeInfo<T>{}(typeInfo);
-        details::FillModuleTypes<T, TypeInfo::ModuleTypes>{}(*typeInfo);
-        typeInfo->Release();
+        details::FillModuleTypes<T, TypeInfo::ModuleTypes>{}(typeInfo);
     }
-    return ret;
+
+    return typeInfoPtr;
 }
 
 template <typename T>
