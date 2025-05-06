@@ -19,6 +19,6 @@
 #include "Entropy/Reflection/DataObject/DataObject.inl"
 #include "Entropy/Reflection/Details/TypeId.inl"
 #include "Entropy/Reflection/TypeInfo/TypeInfo.inl"
-#include "Entropy/Reflection/TypeInfo/TypeInfoPtr.inl"
+#include "Entropy/Reflection/TypeInfo/TypeInfoRef.inl"
 #include "Entropy/Reflection/TypeInfoModules/ClassTypeInfo.inl"
 #endif

@@ -12,7 +12,7 @@ namespace Entropy
 {
 
 template <typename T>
-TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept;
+const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
 
 namespace details
 {
@@ -23,7 +23,7 @@ template <typename TModule, typename TType, typename = void>
 struct FillModuleTypeClass
 {
     void operator()(Entropy::Reflection::FillModuleTypeInfo<TModule, TType>& handler, TModule& module,
-                    TypeInfoPtr typeInfo)
+                    const TypeInfo* typeInfo)
     {
     }
 };
@@ -35,7 +35,7 @@ struct FillModuleTypeClass<TModule, TType, typename std::enable_if<Traits::IsRef
 
     struct HandleClass
     {
-        HandleClass(ModuleHandlerType* handler, TModule* module, TypeInfoPtr typeInfo)
+        HandleClass(ModuleHandlerType* handler, TModule* module, const TypeInfo* typeInfo)
             : _handler(handler)
             , _module(module)
             , _typeInfo(typeInfo)
@@ -51,10 +51,10 @@ struct FillModuleTypeClass<TModule, TType, typename std::enable_if<Traits::IsRef
     private:
         ModuleHandlerType* _handler = nullptr;
         TModule* _module            = nullptr;
-        TypeInfoPtr _typeInfo       = nullptr;
+        TypeInfoRef _typeInfo       = nullptr;
     };
 
-    void operator()(ModuleHandlerType& handler, TModule& module, TypeInfoPtr typeInfo) const
+    void operator()(ModuleHandlerType& handler, TModule& module, const TypeInfo* typeInfo) const
     {
         ForEachReflectedClass<false /* IncludeSubclasses */, TType>(HandleClass(&handler, &module, typeInfo));
     }
@@ -78,7 +78,7 @@ struct FillModuleTypeTemplateParameters<TModule, TType<Tn...>>
     template <typename U>
     void HandleTemplateParameters(ModuleHandlerType& handler, TModule& module)
     {
-        TypeInfoPtr templateParamTypeInfo = ReflectTypeAndGetTypeInfo<U>();
+        const TypeInfo* templateParamTypeInfo = ReflectTypeAndGetTypeInfo<U>();
         handler.template HandleTemplateParameter<U>(module, templateParamTypeInfo);
     }
 
@@ -106,7 +106,7 @@ struct FillModuleTypeBaseClass<TModule, TType, typename std::enable_if<Traits::H
 {
     void operator()(Entropy::Reflection::FillModuleTypeInfo<TModule, TType>& handler, TModule& module) const
     {
-        TypeInfoPtr baseClassTypeInfo = ReflectTypeAndGetTypeInfo<Traits::BaseClassOf_t<TType>>();
+        const TypeInfo* baseClassTypeInfo = ReflectTypeAndGetTypeInfo<Traits::BaseClassOf_t<TType>>();
 
         handler.template HandleBaseClass<Traits::BaseClassOf_t<TType>>(module, baseClassTypeInfo);
     }
@@ -138,7 +138,7 @@ struct FillModuleTypeClassMembers<TModule, TType, typename std::enable_if<Traits
         template <typename TMember, typename... TAttrTypes>
         void operator()(const char* memberName, AttributeCollection<TAttrTypes...>&& memberAttr)
         {
-            TypeInfoPtr typeInfo = ReflectTypeAndGetTypeInfo<TMember>();
+            const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TMember>();
 
             _handler->template HandleClassMember<TMember, TAttrTypes...>(*_module, memberName, typeInfo,
                                                                          std::move(memberAttr));
@@ -176,13 +176,12 @@ struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
         ModuleFillerType filler;
 
         TFirstModule& module = typeInfo->Get<TFirstModule>();
-        TypeInfoPtr typeInfoPtr(typeInfo);
 
         // Base Type
         filler.HandleType(module, typeInfo);
 
         // Class Type
-        FillModuleTypeClass<TFirstModule, TType>{}(filler, module, typeInfoPtr);
+        FillModuleTypeClass<TFirstModule, TType>{}(filler, module, typeInfo);
 
         // Template Parameters
         FillModuleTypeTemplateParameters<TFirstModule, TType>{}(filler, module);
@@ -328,7 +327,7 @@ struct FillCommonTypeInfo
 } // namespace details
 
 template <typename T>
-TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept
+const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept
 {
     // We cannot make the allocation and initialization one step because re-entrancy will cause a hang.
     // Consider the declaration:
@@ -339,7 +338,7 @@ TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept
     // the template parameter.
 
     static TypeInfo* typeInfo = details::CreateTypeInfo();
-    static TypeInfoPtr typeInfoPtr(typeInfo);
+    static TypeInfoRef typeInfoRef(typeInfo);
 
     if (ENTROPY_UNLIKELY(typeInfo->RequireInitialization()))
     {
@@ -347,7 +346,7 @@ TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept
         details::FillModuleTypes<T, TypeInfo::ModuleTypes>{}(typeInfo);
     }
 
-    return typeInfoPtr;
+    return typeInfo;
 }
 
 template <typename T>

@@ -9,7 +9,7 @@
 namespace Entropy
 {
 
-class TypeInfoPtr;
+class TypeInfo;
 
 namespace Reflection
 {
@@ -17,13 +17,13 @@ namespace Reflection
 template <typename TModule>
 struct DefaultFillModuleTypeInfo
 {
-    void HandleType(TModule& module, const TypeInfoPtr& thisTypeInfo) {}
+    void HandleType(TModule& module, const TypeInfo* thisTypeInfo) {}
 
     /// <summary>
     /// Called if the type is a reflected class. If the type is not reflected, this is never called.
     /// </summary>
     template <typename... TAttrTypes>
-    void HandleClass(TModule& module, const TypeInfoPtr& thisTypeInfo,
+    void HandleClass(TModule& module, const TypeInfo* thisTypeInfo,
                      const AttributeCollection<TAttrTypes...>& classAttr)
     {
     }
@@ -32,7 +32,7 @@ struct DefaultFillModuleTypeInfo
     /// Called for each member on a reflected class. If the type is not reflected, this is never called.
     /// </summary>
     template <typename TMember, typename... TAttrTypes>
-    void HandleClassMember(TModule& module, const char* memberName, const TypeInfoPtr& memberTypeInfo,
+    void HandleClassMember(TModule& module, const char* memberName, const TypeInfo* memberTypeInfo,
                            const AttributeCollection<TAttrTypes...>& memberAttr)
     {
     }
@@ -42,7 +42,7 @@ struct DefaultFillModuleTypeInfo
     /// class, this is never called.
     /// </summary>
     template <typename TBaseClass>
-    void HandleBaseClass(TModule& module, const TypeInfoPtr& baseClassTypeInfo)
+    void HandleBaseClass(TModule& module, const TypeInfo* baseClassTypeInfo)
     {
     }
 
@@ -50,7 +50,7 @@ struct DefaultFillModuleTypeInfo
     /// Called for each template parameter on this type. This is called even if the type is not reflected.
     /// </summary>
     template <typename TTemplateClass>
-    void HandleTemplateParameter(TModule& module, const TypeInfoPtr& templateParamTypeInfo)
+    void HandleTemplateParameter(TModule& module, const TypeInfo* templateParamTypeInfo)
     {
     }
 };

@@ -10,21 +10,23 @@ namespace Entropy
 class TypeInfo;
 
 /// <summary>
-/// Smart pointer like object around TypeInfo
+/// Holds a reference to a type info object. It is recommended that you use this when you need a TypeInfo class member
+/// variable.
 /// </summary>
-class TypeInfoPtr final
+class TypeInfoRef final
 {
 public:
-    constexpr TypeInfoPtr() noexcept = default;
-    inline TypeInfoPtr(const TypeInfo* ptr);
-    inline TypeInfoPtr(const TypeInfoPtr& other);
-    inline TypeInfoPtr(TypeInfoPtr&& other);
-    ~TypeInfoPtr();
+    constexpr TypeInfoRef() noexcept = default;
+    inline TypeInfoRef(const TypeInfo* ptr);
+    inline TypeInfoRef(const TypeInfoRef& other);
+    inline TypeInfoRef(TypeInfoRef&& other);
+    ~TypeInfoRef();
 
+    inline operator const TypeInfo*() const { return _ptr; }
     inline const TypeInfo* operator->() const { return _ptr; }
 
-    inline TypeInfoPtr& operator=(const TypeInfoPtr& other);
-    inline TypeInfoPtr& operator=(TypeInfoPtr&& other);
+    inline TypeInfoRef& operator=(const TypeInfoRef& other);
+    inline TypeInfoRef& operator=(TypeInfoRef&& other);
 
     inline operator bool() const { return _ptr != nullptr; }
     inline bool operator==(const TypeInfo* ptr) const { return _ptr == ptr; }

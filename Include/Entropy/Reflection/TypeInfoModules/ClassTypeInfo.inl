@@ -22,7 +22,7 @@ inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type Attribu
 {
     using TAttr = Entropy::Traits::UnqualifiedType_t<decltype(attr.template GetAt<Idx>())>;
 
-    TypeInfoPtr typeInfo = ReflectTypeAndGetTypeInfo<TAttr>();
+    const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TAttr>();
 
     if (typeInfo)
     {
@@ -55,12 +55,12 @@ void AttributeContainer::AddAttributes(AttributeCollection<TAttrTypes...>&& attr
 
 //=======================
 
-void ClassDescription::AddTemplateParameter(TypeInfoPtr templateParameter)
+void ClassDescription::AddTemplateParameter(const TypeInfo* templateParameter)
 {
-    _templateParameters.push_back(std::move(templateParameter));
+    _templateParameters.push_back(TypeInfoRef(templateParameter));
 }
 
-void ClassDescription::SetBaseClass(TypeInfoPtr baseClass) { _baseClassTypeInfo = baseClass; }
+void ClassDescription::SetBaseClass(const TypeInfo* baseClass) { _baseClassTypeInfo = baseClass; }
 
 void ClassDescription::AddMember(const char* name, MemberDescription&& memberInfo)
 {

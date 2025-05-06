@@ -7,7 +7,7 @@
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeId.h"
-#include "Entropy/Reflection/TypeInfo/TypeInfoPtr.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoTraits.h"
 #include <atomic>
 
@@ -33,7 +33,7 @@ struct HandleIsDestructible;
 } // namespace details
 
 class DataObject;
-class TypeInfoPtr;
+class TypeInfoRef;
 
 /// <summary>
 /// Holds runtime type information for any type that are accessible through different modules. The list of modules can
@@ -150,7 +150,7 @@ private:
     //-----
 
     template <typename>
-    friend TypeInfoPtr ReflectTypeAndGetTypeInfo() noexcept;
+    friend const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
 
     template <typename>
     friend struct details::FillCommonTypeInfo;
@@ -168,7 +168,7 @@ private:
     friend struct details::HandleIsDestructible;
 
     friend class DataObject;
-    friend class TypeInfoPtr;
+    friend class TypeInfoRef;
 };
 
 } // namespace Entropy

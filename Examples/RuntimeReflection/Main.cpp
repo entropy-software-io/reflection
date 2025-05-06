@@ -60,7 +60,7 @@ struct MyRecursiveTemplateStruct : public MyTemplateStruct<MyRecursiveTemplateSt
     int MyIntValue = 1;
 };
 
-void PrintClassInfo(Entropy::TypeInfoPtr typeInfo)
+void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 {
     using namespace Entropy;
     using namespace Entropy::Reflection;
@@ -138,21 +138,21 @@ int main(int argc, char* argv[])
     using namespace Entropy::Reflection;
 
     {
-        TypeInfoPtr typeInfo = ReflectTypeAndGetTypeInfo<MyStruct>();
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyStruct>();
         PrintClassInfo(typeInfo);
     }
 
     std::cout << std::endl;
 
     {
-        TypeInfoPtr typeInfo = ReflectTypeAndGetTypeInfo<MyTemplateStruct<double, char>>();
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyTemplateStruct<double, char>>();
         PrintClassInfo(typeInfo);
     }
 
     std::cout << std::endl;
 
     {
-        TypeInfoPtr typeInfo = ReflectTypeAndGetTypeInfo<MyRecursiveTemplateStruct>();
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyRecursiveTemplateStruct>();
         PrintClassInfo(typeInfo);
     }
 

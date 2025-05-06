@@ -12,7 +12,7 @@ namespace Entropy
 
 DataObject::DataObject(std::nullptr_t) {}
 
-DataObject::DataObject(TypeInfoPtr typeInfo, void* data)
+DataObject::DataObject(const TypeInfo* typeInfo, void* data)
 {
     ContainerTraits::Allocator<DataObjectContainer> alloc;
     _container = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);

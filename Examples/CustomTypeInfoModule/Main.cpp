@@ -16,7 +16,7 @@ struct ConvertableToMyCustomType
     operator MyCustomType() { return MyCustomType(); }
 };
 
-void PrintTypeInfo(Entropy::TypeInfoPtr typeInfo)
+void PrintTypeInfo(const Entropy::TypeInfo* typeInfo)
 {
     using namespace Entropy;
     using namespace Entropy::Reflection;
