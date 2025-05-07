@@ -333,6 +333,26 @@ struct FillCommonTypeInfo
         HandleIsCopyConstructible<TType>{}(typeInfo);
         HandleIsMoveConstructible<TType>{}(typeInfo);
         HandleIsDestructible<TType>{}(typeInfo);
+
+        if ENTROPY_CONSTEXPR (std::is_const<TType>::value)
+        {
+            typeInfo->SetIsConst();
+        }
+
+        if ENTROPY_CONSTEXPR (std::is_pointer<TType>::value)
+        {
+            typeInfo->SetIsPointer();
+        }
+
+        if ENTROPY_CONSTEXPR (std::is_lvalue_reference<TType>::value)
+        {
+            typeInfo->SetIsLReference();
+        }
+
+        if ENTROPY_CONSTEXPR (std::is_rvalue_reference<TType>::value)
+        {
+            typeInfo->SetIsRReference();
+        }
     }
 };
 

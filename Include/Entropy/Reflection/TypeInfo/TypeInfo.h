@@ -42,6 +42,31 @@ class TypeInfoRef;
 /// </summary>
 class TypeInfo final
 {
+    enum class Flags : int
+    {
+        None         = 0x0,
+        IsConst      = 1 << 0,
+        IsPointer    = 1 << 1,
+        IsLReference = 1 << 2,
+        IsRReference = 1 << 3,
+    };
+    friend inline constexpr Flags operator|(Flags x, Flags y)
+    {
+        return static_cast<Flags>(static_cast<typename std::underlying_type<Flags>::type>(x) |
+                                  static_cast<typename std::underlying_type<Flags>::type>(y));
+    }
+    friend inline constexpr Flags operator&(Flags x, Flags y)
+    {
+        return static_cast<Flags>(static_cast<typename std::underlying_type<Flags>::type>(x) &
+                                  static_cast<typename std::underlying_type<Flags>::type>(y));
+    }
+    friend inline Flags& operator|=(Flags& x, Flags y)
+    {
+        reinterpret_cast<typename std::underlying_type<Flags>::type&>(x) |=
+            static_cast<typename std::underlying_type<Flags>::type>(y);
+        return x;
+    }
+
 public:
     using ModuleTypes = Reflection::TypeInfoTraits<>::ModuleTypes;
 
@@ -117,6 +142,11 @@ public:
     /// </remarks>
     DataObject DangerousMoveConstruct(void* src) const;
 
+    bool IsConst() const;
+    bool IsPointer() const;
+    bool IsLValueReference() const;
+    bool IsRValueReference() const;
+    bool IsReference() const;
 private:
     void AddRef() const;
     void Release() const;
@@ -129,6 +159,11 @@ private:
     void SetMoveConstructionHandler(MoveConstructionHandler&& handler);
     void SetDestructionHandler(DestructionHandler&& handler);
 
+    void SetIsConst();
+    void SetIsPointer();
+    void SetIsLReference();
+    void SetIsRReference();
+
     inline void Destruct(void* dataPtr) const;
 
     ContainerTraits::StringType _typeName{};
@@ -139,6 +174,8 @@ private:
     DestructionHandler _destructionFn{};
 
     ModuleTypes _modules{};
+
+    Flags _flags = Flags::None;
 
     TypeId _typeId = cInvalidTypeId;
 

@@ -122,4 +122,22 @@ void TypeInfo::SetMoveConstructionHandler(MoveConstructionHandler&& handler)
 
 void TypeInfo::SetDestructionHandler(DestructionHandler&& handler) { _destructionFn = std::move(handler); }
 
+bool TypeInfo::IsConst() const { return (_flags & Flags::IsConst) != Flags::None; }
+
+bool TypeInfo::IsPointer() const { return (_flags & Flags::IsPointer) != Flags::None; }
+
+bool TypeInfo::IsLValueReference() const { return (_flags & Flags::IsLReference) != Flags::None; }
+
+bool TypeInfo::IsRValueReference() const { return (_flags & Flags::IsRReference) != Flags::None; }
+
+bool TypeInfo::IsReference() const { return (_flags & (Flags::IsLReference | Flags::IsRReference)) != Flags::None; }
+
+void TypeInfo::SetIsConst() { _flags |= Flags::IsConst; }
+
+void TypeInfo::SetIsPointer() { _flags |= Flags::IsPointer; }
+
+void TypeInfo::SetIsLReference() { _flags |= Flags::IsLReference; }
+
+void TypeInfo::SetIsRReference() { _flags |= Flags::IsRReference; }
+
 } // namespace Entropy
