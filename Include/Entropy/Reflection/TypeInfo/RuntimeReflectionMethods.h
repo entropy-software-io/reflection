@@ -75,22 +75,25 @@ struct FillModuleTypeTemplateParameters<TModule, TType<Tn...>>
 {
     using ModuleHandlerType = Entropy::Reflection::FillModuleTypeInfo<TModule, TType<Tn...>>;
 
-    template <typename U>
-    void HandleTemplateParameters(ModuleHandlerType& handler, TModule& module)
+    template <typename... Un>
+    struct HandleTemplateParameters
     {
-        const TypeInfo* templateParamTypeInfo = ReflectTypeAndGetTypeInfo<U>();
-        handler.template HandleTemplateParameter<U>(module, templateParamTypeInfo);
-    }
+        void operator()(ModuleHandlerType& handler, TModule& module) const {}
+    };
 
-    template <typename U1, typename U2, typename... Un>
-    void HandleTemplateParameters(ModuleHandlerType& handler, TModule& module)
+    template <typename U1, typename... Un>
+    struct HandleTemplateParameters<U1, Un...>
     {
-        HandleTemplateParameters<U1>(handler, module);
+        void operator()(ModuleHandlerType& handler, TModule& module) const
+        {
+            const TypeInfo* templateParamTypeInfo = ReflectTypeAndGetTypeInfo<U1>();
+            handler.template HandleTemplateParameter<U1>(module, templateParamTypeInfo);
 
-        HandleTemplateParameters<U2, Un...>(handler, module);
-    }
+            HandleTemplateParameters<Un...>{}(handler, module);
+        }
+    };
 
-    void operator()(ModuleHandlerType& handler, TModule& module) { HandleTemplateParameters<Tn...>(handler, module); }
+    void operator()(ModuleHandlerType& handler, TModule& module) { HandleTemplateParameters<Tn...>{}(handler, module); }
 };
 
 //===================
@@ -138,10 +141,14 @@ struct FillModuleTypeClassMembers<TModule, TType, typename std::enable_if<Traits
         template <typename TMember, typename... TAttrTypes>
         void operator()(const char* memberName, AttributeCollection<TAttrTypes...>&& memberAttr)
         {
-            const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TMember>();
+            // TMember is always a reference because we use decltype((member)) to preserve the const of the type. This
+            // forces a reference too.
+            using TMemberNoRef = typename std::remove_reference<TMember>::type;
 
-            _handler->template HandleClassMember<TMember, TAttrTypes...>(*_module, memberName, typeInfo,
-                                                                         std::move(memberAttr));
+            const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TMemberNoRef>();
+
+            _handler->template HandleClassMember<TMemberNoRef, TAttrTypes...>(*_module, memberName, typeInfo,
+                                                                              std::move(memberAttr));
         }
 
     private:
@@ -319,7 +326,7 @@ struct FillCommonTypeInfo
 {
     void operator()(TypeInfo* typeInfo) const
     {
-        typeInfo->SetTypeName(MakeTypeName<TType>());
+        typeInfo->SetTypeName(MakeTypeName<TType>{}());
         typeInfo->SetTypeId(Traits::TypeIdOf<TType>{}());
 
         HandleIsConstructible<TType>{}(typeInfo);

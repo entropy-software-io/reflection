@@ -60,6 +60,11 @@ struct MyRecursiveTemplateStruct : public MyTemplateStruct<MyRecursiveTemplateSt
     int MyIntValue = 1;
 };
 
+template <typename... Tn>
+struct MyVariableTemplateStruct
+{
+};
+
 void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 {
     using namespace Entropy;
@@ -71,7 +76,7 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 
         if (!classInfo.IsReflectedClass())
         {
-            std::cout << typeInfo->GetTypeName() << " is not a reflected class" << std::endl;
+            std::cout << "Non reflected class '" << typeInfo->GetTypeName() << "'" << std::endl;
             return;
         }
 
@@ -145,7 +150,7 @@ int main(int argc, char* argv[])
     std::cout << std::endl;
 
     {
-        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyTemplateStruct<double, char>>();
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyTemplateStruct<double, const char*>>();
         PrintClassInfo(typeInfo);
     }
 
@@ -153,6 +158,21 @@ int main(int argc, char* argv[])
 
     {
         const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyRecursiveTemplateStruct>();
+        PrintClassInfo(typeInfo);
+    }
+
+    std::cout << std::endl;
+
+    {
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyVariableTemplateStruct<>>();
+        PrintClassInfo(typeInfo);
+    }
+
+    std::cout << std::endl;
+
+    {
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<
+            MyVariableTemplateStruct<MyTemplateStruct<double, MyTemplateStruct<int&, std::string&>>>>();
         PrintClassInfo(typeInfo);
     }
 

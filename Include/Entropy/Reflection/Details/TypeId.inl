@@ -16,7 +16,7 @@ namespace Entropy
 namespace details
 {
 
-ReflectionContainerTraits<TypeId>::StringType MakeTypeName(const char* rawTypeName)
+ReflectionContainerTraits<TypeId>::StringType MakeTypeNameFromRawName(const char* rawTypeName)
 {
     using ContainerTraits = ReflectionContainerTraits<TypeId>;
     using StrOps          = StringOps<ContainerTraits::StringType>;
@@ -26,7 +26,6 @@ ReflectionContainerTraits<TypeId>::StringType MakeTypeName(const char* rawTypeNa
     StrOps::Replace(ret, "struct ", "");
     StrOps::Replace(ret, "class ", "");
     StrOps::Replace(ret, "enum ", "");
-    StrOps::Replace(ret, " >", ">");
     return ret;
 #else
     int status;
@@ -39,12 +38,26 @@ ReflectionContainerTraits<TypeId>::StringType MakeTypeName(const char* rawTypeNa
 #endif
 }
 
-TypeId MakeTypeIdFromTypeName(const char* rawTypeName)
+ReflectionContainerTraits<TypeId>::StringType MakeTypeNameNoTemplateParamsFromRawName(const char* rawTypeName)
 {
     using ContainerTraits = ReflectionContainerTraits<TypeId>;
     using StrOps          = StringOps<ContainerTraits::StringType>;
 
-    auto typeName = MakeTypeName(rawTypeName);
+    auto ret = MakeTypeNameFromRawName(rawTypeName);
+
+    int first = StrOps::FindFirst(ret, '<');
+    if (first >= 0)
+    {
+        StrOps::SubString(ret, 0, first);
+    }
+
+    return ret;
+}
+
+TypeId MakeTypeIdFromTypeName(const ReflectionContainerTraits<TypeId>::StringType& typeName)
+{
+    using ContainerTraits = ReflectionContainerTraits<TypeId>;
+    using StrOps          = StringOps<ContainerTraits::StringType>;
 
     return TypeId(StringHash(StrOps::GetStr(typeName), StrOps::GetLength(typeName)));
 }

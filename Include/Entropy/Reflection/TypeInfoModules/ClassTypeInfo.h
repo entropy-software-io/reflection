@@ -201,7 +201,12 @@ struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<C
     template <typename TTemplateClass>
     void HandleTemplateParameter(ClassTypeInfo& module, const TypeInfo* templateParamTypeInfo)
     {
-        module.GetOrAddClassDescription()->AddTemplateParameter(templateParamTypeInfo);
+        // We get template parameters for non-reflected types too. Don't waste space recording if the type isn't
+        // reflected.
+        if (module.IsReflectedClass())
+        {
+            module.GetOrAddClassDescription()->AddTemplateParameter(templateParamTypeInfo);
+        }
     }
 };
 
