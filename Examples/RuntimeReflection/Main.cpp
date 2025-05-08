@@ -38,6 +38,7 @@ struct MyStruct : public MyBaseStruct
     float MyFloatValue = 1.23f;
 };
 
+// NOLINTBEGIN
 template <typename T1, typename T2>
 struct MyTemplateStruct
 {
@@ -46,6 +47,7 @@ struct MyTemplateStruct
     ENTROPY_REFLECT_MEMBER(MyIntValue)
     int MyIntValue = 1;
 };
+// NOLINTEND
 
 // Reflecting this type is interesting because the template parameters reference the type we are reflecting, so we end
 // up with a re-entrant call. During the processing of the template parameters, MyRecursiveTemplateStruct's type info
@@ -65,7 +67,7 @@ struct MyVariableTemplateStruct
 {
 };
 
-void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
+void PrintClassInfo(const Entropy::TypeInfo* typeInfo) noexcept
 {
     using namespace Entropy;
     using namespace Entropy::Reflection;
