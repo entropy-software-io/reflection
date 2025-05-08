@@ -6,12 +6,27 @@
 
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/TypeInfo/RuntimeReflectionMethods.h"
+#include <type_traits>
 
 namespace Entropy
 {
 
 struct DataObjectFactory
 {
+private:
+    template <typename T, typename = void>
+    struct ToVoid
+    {
+        void* operator()(T&& param) const { return reinterpret_cast<void*>(&param); }
+    };
+
+    template <typename T>
+    struct ToVoid<T, typename std::enable_if<std::is_const<typename std::remove_reference<T>::type>::value>::type>
+    {
+        void* operator()(T&& param) const { return const_cast<void*>(reinterpret_cast<const void*>(&param)); }
+    };
+
+public:
     template <typename T>
     inline static DataObject Create()
     {
@@ -49,15 +64,10 @@ struct DataObjectFactory
     }
 
     template <typename T>
-    inline static DataObject Wrap(T* value)
+    inline static DataObject Wrap(T&& value)
     {
         const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
-        if (ENTROPY_UNLIKELY(!typeInfo || !typeInfo->CanMoveConstruct()))
-        {
-            return nullptr;
-        }
-
-        return DataObject(typeInfo, value, false /* deallocate */);
+        return DataObject(typeInfo, ToVoid<T>{}(std::forward<T>(value)), false /* deallocate */);
     }
 };
 
