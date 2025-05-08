@@ -50,13 +50,13 @@ public:
     constexpr AttributeCollection() {}
 
     template <std::size_t Idx>
-    auto GetAt()
+    auto GetAt() -> decltype(std::get<Idx>(std::declval<std::tuple<TAttrTypes...>&>()))
     {
         return std::get<Idx>(_attrs);
     }
 
     template <std::size_t Idx>
-    auto GetAt() const
+    auto GetAt() const -> decltype(std::get<Idx>(std::declval<const std::tuple<TAttrTypes...>&>()))
     {
         return std::get<Idx>(_attrs);
     }

@@ -31,9 +31,10 @@ ReflectionContainerTraits<TypeId>::StringType MakeTypeNameFromRawName(const char
     int status;
     char* realName = abi::__cxa_demangle(rawTypeName, 0, 0, &status);
 
-    String ret = realName;
+    ContainerTraits::StringType ret = realName;
     free(realName);
-    ret = ret.Replace(", "_EStr, ","_EStr).Replace("::__2::"_EStr, "::"_EStr);
+    StrOps::Replace(ret, ", ", ",");
+    StrOps::Replace(ret, "::__2::", "::");
     return ret;
 #endif
 }

@@ -215,7 +215,7 @@ struct HandleIsConstructible
 template <typename T>
 struct HandleIsConstructible<T, typename std::enable_if<std::is_default_constructible<T>::value>::type>
 {
-    using NonConstT       = std::remove_const_t<T>;
+    using NonConstT       = typename std::remove_const<T>::type;
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
@@ -244,7 +244,7 @@ template <typename T>
 struct HandleIsCopyConstructible<
     T, typename std::enable_if<std::is_copy_constructible<T>::value && !std::is_reference<T>::value>::type>
 {
-    using NonConstT       = std::remove_const_t<T>;
+    using NonConstT       = typename std::remove_const<T>::type;
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
@@ -273,7 +273,7 @@ template <typename T>
 struct HandleIsMoveConstructible<
     T, typename std::enable_if<std::is_move_constructible<T>::value && !std::is_reference<T>::value>::type>
 {
-    using NonConstT       = std::remove_const_t<T>;
+    using NonConstT       = typename std::remove_const<T>::type;
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
@@ -305,7 +305,7 @@ struct HandleIsDestructible<
                                (std::is_copy_constructible<T>::value && !std::is_reference<T>::value) ||
                                (std::is_copy_constructible<T>::value && !std::is_reference<T>::value)>::type>
 {
-    using NonConstT       = std::remove_const_t<T>;
+    using NonConstT       = typename std::remove_const<T>::type;
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
