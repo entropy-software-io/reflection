@@ -122,7 +122,7 @@ private:
 
 public:
     inline bool IsReflectedClass() const { return _isReflectedClass; }
-    inline const ContainerTraits::VectorType<const TypeInfo*> GetTemplateParameters() const
+    inline const ContainerTraits::VectorType<const TypeInfo*>& GetTemplateParameters() const
     {
         return _templateParameters;
     }
