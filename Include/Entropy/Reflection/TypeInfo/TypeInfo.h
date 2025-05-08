@@ -7,6 +7,7 @@
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeId.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoTraits.h"
 #include <atomic>
 
@@ -32,7 +33,6 @@ struct HandleIsDestructible;
 } // namespace details
 
 class DataObject;
-class TypeInfoRef;
 
 /// <summary>
 /// Holds runtime type information for any type that are accessible through different modules. The list of modules can
@@ -100,14 +100,14 @@ public:
     inline TypeId GetTypeId() const { return _typeId; }
 
     template <typename TModule>
-    const TModule& Get() const
+    const TModule& Get() const noexcept
     {
         static constexpr std::size_t idx = ModuleIndexHelper<TModule, ModuleTypes>::value;
         return std::get<idx>(_modules);
     }
 
     template <typename TModule>
-    TModule& Get()
+    TModule& Get() noexcept
     {
         static constexpr std::size_t idx = ModuleIndexHelper<TModule, ModuleTypes>::value;
         return std::get<idx>(_modules);
@@ -147,6 +147,36 @@ public:
     bool IsLValueReference() const;
     bool IsRValueReference() const;
     bool IsReference() const;
+
+    /// <summary>
+    /// Returns true if we have any qualifiers, like const, *, &, etc...
+    /// </summary>
+    inline bool IsQualifiedType() const;
+
+    /// <summary>
+    /// Returns the type with one layer of qualifiers removed. If this type is not qualified, this object is returned.
+    /// </summary>
+    /// <remarks>
+    /// const T -> T
+    /// const T& -> const T
+    /// const T* -> const T
+    /// T* const -> T (both const and * are at the same level in this case)
+    /// </remarks>
+    inline const TypeInfo* GetNextUnqualifiedType() const;
+
+    /// <summary>
+    /// Returns the type with all qualifiers removed. If this type is not qualified, this object is returned.
+    /// </summary>
+    /// <remarks>
+    /// T const*& -> T
+    /// </remarks>
+    const TypeInfo* GetFullyUnqualifiedType() const;
+
+    /// <summary>
+    /// Conservative check to see if an object of this type can be assigned from an object of the other type.
+    /// </summary>
+    bool IsAssignableFrom(const TypeInfo* other) const noexcept;
+
 private:
     void AddRef() const;
     void Release() const;
@@ -164,6 +194,8 @@ private:
     void SetIsLReference();
     void SetIsRReference();
 
+    void SetNextUnqualifiedType(const TypeInfo* typeInfo);
+
     inline void Destruct(void* dataPtr) const;
 
     ContainerTraits::StringType _typeName{};
@@ -174,6 +206,8 @@ private:
     DestructionHandler _destructionFn{};
 
     ModuleTypes _modules{};
+
+    TypeInfoRef _nextUnqualifiedType{};
 
     Flags _flags = Flags::None;
 

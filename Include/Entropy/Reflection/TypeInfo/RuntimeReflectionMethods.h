@@ -353,6 +353,36 @@ struct FillCommonTypeInfo
         {
             typeInfo->SetIsRReference();
         }
+
+        if ENTROPY_CONSTEXPR (!Traits::IsUnqualifiedType<TType>::value)
+        {
+            if ENTROPY_CONSTEXPR (std::is_reference<TType>::value)
+            {
+                // References can never also be const.
+
+                const TypeInfo* unqualifiedType =
+                    ReflectTypeAndGetTypeInfo<typename std::remove_reference<TType>::type>();
+                typeInfo->SetNextUnqualifiedType(unqualifiedType);
+            }
+            else if ENTROPY_CONSTEXPR (std::is_pointer<TType>::value)
+            {
+                // Pointers can also be const at the same time. Make sure we remove both qualifiers because
+                // we have already recorded both of them.
+
+                const TypeInfo* unqualifiedType = ReflectTypeAndGetTypeInfo<
+                    typename std::remove_const<typename std::remove_pointer<TType>::type>::type>();
+                typeInfo->SetNextUnqualifiedType(unqualifiedType);
+            }
+            else if ENTROPY_CONSTEXPR (std::is_const<TType>::value)
+            {
+                // Catches just raw const types. For instance, const int& will eventually come here
+                // because the reference cannot be const. Also, const int* will eventually come here, but int* const
+                // will not.
+
+                const TypeInfo* unqualifiedType = ReflectTypeAndGetTypeInfo<typename std::remove_const<TType>::type>();
+                typeInfo->SetNextUnqualifiedType(unqualifiedType);
+            }
+        }
     }
 };
 

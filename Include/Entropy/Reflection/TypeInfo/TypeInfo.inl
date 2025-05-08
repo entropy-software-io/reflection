@@ -140,4 +140,60 @@ void TypeInfo::SetIsLReference() { _flags |= Flags::IsLReference; }
 
 void TypeInfo::SetIsRReference() { _flags |= Flags::IsRReference; }
 
+inline bool TypeInfo::IsQualifiedType() const { return _nextUnqualifiedType; }
+
+inline const TypeInfo* TypeInfo::GetNextUnqualifiedType() const
+{
+    if (_nextUnqualifiedType)
+    {
+        return _nextUnqualifiedType;
+    }
+    return this;
+}
+
+const TypeInfo* TypeInfo::GetFullyUnqualifiedType() const
+{
+    const TypeInfo* ret = this;
+    while (ret->IsQualifiedType())
+    {
+        ret = ret->GetNextUnqualifiedType();
+    }
+    return ret;
+}
+
+void TypeInfo::SetNextUnqualifiedType(const TypeInfo* typeInfo) { _nextUnqualifiedType = typeInfo; }
+
+bool TypeInfo::IsAssignableFrom(const TypeInfo* other) const noexcept
+{
+    if (ENTROPY_UNLIKELY(other == nullptr))
+    {
+        return false;
+    }
+
+    if (this == other)
+    {
+        // Same type
+        return true;
+    }
+
+    // Remove one pointer layer
+    if (IsPointer() == other->IsPointer())
+    {
+        return GetNextUnqualifiedType()->IsAssignableFrom(other->GetNextUnqualifiedType());
+    }
+    else
+    {
+        // Mismatch pointer counts
+        return false;
+    }
+
+    if (IsConst() && !other->IsConst())
+    {
+        // We can qualify-up to const.
+        return GetNextUnqualifiedType()->IsAssignableFrom(other);
+    }
+
+    return false;
+}
+
 } // namespace Entropy
