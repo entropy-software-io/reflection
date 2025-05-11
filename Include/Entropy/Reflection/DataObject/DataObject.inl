@@ -10,9 +10,9 @@
 namespace Entropy
 {
 
-DataObject::DataObject(std::nullptr_t) {}
+inline DataObject::DataObject(std::nullptr_t) {}
 
-DataObject::DataObject(const TypeInfo* typeInfo, void* data, bool deallocate)
+inline DataObject::DataObject(const TypeInfo* typeInfo, void* data, bool deallocate)
 {
     ContainerTraits::Allocator<DataObjectContainer> alloc;
     _container = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
@@ -26,7 +26,7 @@ DataObject::DataObject(const TypeInfo* typeInfo, void* data, bool deallocate)
     }
 }
 
-DataObject::DataObject(const DataObject& other)
+inline DataObject::DataObject(const DataObject& other)
     : _container(other._container)
 {
     if (_container != nullptr)
@@ -35,15 +35,15 @@ DataObject::DataObject(const DataObject& other)
     }
 }
 
-DataObject::DataObject(DataObject&& other)
+inline DataObject::DataObject(DataObject&& other)
     : _container(other._container)
 {
     other._container = nullptr;
 }
 
-DataObject::~DataObject() { Release(); }
+inline DataObject::~DataObject() { Release(); }
 
-void DataObject::Release()
+inline void DataObject::Release()
 {
     if (_container)
     {

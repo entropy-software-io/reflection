@@ -9,7 +9,7 @@ namespace Entropy
 namespace Reflection
 {
 
-AttributeData::AttributeData(DataObject&& dataObj)
+inline AttributeData::AttributeData(DataObject&& dataObj)
     : _dataObj(std::move(dataObj))
 {
 }
@@ -48,28 +48,28 @@ inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type Attribu
 }
 
 template <typename... TAttrTypes>
-void AttributeContainer::AddAttributes(AttributeCollection<TAttrTypes...>&& attr)
+inline void AttributeContainer::AddAttributes(AttributeCollection<TAttrTypes...>&& attr)
 {
     AddAttribute<0>(attr);
 }
 
 //=======================
 
-void ClassDescription::AddTemplateParameter(const TypeInfo* templateParameter)
+inline void ClassDescription::AddTemplateParameter(const TypeInfo* templateParameter)
 {
     _templateParameters.push_back(templateParameter);
 }
 
-void ClassDescription::SetBaseClass(const TypeInfo* baseClass) { _baseClassTypeInfo = baseClass; }
+inline void ClassDescription::SetBaseClass(const TypeInfo* baseClass) { _baseClassTypeInfo = baseClass; }
 
-void ClassDescription::AddMember(const char* name, MemberDescription&& memberInfo)
+inline void ClassDescription::AddMember(const char* name, MemberDescription&& memberInfo)
 {
     _members.emplace(name, std::move(memberInfo));
 }
 
 //=======================
 
-ClassTypeInfo::~ClassTypeInfo()
+inline ClassTypeInfo::~ClassTypeInfo()
 {
     if (_classDesc)
     {
@@ -80,7 +80,7 @@ ClassTypeInfo::~ClassTypeInfo()
     }
 }
 
-ClassDescription* ClassTypeInfo::GetOrAddClassDescription()
+inline ClassDescription* ClassTypeInfo::GetOrAddClassDescription()
 {
     if (!_classDesc)
     {

@@ -7,7 +7,7 @@
 namespace Entropy
 {
 
-TypeInfoRef::TypeInfoRef(const TypeInfo* ptr)
+inline TypeInfoRef::TypeInfoRef(const TypeInfo* ptr)
     : _ptr(ptr)
 {
     if (_ptr)
@@ -16,18 +16,18 @@ TypeInfoRef::TypeInfoRef(const TypeInfo* ptr)
     }
 }
 
-TypeInfoRef::TypeInfoRef(const TypeInfoRef& other)
+inline TypeInfoRef::TypeInfoRef(const TypeInfoRef& other)
     : TypeInfoRef(other._ptr)
 {
 }
 
-TypeInfoRef::TypeInfoRef(TypeInfoRef&& other)
+inline TypeInfoRef::TypeInfoRef(TypeInfoRef&& other)
     : _ptr(other._ptr)
 {
     other._ptr = nullptr;
 }
 
-TypeInfoRef::~TypeInfoRef()
+inline TypeInfoRef::~TypeInfoRef()
 {
     if (_ptr)
     {
@@ -36,14 +36,14 @@ TypeInfoRef::~TypeInfoRef()
     }
 }
 
-TypeInfoRef& TypeInfoRef::operator=(const TypeInfoRef& other)
+inline TypeInfoRef& TypeInfoRef::operator=(const TypeInfoRef& other)
 {
     this->~TypeInfoRef();
     new (this) TypeInfoRef(other);
     return *this;
 }
 
-TypeInfoRef& TypeInfoRef::operator=(TypeInfoRef&& other)
+inline TypeInfoRef& TypeInfoRef::operator=(TypeInfoRef&& other)
 {
     this->~TypeInfoRef();
     new (this) TypeInfoRef(std::move(other));

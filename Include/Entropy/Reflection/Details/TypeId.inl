@@ -16,7 +16,7 @@ namespace Entropy
 namespace details
 {
 
-ReflectionContainerTraits<TypeId>::StringType MakeTypeNameFromRawName(const char* rawTypeName)
+inline ReflectionContainerTraits<TypeId>::StringType MakeTypeNameFromRawName(const char* rawTypeName)
 {
     using ContainerTraits = ReflectionContainerTraits<TypeId>;
     using StrOps          = StringOps<ContainerTraits::StringType>;
@@ -39,7 +39,7 @@ ReflectionContainerTraits<TypeId>::StringType MakeTypeNameFromRawName(const char
 #endif
 }
 
-ReflectionContainerTraits<TypeId>::StringType MakeTypeNameNoTemplateParamsFromRawName(const char* rawTypeName)
+inline ReflectionContainerTraits<TypeId>::StringType MakeTypeNameNoTemplateParamsFromRawName(const char* rawTypeName)
 {
     using ContainerTraits = ReflectionContainerTraits<TypeId>;
     using StrOps          = StringOps<ContainerTraits::StringType>;
@@ -55,7 +55,7 @@ ReflectionContainerTraits<TypeId>::StringType MakeTypeNameNoTemplateParamsFromRa
     return ret;
 }
 
-TypeId MakeTypeIdFromTypeName(const ReflectionContainerTraits<TypeId>::StringType& typeName)
+inline TypeId MakeTypeIdFromTypeName(const ReflectionContainerTraits<TypeId>::StringType& typeName)
 {
     using ContainerTraits = ReflectionContainerTraits<TypeId>;
     using StrOps          = StringOps<ContainerTraits::StringType>;
