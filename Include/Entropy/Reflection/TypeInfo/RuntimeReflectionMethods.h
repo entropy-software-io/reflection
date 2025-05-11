@@ -367,10 +367,10 @@ struct FillCommonTypeInfo
             else if ENTROPY_CONSTEXPR (std::is_pointer<TType>::value)
             {
                 // Pointers can also be const at the same time. Make sure we remove both qualifiers because
-                // we have already recorded both of them.
+                // we have already recorded both of them. The order we remove matters.
 
                 const TypeInfo* unqualifiedType = ReflectTypeAndGetTypeInfo<
-                    typename std::remove_const<typename std::remove_pointer<TType>::type>::type>();
+                    typename std::remove_pointer<typename std::remove_const<TType>::type>::type>();
                 typeInfo->SetNextUnqualifiedType(unqualifiedType);
             }
             else if ENTROPY_CONSTEXPR (std::is_const<TType>::value)
