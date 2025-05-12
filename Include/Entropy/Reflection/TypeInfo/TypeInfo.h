@@ -42,6 +42,7 @@ class DataObject;
 /// </summary>
 class TypeInfo final
 {
+    // NOLINTBEGIN(clang-analyzer-optin.core.EnumCastOutOfRange)
     enum class Flags : int
     {
         None         = 0x0,
@@ -66,6 +67,7 @@ class TypeInfo final
             static_cast<typename std::underlying_type<Flags>::type>(y);
         return x;
     }
+    // NOLINTEND(clang-analyzer-optin.core.EnumCastOutOfRange)
 
 public:
     using ModuleTypes = Reflection::TypeInfoTraits<>::ModuleTypes;
