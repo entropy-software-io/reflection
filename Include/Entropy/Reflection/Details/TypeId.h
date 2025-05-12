@@ -27,7 +27,9 @@ struct MakeTypeNameFn
 };
 
 template <typename TFn, typename T>
-struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_const<T>::value>::type>
+struct MakeTypeNameFn<
+    TFn, T,
+    typename std::enable_if<std::is_const<T>::value && !std::is_pointer<T>::value && !std::is_array<T>::value>::type>
 {
     ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
     {
@@ -42,7 +44,7 @@ struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_const<T>::value>::
 };
 
 template <typename TFn, typename T>
-struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_pointer<T>::value>::type>
+struct MakeTypeNameFn<TFn, T, typename std::enable_if<!std::is_const<T>::value && std::is_pointer<T>::value>::type>
 {
     ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
     {
@@ -52,6 +54,113 @@ struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_pointer<T>::value>
         ReflectionContainerTraits<TypeId>::StringType ret =
             MakeTypeNameFn<TFn, typename std::remove_pointer<T>::type>{}(fn);
         StrOps::Append(ret, "*");
+        return ret;
+    }
+};
+
+template <typename TFn, typename T>
+struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_const<T>::value && std::is_pointer<T>::value>::type>
+{
+    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    {
+        using ContainerTraits = ReflectionContainerTraits<TypeId>;
+        using StrOps          = StringOps<ContainerTraits::StringType>;
+
+        // remove_pointer removes const too
+        ReflectionContainerTraits<TypeId>::StringType ret =
+            MakeTypeNameFn<TFn, typename std::remove_pointer<T>::type>{}(fn);
+        StrOps::Append(ret, "*const");
+        return ret;
+    }
+};
+
+template <typename TFn, typename T>
+struct MakeTypeNameFn<TFn, T[]>
+{
+    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    {
+        using ContainerTraits = ReflectionContainerTraits<TypeId>;
+        using StrOps          = StringOps<ContainerTraits::StringType>;
+
+        ReflectionContainerTraits<TypeId>::StringType ret =
+            MakeTypeNameFn<TFn, typename std::remove_extent<T[I]>::type>{}(fn);
+        StrOps::Append(ret, "[]");
+        return ret;
+    }
+};
+
+template <typename TFn, typename T, std::size_t I>
+struct MakeTypeNameFn<TFn, T[I]>
+{
+    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    {
+        using ContainerTraits = ReflectionContainerTraits<TypeId>;
+        using StrOps          = StringOps<ContainerTraits::StringType>;
+
+        char iBuf[20] = {0};
+        std::snprintf(iBuf, sizeof(iBuf) / sizeof(char), "%llo", I);
+
+        ReflectionContainerTraits<TypeId>::StringType ret = MakeTypeNameFn<TFn, T>{}(fn);
+        StrOps::Append(ret, "[");
+        StrOps::Append(ret, iBuf);
+        StrOps::Append(ret, "]");
+        return ret;
+    }
+};
+
+// Arrays are processed in reading order. char [1][2][3] will be processed <char[2][3], 1>, then <char[3], 2>, etc. If
+// left alone, we produce the string char[3][2][1]. Instead, handle some common multi-dimensional arrays explicitly.
+template <typename TFn, typename T, std::size_t I, std::size_t J>
+struct MakeTypeNameFn<TFn, T[I][J]>
+{
+    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    {
+        using ContainerTraits = ReflectionContainerTraits<TypeId>;
+        using StrOps          = StringOps<ContainerTraits::StringType>;
+
+        char iBuf[20] = {0};
+        std::snprintf(iBuf, sizeof(iBuf) / sizeof(char), "%llo", I);
+
+        char jBuf[20] = {0};
+        std::snprintf(jBuf, sizeof(jBuf) / sizeof(char), "%llo", J);
+
+        ReflectionContainerTraits<TypeId>::StringType ret = MakeTypeNameFn<TFn, T>{}(fn);
+        StrOps::Append(ret, "[");
+        StrOps::Append(ret, iBuf);
+        StrOps::Append(ret, "][");
+        StrOps::Append(ret, jBuf);
+        StrOps::Append(ret, "]");
+        return ret;
+    }
+};
+
+// Arrays are processed in reading order. char [1][2][3] will be processed <char[2][3], 1>, then <char[3], 2>, etc. If
+// left alone, we produce the string char[3][2][1]. Instead, handle some common multi-dimensional arrays explicitly.
+template <typename TFn, typename T, std::size_t I, std::size_t J, std::size_t K>
+struct MakeTypeNameFn<TFn, T[I][J][K]>
+{
+    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    {
+        using ContainerTraits = ReflectionContainerTraits<TypeId>;
+        using StrOps          = StringOps<ContainerTraits::StringType>;
+
+        char iBuf[20] = {0};
+        std::snprintf(iBuf, sizeof(iBuf) / sizeof(char), "%llo", I);
+
+        char jBuf[20] = {0};
+        std::snprintf(jBuf, sizeof(jBuf) / sizeof(char), "%llo", J);
+
+        char kBuf[20] = {0};
+        std::snprintf(kBuf, sizeof(kBuf) / sizeof(char), "%llo", K);
+
+        ReflectionContainerTraits<TypeId>::StringType ret = MakeTypeNameFn<TFn, T>{}(fn);
+        StrOps::Append(ret, "[");
+        StrOps::Append(ret, iBuf);
+        StrOps::Append(ret, "][");
+        StrOps::Append(ret, jBuf);
+        StrOps::Append(ret, "][");
+        StrOps::Append(ret, kBuf);
+        StrOps::Append(ret, "]");
         return ret;
     }
 };
