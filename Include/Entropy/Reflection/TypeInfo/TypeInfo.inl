@@ -166,7 +166,7 @@ inline const TypeInfo* TypeInfo::GetFullyUnqualifiedType() const
 
 inline void TypeInfo::SetNextUnqualifiedType(const TypeInfo* typeInfo) { _nextUnqualifiedType = typeInfo; }
 
-inline bool TypeInfo::IsAssignableFrom(const TypeInfo* other) const noexcept
+inline bool TypeInfo::CanCastTo(const TypeInfo* other) const noexcept
 {
     if (ENTROPY_UNLIKELY(other == nullptr))
     {
@@ -179,24 +179,37 @@ inline bool TypeInfo::IsAssignableFrom(const TypeInfo* other) const noexcept
         return true;
     }
 
-    // Remove one pointer layer
-    if (IsPointer() == other->IsPointer())
+    // Remove references. When doing the cast in DataObject, we will return a reference anyways.
+    if (IsReference() || other->IsReference())
     {
-        return GetNextUnqualifiedType()->IsAssignableFrom(other->GetNextUnqualifiedType());
-    }
-    else
-    {
-        // Mismatch pointer counts
-        return false;
+        auto unrefThis  = (IsReference() ? GetNextUnqualifiedType() : this);
+        auto unrefOther = (other->IsReference() ? other->GetNextUnqualifiedType() : other);
+
+        return unrefThis->CanCastTo(unrefOther);
     }
 
     if (IsConst() && !other->IsConst())
     {
-        // We can qualify-up to const.
-        return GetNextUnqualifiedType()->IsAssignableFrom(other);
+        // We don't allow removing our const
+        return false;
     }
 
-    return false;
+    // Remove one pointer layer
+    if (IsPointer() || other->IsPointer())
+    {
+        if (IsPointer() == other->IsPointer())
+        {
+            return GetNextUnqualifiedType()->CanCastTo(other->GetNextUnqualifiedType());
+        }
+        else
+        {
+            // Mismatch pointer counts
+            return false;
+        }
+    }
+
+    // Compare the base types without any qualifiers we've already checked for
+    return (GetFullyUnqualifiedType() == other->GetFullyUnqualifiedType());
 }
 
 } // namespace Entropy

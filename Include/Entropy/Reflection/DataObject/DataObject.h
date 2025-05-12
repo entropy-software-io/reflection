@@ -54,8 +54,8 @@ public:
     }
 
     /// <summary>
-    /// Casts the data into a usable type. This method does not have safety checks; check against null and use IsType<>
-    /// to check if the cast is safe.
+    /// Casts the data into a usable type. This method does not have safety checks; check against null and use
+    /// IsExactType<> or CanCastTo<> to check if the cast is safe.
     /// </summary>
     template <typename T>
     inline T& GetData()
@@ -72,8 +72,17 @@ public:
         return nullptr;
     }
 
+    /// <summary>
+    /// Quick check to see if we are the exact type.
+    /// </summary>
     template <typename T>
-    inline bool IsType() const;
+    inline bool IsExactType() const;
+
+    /// <summary>
+    /// A more involved check to see if we can cast the specified type.
+    /// </summary>
+    template <typename T>
+    inline bool CanCastTo() const;
 
     inline bool operator==(std::nullptr_t) const { return (_container == nullptr); }
     inline bool operator!=(std::nullptr_t) const { return (_container != nullptr); }

@@ -173,9 +173,14 @@ public:
     const TypeInfo* GetFullyUnqualifiedType() const;
 
     /// <summary>
-    /// Conservative check to see if an object of this type can be assigned from an object of the other type.
+    /// Conservative check to see if a DataObject of this type can be cast to the specified type.
     /// </summary>
-    bool IsAssignableFrom(const TypeInfo* other) const noexcept;
+    /// <remarks>
+    /// This will not allow conversions of the unqualified data type. Static casts and implicit conversions that are
+    /// normally allowed by C++ are not accepted. Instead, a cast to the underlying type must be made and then let the
+    /// compiler do the actual conversion to the desired type.
+    /// <remarks>
+    bool CanCastTo(const TypeInfo* other) const noexcept;
 
 private:
     void AddRef() const;

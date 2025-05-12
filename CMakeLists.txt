@@ -1,5 +1,6 @@
 option(ENTROPY_REFLECTION_ENABLE_RUNTIME "True to enable runtime reflection (requires bringing in Entropy Core dependency)" ON)
 option(ENTROPY_BUILD_EXAMPLES "True to build example projects" ON)
+option(ENTROPY_BUILD_TESTS "True to build tests" OFF)
 
 add_subdirectory(Dependencies)
 
@@ -21,5 +22,9 @@ if (${ENTROPY_REFLECTION_ENABLE_RUNTIME})
 endif()
 
 if (${ENTROPY_BUILD_EXAMPLES})
-    add_subdirectory(examples)
+    add_subdirectory(Examples)
+endif()
+
+if (${ENTROPY_BUILD_TESTS})
+    add_subdirectory(Tests)
 endif()

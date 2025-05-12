@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (!dataObj.IsType<MyStruct>())
+    if (!dataObj.IsExactType<MyStruct>())
     {
         std::cerr << "Data object is not the type we expected" << std::endl;
         return 1;

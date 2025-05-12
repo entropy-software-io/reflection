@@ -64,11 +64,21 @@ inline void DataObject::Release()
 }
 
 template <typename T>
-inline bool DataObject::IsType() const
+inline bool DataObject::IsExactType() const
 {
     if (ENTROPY_LIKELY(_container))
     {
         return _container->_typeInfo == ReflectTypeAndGetTypeInfo<T>();
+    }
+    return false;
+}
+
+template <typename T>
+inline bool DataObject::CanCastTo() const
+{
+    if (ENTROPY_LIKELY(_container))
+    {
+        return _container->_typeInfo->CanCastTo(ReflectTypeAndGetTypeInfo<T>());
     }
     return false;
 }

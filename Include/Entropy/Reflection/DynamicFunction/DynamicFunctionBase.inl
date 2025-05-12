@@ -75,13 +75,7 @@ bool DynamicFunctionBase::IsParameterConvertible(const DynamicFuncParam& param)
         return false;
     }
 
-    const TypeInfo* thisFnParamTypeInfo = ReflectTypeAndGetTypeInfo<typename std::decay<T>::type>();
-    if (ENTROPY_UNLIKELY(!thisFnParamTypeInfo))
-    {
-        return false;
-    }
-
-    return thisFnParamTypeInfo->IsAssignableFrom(param._dataObj.GetTypeInfo());
+    return param._dataObj.CanCastTo<T>();
 }
 
 template <typename T, typename... TRest>
