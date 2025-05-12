@@ -76,8 +76,29 @@ int TypeInfo_TestCanCastTo(int argc, char** const argv)
     // base type. TypeInfo is static and not unique per allocation.
     ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<MyCastTestStruct, MyDerivedCastTestStruct>());
 
-    // Array to pointer conversion is allowed
-    ENTROPY_VERIFY_FUNC(CheckCanCastTo<const char[4], const char*>());
+    // Array to pointer conversion is allowed, but not the other way around
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<const MyCastTestStruct[4], const MyCastTestStruct*>());
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<MyCastTestStruct[4], const MyCastTestStruct*>());
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<const MyCastTestStruct[4], const MyCastTestStruct* const>());
+    ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<const MyCastTestStruct*, const MyCastTestStruct[4]>());
+    ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<const MyCastTestStruct* [4], const MyCastTestStruct* const>());
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<const MyCastTestStruct* [4], const MyCastTestStruct* const*>());
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<char* const[4], char* const*>());
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<char* const[4], char* const* const>());
+    ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<char* const[4], char** const>());
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<char* [4], char* const* const>());
+    ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<const char[4], char const>());
+
+    // C++ doesn't allow casting array of arrays to double pointers.
+    ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<const MyCastTestStruct[4][3], const MyCastTestStruct**>());
+    ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<MyCastTestStruct[4][3], MyCastTestStruct**>());
+    ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<MyCastTestStruct[4][3], const MyCastTestStruct**>());
+    ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<const MyCastTestStruct[4][3], MyCastTestStruct**>());
+
+    // We don't keep array extents, so unless it is an exact type, casting to array types doesn't work.
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<MyCastTestStruct[4], MyCastTestStruct[4]>());
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<const MyCastTestStruct[4], const MyCastTestStruct[4]>());
+    ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<MyCastTestStruct[4], const MyCastTestStruct[4]>());
 
     return 0;
 }

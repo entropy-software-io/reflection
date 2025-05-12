@@ -50,6 +50,7 @@ class TypeInfo final
         IsPointer    = 1 << 1,
         IsLReference = 1 << 2,
         IsRReference = 1 << 3,
+        IsArray      = 1 << 4, // Static allocated array. (e.g. char[4])
     };
     friend inline constexpr Flags operator|(Flags x, Flags y)
     {
@@ -146,6 +147,8 @@ public:
 
     bool IsConst() const;
     bool IsPointer() const;
+    bool IsArray() const;
+    bool IsPointerOrArray() const;
     bool IsLValueReference() const;
     bool IsRValueReference() const;
     bool IsReference() const;
@@ -178,9 +181,9 @@ public:
     /// Conservative check to see if a DataObject of this type can be cast to the specified type.
     /// </summary>
     /// <remarks>
-    /// This will not allow conversions of the unqualified data type. Static casts and implicit conversions that are
-    /// normally allowed by C++ are not accepted. Instead, a cast to the underlying type must be made and then let the
-    /// compiler do the actual conversion to the desired type.
+    /// This will not allow conversions of the unqualified data type to a different type. Static casts and implicit
+    /// conversions that are normally allowed by C++ are not accepted because we cast a raw void*. Instead, a cast to
+    /// the underlying type must be made and then let the compiler do the actual conversion to the desired type.
     /// <remarks>
     bool CanCastTo(const TypeInfo* other) const noexcept;
 
@@ -200,6 +203,7 @@ private:
     void SetIsPointer();
     void SetIsLReference();
     void SetIsRReference();
+    void SetIsArray();
 
     void SetNextUnqualifiedType(const TypeInfo* typeInfo);
 

@@ -407,6 +407,11 @@ struct FillCommonTypeInfo
             typeInfo->SetIsRReference();
         }
 
+        if ENTROPY_CONSTEXPR (std::is_array<TType>::value)
+        {
+            typeInfo->SetIsArray();
+        }
+
         if ENTROPY_CONSTEXPR (!Traits::IsUnqualifiedType<TType>::value)
         {
             if ENTROPY_CONSTEXPR (std::is_reference<TType>::value)
@@ -419,11 +424,19 @@ struct FillCommonTypeInfo
             }
             else if ENTROPY_CONSTEXPR (std::is_pointer<TType>::value)
             {
-                // Pointers can also be const at the same time. Make sure we remove both qualifiers because
+                // Pointers can also be const at the same time. std::remove_pointer removes any const too.
+
+                const TypeInfo* unqualifiedType =
+                    ReflectTypeAndGetTypeInfo<typename std::remove_pointer<TType>::type>();
+                typeInfo->SetNextUnqualifiedType(unqualifiedType);
+            }
+            else if ENTROPY_CONSTEXPR (std::is_array<TType>::value)
+            {
+                // Arrays can also be const at the same time. Make sure we remove both qualifiers because
                 // we have already recorded both of them. The order we remove matters.
 
                 const TypeInfo* unqualifiedType = ReflectTypeAndGetTypeInfo<
-                    typename std::remove_pointer<typename std::remove_const<TType>::type>::type>();
+                    typename std::remove_extent<typename std::remove_const<TType>::type>::type>();
                 typeInfo->SetNextUnqualifiedType(unqualifiedType);
             }
             else if ENTROPY_CONSTEXPR (std::is_const<TType>::value)

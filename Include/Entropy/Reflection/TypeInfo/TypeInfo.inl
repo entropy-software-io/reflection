@@ -126,6 +126,10 @@ inline bool TypeInfo::IsConst() const { return (_flags & Flags::IsConst) != Flag
 
 inline bool TypeInfo::IsPointer() const { return (_flags & Flags::IsPointer) != Flags::None; }
 
+inline bool TypeInfo::IsArray() const { return (_flags & Flags::IsArray) != Flags::None; }
+
+inline bool TypeInfo::IsPointerOrArray() const { return (_flags & (Flags::IsPointer | Flags::IsArray)) != Flags::None; }
+
 inline bool TypeInfo::IsLValueReference() const { return (_flags & Flags::IsLReference) != Flags::None; }
 
 inline bool TypeInfo::IsRValueReference() const { return (_flags & Flags::IsRReference) != Flags::None; }
@@ -142,6 +146,8 @@ inline void TypeInfo::SetIsPointer() { _flags |= Flags::IsPointer; }
 inline void TypeInfo::SetIsLReference() { _flags |= Flags::IsLReference; }
 
 inline void TypeInfo::SetIsRReference() { _flags |= Flags::IsRReference; }
+
+inline void TypeInfo::SetIsArray() { _flags |= Flags::IsArray; }
 
 inline bool TypeInfo::IsQualifiedType() const { return _nextUnqualifiedType; }
 
@@ -188,18 +194,37 @@ inline bool TypeInfo::CanCastTo(const TypeInfo* other) const noexcept
         return unrefThis->CanCastTo(unrefOther);
     }
 
-    if (IsConst() && !other->IsConst())
+    if (IsConst())
     {
         // We don't allow removing our const
-        return false;
+        bool canCast = other->IsConst();
+
+        // One caveat is arrays: "const char[]" will be both an array and const, but "const char*" will be just be a
+        // pointer (and const at the next level). We need to check for this case explicitly.
+        if (IsArray() && other->IsPointer())
+        {
+            canCast = other->GetNextUnqualifiedType()->IsConst();
+        }
+
+        if (!canCast)
+        {
+            return false;
+        }
     }
 
-    // Remove one pointer layer
-    if (IsPointer() || other->IsPointer())
+    // Remove one pointer layer. Arrays can be cast to pointers, but not the other way around.
+    if (IsPointerOrArray() || other->IsPointer())
     {
-        if (IsPointer() == other->IsPointer())
+        if (IsPointerOrArray() == other->IsPointer())
         {
-            return GetNextUnqualifiedType()->CanCastTo(other->GetNextUnqualifiedType());
+            // Can't cast more than one array dimension to pointer
+            auto nextType = GetNextUnqualifiedType();
+            if (nextType->IsArray())
+            {
+                return false;
+            }
+
+            return nextType->CanCastTo(other->GetNextUnqualifiedType());
         }
         else
         {
