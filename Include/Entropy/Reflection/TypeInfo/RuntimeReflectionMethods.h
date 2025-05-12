@@ -213,7 +213,8 @@ struct HandleIsConstructible
 };
 
 template <typename T>
-struct HandleIsConstructible<T, typename std::enable_if<std::is_default_constructible<T>::value>::type>
+struct HandleIsConstructible<
+    T, typename std::enable_if<std::is_destructible<T>::value && std::is_default_constructible<T>::value>::type>
 {
     using NonConstT       = typename std::remove_const<T>::type;
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
@@ -242,7 +243,8 @@ struct HandleIsCopyConstructible
 
 template <typename T>
 struct HandleIsCopyConstructible<
-    T, typename std::enable_if<std::is_copy_constructible<T>::value && !std::is_reference<T>::value>::type>
+    T, typename std::enable_if<std::is_destructible<T>::value && std::is_copy_constructible<T>::value &&
+                               !std::is_reference<T>::value>::type>
 {
     using NonConstT       = typename std::remove_const<T>::type;
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
@@ -271,7 +273,8 @@ struct HandleIsMoveConstructible
 
 template <typename T>
 struct HandleIsMoveConstructible<
-    T, typename std::enable_if<std::is_move_constructible<T>::value && !std::is_reference<T>::value>::type>
+    T, typename std::enable_if<std::is_destructible<T>::value && std::is_move_constructible<T>::value &&
+                               !std::is_reference<T>::value>::type>
 {
     using NonConstT       = typename std::remove_const<T>::type;
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
@@ -301,9 +304,10 @@ struct HandleIsDestructible
 
 template <typename T>
 struct HandleIsDestructible<
-    T, typename std::enable_if<std::is_default_constructible<T>::value ||
-                               (std::is_copy_constructible<T>::value && !std::is_reference<T>::value) ||
-                               (std::is_copy_constructible<T>::value && !std::is_reference<T>::value)>::type>
+    T, typename std::enable_if<std::is_destructible<T>::value &&
+                               (std::is_default_constructible<T>::value ||
+                                (std::is_copy_constructible<T>::value && !std::is_reference<T>::value) ||
+                                (std::is_copy_constructible<T>::value && !std::is_reference<T>::value))>::type>
 {
     using NonConstT       = typename std::remove_const<T>::type;
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
