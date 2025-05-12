@@ -7,6 +7,7 @@
 #include "Entropy/Core/Log.h"
 
 #define ENTROPY_VERIFY_FUNC(...)                                                                                       \
+    do                                                                                                                 \
     {                                                                                                                  \
         bool ret = !!(__VA_ARGS__);                                                                                    \
         if (!ret)                                                                                                      \
@@ -14,9 +15,10 @@
             ENTROPY_LOG_ERROR_FUNC("Verify failed: " << #__VA_ARGS__);                                                 \
             return 1;                                                                                                  \
         }                                                                                                              \
-    }
+    } while (false)
 
 #define ENTROPY_VERIFY_NOT_FUNC(...)                                                                                   \
+    do                                                                                                                 \
     {                                                                                                                  \
         bool ret = !!(__VA_ARGS__);                                                                                    \
         if (ret)                                                                                                       \
@@ -24,4 +26,4 @@
             ENTROPY_LOG_ERROR_FUNC("Verify not failed: " << #__VA_ARGS__);                                             \
             return 1;                                                                                                  \
         }                                                                                                              \
-    }
+    } while (false)

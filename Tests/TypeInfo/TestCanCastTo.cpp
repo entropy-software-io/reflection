@@ -6,6 +6,13 @@
 #include "Entropy/Reflection.h"
 #include "TestMacros.h"
 
+namespace Entropy
+{
+namespace Tests
+{
+namespace TypeInfo
+{
+
 struct MyCastTestStruct
 {
 };
@@ -26,8 +33,14 @@ bool CheckCanCastTo()
     return fromTypeInfo->CanCastTo(toTypeInfo);
 }
 
+} // namespace TypeInfo
+} // namespace Tests
+} // namespace Entropy
+
 int TypeInfo_TestCanCastTo(int argc, char** const argv)
 {
+    using namespace Entropy::Tests::TypeInfo;
+
     ENTROPY_VERIFY_FUNC(CheckCanCastTo<int, int>());
 
     // Right now, we don't allow changing pointer counts, but potentially could allow one level of change because
@@ -50,6 +63,7 @@ int TypeInfo_TestCanCastTo(int argc, char** const argv)
     ENTROPY_VERIFY_FUNC(CheckCanCastTo<int&, int>());
     ENTROPY_VERIFY_FUNC(CheckCanCastTo<int, int&>());
     ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<const int&, int>());
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<int**&, const int**>());
 
     ENTROPY_VERIFY_FUNC(CheckCanCastTo<MyCastTestStruct, MyCastTestStruct>());
     ENTROPY_VERIFY_FUNC(CheckCanCastTo<MyCastTestStruct, const MyCastTestStruct&>());
@@ -61,6 +75,9 @@ int TypeInfo_TestCanCastTo(int argc, char** const argv)
     // Downcasting not supported. Whatever concrete type was allocated will be lost when stuffed into a DataObject of a
     // base type. TypeInfo is static and not unique per allocation.
     ENTROPY_VERIFY_NOT_FUNC(CheckCanCastTo<MyCastTestStruct, MyDerivedCastTestStruct>());
+
+    // Array to pointer conversion is allowed
+    ENTROPY_VERIFY_FUNC(CheckCanCastTo<const char[4], const char*>());
 
     return 0;
 }
