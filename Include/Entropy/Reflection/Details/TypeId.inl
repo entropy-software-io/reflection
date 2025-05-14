@@ -4,7 +4,7 @@
 
 #include "Entropy/Core/Details/Defines.h"
 #include "Entropy/Core/Details/Hash.h"
-#include "Entropy/Reflection/Details/ContainerTypes.h"
+#include "Entropy/Core/Details/StringOps.h"
 
 #ifndef ENTROPY_MSVC
 #include <cxxabi.h>
@@ -18,49 +18,40 @@ namespace details
 
 inline ReflectionContainerTraits<TypeId>::StringType MakeTypeNameFromRawName(const char* rawTypeName)
 {
-    using ContainerTraits = ReflectionContainerTraits<TypeId>;
-    using StrOps          = StringOps<ContainerTraits::StringType>;
-
 #ifdef ENTROPY_MSVC
-    ContainerTraits::StringType ret = rawTypeName;
-    StrOps::Replace(ret, "struct ", "");
-    StrOps::Replace(ret, "class ", "");
-    StrOps::Replace(ret, "enum ", "");
+    StringOps::StringType ret = rawTypeName;
+    StringOps::Replace(ret, "struct ", "");
+    StringOps::Replace(ret, "class ", "");
+    StringOps::Replace(ret, "enum ", "");
     return ret;
 #else
     int status;
     char* realName = abi::__cxa_demangle(rawTypeName, 0, 0, &status);
 
-    ContainerTraits::StringType ret = realName;
+    StringOps::StringType ret = realName;
     free(realName);
-    StrOps::Replace(ret, ", ", ",");
-    StrOps::Replace(ret, "::__2::", "::");
+    StringOps::Replace(ret, ", ", ",");
+    StringOps::Replace(ret, "::__2::", "::");
     return ret;
 #endif
 }
 
 inline ReflectionContainerTraits<TypeId>::StringType MakeTypeNameNoTemplateParamsFromRawName(const char* rawTypeName)
 {
-    using ContainerTraits = ReflectionContainerTraits<TypeId>;
-    using StrOps          = StringOps<ContainerTraits::StringType>;
-
     auto ret = MakeTypeNameFromRawName(rawTypeName);
 
-    int first = StrOps::FindFirst(ret, '<');
+    int first = StringOps::FindFirst(ret, '<');
     if (first >= 0)
     {
-        StrOps::SubString(ret, 0, first);
+        StringOps::SubString(ret, 0, first);
     }
 
     return ret;
 }
 
-inline TypeId MakeTypeIdFromTypeName(const ReflectionContainerTraits<TypeId>::StringType& typeName)
+inline TypeId MakeTypeIdFromTypeName(const StringOps::StringType& typeName)
 {
-    using ContainerTraits = ReflectionContainerTraits<TypeId>;
-    using StrOps          = StringOps<ContainerTraits::StringType>;
-
-    return TypeId(StringHash(StrOps::GetStr(typeName), StrOps::GetLength(typeName)));
+    return TypeId(StringHash(StringOps::GetStr(typeName), StringOps::GetLength(typeName)));
 }
 
 } // namespace details
