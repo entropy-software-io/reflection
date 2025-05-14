@@ -26,6 +26,7 @@ public:
   float MyVar{1.0f};
 };
 ```
+
 ## Sample Query of a Reflected Class (Runtime Evaluated)
 ```
 {
@@ -51,6 +52,7 @@ public:
   }
 }
 ```
+
 ## Recommended Make Integration
 ```
 include(FetchContent)
@@ -73,117 +75,49 @@ Compile time reflection allows you to create templated callbacks that are evalua
 Each call for each member is compiled into the code.
 While not as powerful as runtime reflection, this can be useful for serialization or to convert data between two similar classes.
 
-Example: Iterating through all data members in reflected order. See the _Exmaples/CompileTimeReflection_ folder for the full code.
-```
-#include "Entropy/Reflection.h"
+See:
+* _Examples/CompileTimeReflection_ - Basic iteration of reflected members
+* _Examples/TransformDataStructures_ - Copy data between two similar structs, converting types as needed.
 
-// Our custom operation to perform on the reflected class
-struct PrintName
+### Runtime Object Creation
+Given a ```TypeInfo```, you can allocate an instance (if the type allows). You are given back a ```DataObject``` which wraps a ```TypeInfo``` and a ```void*```. Safety checks are provided with casting methods to help prevent aiming the gun too close to your foot.
+
+### Attributes
+Every reflected member and class can be annotated with user-defined attributes in the form of classes / structs. Attributes may hold data, but the data should be set in the constructor of the attribute. Attributes and their associated data can be pulled from ```TypeInfo```.
+
+[!NOTE]
+Each class / member may only have one attribute of a particular type as they are stored internally as a map keyed off the attribute type.
+
+Example:
+```
+struct MyAttribute
 {
-    //
-    // This will be called for each member. A parameter of type "Entropy::AttributeCollection<TAttrTypes...>&&"
-    // can be added if you wish to get the list of attributes for each member too.
-    //
-    template <typename TMember>
-    void operator()(const char* memberName, const TMember& memberValue)
+    MyAttribute(int val)
+        : value(val)
     {
-        std::cout << "Member: " << memberName << ", Value: " << memberValue << std::endl;
     }
+
+    int value = 0;
+};
+
+struct MyStruct
+{
+    ENTROPY_REFLECT_CLASS(MyStruct, MyAttribute(123))
 };
 
 ...
 
-void SomeFunction()
-{
-    MyReflectedClass myClass;
+const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<MyStruct>();
+const ClassDescription* classDesc = typeInfo->Get<ClassTypeInfo>().GetClassDescription();
 
-    // This will PrintName's operator() method for each member.
-    Entropy::ForEachReflectedMember<true>(myClass, PrintName{});
-}
+const MyAttribute* attr = classDesc->TryGetAttribute<MyAttribute>();
 ```
 
-Example: Iterating through each same named member of two classes to transform the data. See the _Exmaples/TransformDataStructures_ folder for the full code.
-```
-// Perhaps this is how we represent 3D vectors internally...
-struct Vector3
-{
-    float x = 0.0f;
-    float y = 0.0f;
-    float z = 0.0f;
-};
+### Dynamic Function Calls
+The ```DynamicFunction``` class wraps a callable type in a non-templated type. A single ```DynamicFunction``` object can be set to any ```std::function<>``` or ```std::mem_fn()``` type (think ```System.Reflection.MethodInfo``` in .NET).
 
-// And this is how we expose 3D vectors in an external API...
-struct Array3
-{
-    float values[3] = {0};
-};
+When invoking a ```DynamicFunction``` object, you pass in fully typed objects. The function object ensures that the types are appropriate and line up. One draw back is that type conversion cannot happen. If a method takes some form of an ```std::string```, you cannot pass in a ```const char*```.
 
-// Our data structure that we use internally and do not share
-struct MyInternalStruct
-{
-    ENTROPY_REFLECT_CLASS(MyInternalStruct)
+When used with ```TypeInfo```, this class allows for a fully automated UI property system. ```TypeInfo``` is used to gather the names of classes and members while ```DynamicFunction``` is used to get and set the values of object instances.
 
-    ENTROPY_REFLECT_MEMBER(MyFloatValue)
-    float MyFloatValue = 1.23f;
-
-    ENTROPY_REFLECT_MEMBER(PositionValue)
-    Vector3 PositionValue;
-
-    ENTROPY_REFLECT_MEMBER(MyInternalOnlyInt)
-    int MyInternalOnlyInt = 123;
-};
-
-// This is what we expose externally
-struct MyExternalStruct
-{
-    ENTROPY_REFLECT_CLASS(MyExternalStruct)
-
-    ENTROPY_REFLECT_MEMBER(MyFloatValue)
-    float MyFloatValue;
-
-    ENTROPY_REFLECT_MEMBER(PositionValue)
-    Array3 PositionValue;
-
-    ENTROPY_REFLECT_MEMBER(MyExternalOnlyInt)
-    int MyExternalOnlyInt;
-};
-
-// This will be called for each same named member. Note: MyInternalOnlyInt and MyExternalOnlyInt will not be evaluated because they only in either struct.
-struct Conversion
-{
-    // General copy
-    template <typename TMemberA, typename TMemberB>
-    void operator()(const char* name, const TMemberA& src, TMemberB& dest)
-    {
-        std::cout << "Copying member [Name: " << name << "] [Value: " << src << "]" << std::endl;
-        dest = src;
-    }
-
-    // Special case to convert Vector3 to Array3
-    template <>
-    void operator()(const char* name, const Vector3& src, Array3& dest)
-    {
-        std::cout << "Copying Vector3 value [Name: " << name << "] [Value: " << src.x << ", " << src.y << ", " << src.z
-                  << "]" << std::endl;
-        dest.values[0] = src.x;
-        dest.values[1] = src.y;
-        dest.values[2] = src.z;
-    }
-};
-
-int main(int argc, char* argv[])
-{
-    MyInternalStruct internalStruct{};
-    internalStruct.PositionValue.x = 1.0f;
-    internalStruct.PositionValue.y = 2.0f;
-    internalStruct.PositionValue.z = 3.0f;
-
-    MyExternalStruct externalStruct{};
-
-    // "true" means to also iterate through base classes (which we do not have in this example)
-    Entropy::ForEachReflectedMemberInBoth<true>(internalStruct, externalStruct, Conversion{});
-
-    return 0;
-}
-```
-
+### Extending
