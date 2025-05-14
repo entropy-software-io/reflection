@@ -69,6 +69,18 @@ private:
 public:
     inline const ContainerTraits::MapType<TypeId, AttributeData>& GetAllAttributes() const { return _attributes; }
 
+    template <typename T>
+    inline const T* TryGetAttribute() const
+    {
+        TypeId typeId = Traits::TypeIdOf<T>{}();
+        auto it       = _attributes.find(typeId);
+        if (it != _attributes.end())
+        {
+            return it->second.GetData<T>();
+        }
+        return nullptr;
+    }
+
 private:
     template <std::size_t Idx = 0, typename... TAttrTypes>
     inline typename std::enable_if<Idx == sizeof...(TAttrTypes), void>::type AddAttribute(
