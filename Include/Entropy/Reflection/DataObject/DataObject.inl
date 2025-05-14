@@ -14,12 +14,11 @@ inline DataObject::DataObject(std::nullptr_t) {}
 
 inline DataObject::DataObject(const TypeInfo* typeInfo, void* data, bool deallocate)
 {
-    ContainerTraits::Allocator<DataObjectContainer> alloc;
-    _container = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
+    _container = AllocatorOps::CreateInstance<DataObjectContainer>();
+    ENTROPY_ASSERT(_container)
+
     if (ENTROPY_LIKELY(_container != nullptr))
     {
-        std::allocator_traits<decltype(alloc)>::construct(alloc, _container);
-
         _container->_typeInfo  = typeInfo;
         _container->_data      = data;
         _container->deallocate = deallocate;
@@ -54,9 +53,7 @@ inline void DataObject::Release()
                 _container->_typeInfo->Destruct(_container->_data);
             }
 
-            ContainerTraits::Allocator<DataObjectContainer> alloc;
-            std::allocator_traits<decltype(alloc)>::destroy(alloc, _container);
-            std::allocator_traits<decltype(alloc)>::deallocate(alloc, _container, 1);
+            AllocatorOps::DestroyInstance(_container);
         }
 
         _container = nullptr;

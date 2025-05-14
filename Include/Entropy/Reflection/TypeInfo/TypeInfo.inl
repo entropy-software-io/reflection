@@ -8,30 +8,11 @@ namespace Entropy
 namespace details
 {
 
-inline TypeInfo* CreateTypeInfo() noexcept
-{
-    using ContainerTraits = ReflectionContainerTraits<TypeInfo>;
-
-    ContainerTraits::Allocator<TypeInfo> alloc;
-    TypeInfo* typeInfo = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
-    if (ENTROPY_LIKELY(typeInfo))
-    {
-        std::allocator_traits<decltype(alloc)>::construct(alloc, typeInfo);
-    }
-
-    return typeInfo;
-}
+inline TypeInfo* CreateTypeInfo() noexcept { return AllocatorOps::CreateInstance<TypeInfo>(); }
 
 inline void DestroyTypeInfo(const TypeInfo* typeInfo) noexcept
 {
-    using ContainerTraits = ReflectionContainerTraits<TypeInfo>;
-
-    if (ENTROPY_LIKELY(typeInfo))
-    {
-        ContainerTraits::Allocator<TypeInfo> alloc;
-        std::allocator_traits<decltype(alloc)>::destroy(alloc, typeInfo);
-        std::allocator_traits<decltype(alloc)>::deallocate(alloc, const_cast<TypeInfo*>(typeInfo), 1);
-    }
+    AllocatorOps::DestroyInstance(const_cast<TypeInfo*>(typeInfo));
 }
 
 } // namespace details

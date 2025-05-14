@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Entropy/Core/Details/AllocatorTraits.h"
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -17,15 +18,12 @@ namespace details
 template <typename T, typename = void>
 struct ReflectionContainerTraits
 {
-    template <typename U>
-    using Allocator = std::allocator<U>;
-
     template <typename TKey, typename TValue>
     using MapType = std::unordered_map<TKey, TValue, std::hash<TKey>, std::equal_to<TKey>,
-                                       Allocator<std::pair<const TKey, TValue>>>;
+                                       typename Traits::AllocatorTraits<std::pair<const TKey, TValue>>::Allocator>;
 
     template <typename TValue>
-    using VectorType = std::vector<TValue, Allocator<TValue>>;
+    using VectorType = std::vector<TValue, typename Traits::AllocatorTraits<TValue>::Allocator>;
 
     using StringType = std::string;
 

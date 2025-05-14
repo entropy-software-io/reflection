@@ -73,9 +73,7 @@ inline ClassTypeInfo::~ClassTypeInfo()
 {
     if (_classDesc)
     {
-        ContainerTraits::Allocator<ClassDescription> alloc;
-        std::allocator_traits<decltype(alloc)>::destroy(alloc, _classDesc);
-        std::allocator_traits<decltype(alloc)>::deallocate(alloc, _classDesc, 1);
+        AllocatorOps::DestroyInstance(_classDesc);
         _classDesc = nullptr;
     }
 }
@@ -84,12 +82,7 @@ inline ClassDescription* ClassTypeInfo::GetOrAddClassDescription()
 {
     if (!_classDesc)
     {
-        ContainerTraits::Allocator<ClassDescription> alloc;
-        _classDesc = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
-        if (ENTROPY_LIKELY(_classDesc))
-        {
-            std::allocator_traits<decltype(alloc)>::construct(alloc, _classDesc);
-        }
+        _classDesc = AllocatorOps::CreateInstance<ClassDescription>();
     }
 
     return _classDesc;

@@ -246,15 +246,7 @@ struct HandleIsConstructible<
 
     inline void operator()(TypeInfo* typeInfo) const
     {
-        typeInfo->SetConstructionHandler([]() {
-            typename ContainerTraits::template Allocator<NonConstT> alloc;
-            NonConstT* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
-            if (ENTROPY_LIKELY(obj != nullptr))
-            {
-                std::allocator_traits<decltype(alloc)>::construct(alloc, obj);
-            }
-            return obj;
-        });
+        typeInfo->SetConstructionHandler([]() { return AllocatorOps::CreateInstance<T>(); });
     }
 };
 
@@ -288,15 +280,8 @@ struct HandleIsCopyConstructible<
 
     inline void operator()(TypeInfo* typeInfo) const
     {
-        typeInfo->SetCopyConstructionHandler([](const void* data) {
-            typename ContainerTraits::template Allocator<NonConstT> alloc;
-            NonConstT* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
-            if (ENTROPY_LIKELY(obj != nullptr))
-            {
-                std::allocator_traits<decltype(alloc)>::construct(alloc, obj, *reinterpret_cast<const T*>(data));
-            }
-            return obj;
-        });
+        typeInfo->SetCopyConstructionHandler(
+            [](const void* data) { return AllocatorOps::CreateInstance<T>(*reinterpret_cast<const T*>(data)); });
     }
 };
 
@@ -330,16 +315,8 @@ struct HandleIsMoveConstructible<
 
     inline void operator()(TypeInfo* typeInfo) const
     {
-        typeInfo->SetMoveConstructionHandler([](void* data) {
-            typename ContainerTraits::template Allocator<NonConstT> alloc;
-            NonConstT* obj = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
-            if (ENTROPY_LIKELY(obj != nullptr))
-            {
-                std::allocator_traits<decltype(alloc)>::construct(alloc, obj,
-                                                                  std::move(*reinterpret_cast<NonConstT*>(data)));
-            }
-            return obj;
-        });
+        typeInfo->SetMoveConstructionHandler(
+            [](void* data) { return AllocatorOps::CreateInstance<T>(std::move(*reinterpret_cast<NonConstT*>(data))); });
     }
 };
 
@@ -363,14 +340,8 @@ struct HandleIsDestructible<
 
     inline void operator()(TypeInfo* typeInfo) const
     {
-        typeInfo->SetDestructionHandler([](void* dataPtr) {
-            if (ENTROPY_LIKELY(dataPtr != nullptr))
-            {
-                typename ContainerTraits::template Allocator<NonConstT> alloc;
-                std::allocator_traits<decltype(alloc)>::destroy(alloc, reinterpret_cast<NonConstT*>(dataPtr));
-                std::allocator_traits<decltype(alloc)>::deallocate(alloc, reinterpret_cast<NonConstT*>(dataPtr), 1);
-            }
-        });
+        typeInfo->SetDestructionHandler(
+            [](void* dataPtr) { AllocatorOps::DestroyInstance(reinterpret_cast<NonConstT*>(dataPtr)); });
     }
 };
 
