@@ -75,9 +75,10 @@ Compile time reflection allows you to create templated callbacks that are evalua
 Each call for each member is compiled into the code.
 While not as powerful as runtime reflection, this can be useful for serialization or to convert data between two similar classes.
 
-See:
-* _Examples/CompileTimeReflection_ - Basic iteration of reflected members
-* _Examples/TransformDataStructures_ - Copy data between two similar structs, converting types as needed.
+> [!TIP]
+> See the following folders for examples:
+> * _Examples/CompileTimeReflection_ - Print out basic information of each member of a reflected class.
+> * _Examples/TransformDataStructures_ - Copy data between two similar structs, converting types as needed.
 
 ### Runtime Object Creation
 Given a ```TypeInfo```, you can allocate an instance (if the type allows). You are given back a ```DataObject``` which wraps a ```TypeInfo``` and a ```void*```. Safety checks are provided with casting methods to help prevent aiming the gun too close to your foot.
