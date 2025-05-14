@@ -85,8 +85,8 @@ Given a ```TypeInfo```, you can allocate an instance (if the type allows). You a
 ### Attributes
 Every reflected member and class can be annotated with user-defined attributes in the form of classes / structs. Attributes may hold data, but the data should be set in the constructor of the attribute. Attributes and their associated data can be pulled from ```TypeInfo```.
 
-[!NOTE]
-Each class / member may only have one attribute of a particular type as they are stored internally as a map keyed off the attribute type.
+> [!NOTE]
+> Each class / member may only have one attribute of a particular type as they are stored internally as a map keyed off the attribute type.
 
 Example:
 ```
