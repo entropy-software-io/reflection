@@ -121,4 +121,26 @@ When invoking a ```DynamicFunction``` object, you pass in fully typed objects. T
 
 When used with ```TypeInfo```, this class allows for a fully automated UI property system. ```TypeInfo``` is used to gather the names of classes and members while ```DynamicFunction``` is used to get and set the values of object instances.
 
-### Extending
+## Extending
+This library does not box you in to a certain set of containers, allocators, and features. It was designed to fit into your code; not have your code fit around it.
+
+### Custom TypeInfo Modules
+```TypeInfo``` can be extended with custom modules, allowing you to specify custom data per type.
+
+> [!NOTE]
+> Each ```TypeInfo``` instance will have an instance of your module. If you only want data for certain types, dynamically allocate it in the module.
+
+When a ```TypeInfo``` is first created via ```Entropy::ReflectType...<>()```, you can hook into a templated callback to fill the information.
+
+> [!CAUTION]
+> While you may safely recursively reflect other types when initializing your module, it is best not to dereference the returned ```TypeInfo``` object for those types because it might not be initialized yet.
+
+> [!TIP]
+> When keeping a ```TypeInfo``` object in a module, use the ```TypeInfoRef``` class to ensure the ```TypeInfo``` will exist during module destruction.
+
+> [!TIP]
+> See the _Examples/CustomTypeInfoModule_ folder for how to set up a basic custom module.
+
+### Changing Allocators and Containers
+You can change how objects are allocated and the containers used within the entire library.
+
