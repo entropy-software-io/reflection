@@ -1,5 +1,5 @@
 # C++ Reflection Library
-A no-dependency, C++11 library that allows for both compile time and runtime reflection (plus more!).
+A no-dependency, type-safe, C++11 library that allows for both compile time and runtime reflection (plus more!).
 This library does _not_ require you to add any pre or post build steps to your build pipeline.
 There is no pre-processing sweep of the code. It is simply markup and run.
 
@@ -7,6 +7,7 @@ There is no pre-processing sweep of the code. It is simply markup and run.
 ```
 #include "Entropy/Reflection.h"
 
+// Struct works also...
 class MyClass
 {
 public:
@@ -50,3 +51,139 @@ public:
   }
 }
 ```
+## Recommended Make Integration
+```
+include(FetchContent)
+
+FetchContent_Declare(
+        entropy-reflection
+        GIT_REPOSITORY https://github.com/entropy-software-io/reflection.git
+    )
+
+# Enable Runtime Reflection
+set (ENTROPY_REFLECTION_ENABLE_RUNTIME ON)
+
+FetchContent_MakeAvailable(entropy-reflection)
+
+target_link_libraries([YOUR_LIBRARY] PRIVATE entropy::reflection)
+```
+## Features
+### Compile Time Reflection
+Compile time reflection allows you to create templated callbacks that are evaluated in a type-safe (compiler enforced) manner.
+Each call for each member is compiled into the code.
+While not as powerful as runtime reflection, this can be useful for serialization or to convert data between two similar classes.
+
+Example: Iterating through all data members in reflected order. See the _Exmaples/CompileTimeReflection_ folder for the full code.
+```
+#include "Entropy/Reflection.h"
+
+// Our custom operation to perform on the reflected class
+struct PrintName
+{
+    //
+    // This will be called for each member. A parameter of type "Entropy::AttributeCollection<TAttrTypes...>&&"
+    // can be added if you wish to get the list of attributes for each member too.
+    //
+    template <typename TMember>
+    void operator()(const char* memberName, const TMember& memberValue)
+    {
+        std::cout << "Member: " << memberName << ", Value: " << memberValue << std::endl;
+    }
+};
+
+...
+
+void SomeFunction()
+{
+    MyReflectedClass myClass;
+
+    // This will PrintName's operator() method for each member.
+    Entropy::ForEachReflectedMember<true>(myClass, PrintName{});
+}
+```
+
+Example: Iterating through each same named member of two classes to transform the data. See the _Exmaples/TransformDataStructures_ folder for the full code.
+```
+// Perhaps this is how we represent 3D vectors internally...
+struct Vector3
+{
+    float x = 0.0f;
+    float y = 0.0f;
+    float z = 0.0f;
+};
+
+// And this is how we expose 3D vectors in an external API...
+struct Array3
+{
+    float values[3] = {0};
+};
+
+// Our data structure that we use internally and do not share
+struct MyInternalStruct
+{
+    ENTROPY_REFLECT_CLASS(MyInternalStruct)
+
+    ENTROPY_REFLECT_MEMBER(MyFloatValue)
+    float MyFloatValue = 1.23f;
+
+    ENTROPY_REFLECT_MEMBER(PositionValue)
+    Vector3 PositionValue;
+
+    ENTROPY_REFLECT_MEMBER(MyInternalOnlyInt)
+    int MyInternalOnlyInt = 123;
+};
+
+// This is what we expose externally
+struct MyExternalStruct
+{
+    ENTROPY_REFLECT_CLASS(MyExternalStruct)
+
+    ENTROPY_REFLECT_MEMBER(MyFloatValue)
+    float MyFloatValue;
+
+    ENTROPY_REFLECT_MEMBER(PositionValue)
+    Array3 PositionValue;
+
+    ENTROPY_REFLECT_MEMBER(MyExternalOnlyInt)
+    int MyExternalOnlyInt;
+};
+
+// This will be called for each same named member. Note: MyInternalOnlyInt and MyExternalOnlyInt will not be evaluated because they only in either struct.
+struct Conversion
+{
+    // General copy
+    template <typename TMemberA, typename TMemberB>
+    void operator()(const char* name, const TMemberA& src, TMemberB& dest)
+    {
+        std::cout << "Copying member [Name: " << name << "] [Value: " << src << "]" << std::endl;
+        dest = src;
+    }
+
+    // Special case to convert Vector3 to Array3
+    template <>
+    void operator()(const char* name, const Vector3& src, Array3& dest)
+    {
+        std::cout << "Copying Vector3 value [Name: " << name << "] [Value: " << src.x << ", " << src.y << ", " << src.z
+                  << "]" << std::endl;
+        dest.values[0] = src.x;
+        dest.values[1] = src.y;
+        dest.values[2] = src.z;
+    }
+};
+
+int main(int argc, char* argv[])
+{
+    MyInternalStruct internalStruct{};
+    internalStruct.PositionValue.x = 1.0f;
+    internalStruct.PositionValue.y = 2.0f;
+    internalStruct.PositionValue.z = 3.0f;
+
+    MyExternalStruct externalStruct{};
+
+    // "true" means to also iterate through base classes (which we do not have in this example)
+    Entropy::ForEachReflectedMemberInBoth<true>(internalStruct, externalStruct, Conversion{});
+
+    return 0;
+}
+```
+
