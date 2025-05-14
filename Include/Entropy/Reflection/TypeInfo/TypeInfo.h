@@ -8,7 +8,7 @@
 #include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
-#include "Entropy/Reflection/TypeInfo/TypeInfoTraits.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoModuleList.h"
 #include <atomic>
 
 namespace Entropy
@@ -71,7 +71,7 @@ class TypeInfo final
     // NOLINTEND(clang-analyzer-optin.core.EnumCastOutOfRange)
 
 public:
-    using ModuleTypes = Reflection::TypeInfoTraits<>::ModuleTypes;
+    using ModuleTypes = Reflection::TypeInfoModuleTraits::ModuleTypes;
 
 private:
     using ContainerTraits = Entropy::details::ReflectionContainerTraits<TypeInfo>;

@@ -2,7 +2,24 @@ option(ENTROPY_REFLECTION_ENABLE_RUNTIME "True to enable runtime reflection (req
 option(ENTROPY_BUILD_EXAMPLES "True to build example projects" ON)
 option(ENTROPY_BUILD_TESTS "True to build tests" OFF)
 
+# Configuration Options
+option (ENTROPY_REFLECTION_INCLUDE_DEFAULT_MODULES "False to exclude the default modules" ON)
+
+# Example config values
+# set(ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST_INCLUDES "#include \"Entropy/Reflection/TypeInfoModules/ClassTypeInfo.h\"")
+# set(ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST "ClassTypeInfo")
+# set(ENTROPY_REFLECTION_EXTRA_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/Include")
+# set(ENTROPY_REFLECTION_EXTRA_LINK_LIBRARIES "")
+
+if ("${ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST}" STREQUAL "")
+    set (ENTROPY_REFLECTION_HAVE_EXTRA_MODULES OFF)
+else()
+    set (ENTROPY_REFLECTION_HAVE_EXTRA_MODULES ON)
+endif()
+
 add_subdirectory(Dependencies)
+
+configure_file(Config/TypeInfoModuleList.h.in Include/Entropy/Reflection/TypeInfo/TypeInfoModuleList.h)
 
 set(ENTROPY_NAMESPACE entropy)
 
@@ -12,8 +29,17 @@ add_library(${ENTROPY_NAMESPACE}::reflection ALIAS entropy-reflection)
 
 target_include_directories(entropy-reflection PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/Include>
     $<INSTALL_INTERFACE:Include>
 )
+
+if (NOT "${ENTROPY_REFLECTION_EXTRA_INCLUDE_DIRECTORIES}" STREQUAL "")
+    target_include_directories(entropy-reflection PUBLIC ${ENTROPY_REFLECTION_EXTRA_INCLUDE_DIRECTORIES})
+endif()
+
+if (NOT "${ENTROPY_REFLECTION_EXTRA_LINK_LIBRARIES}" STREQUAL "")
+    target_link_libraries(entropy-reflection PUBLIC ${ENTROPY_REFLECTION_EXTRA_LINK_LIBRARIES})
+endif()
 
 target_link_libraries(entropy-reflection PUBLIC entropy::core::common)
 
