@@ -1,6 +1,6 @@
 option(ENTROPY_REFLECTION_ENABLE_RUNTIME "True to enable runtime reflection (requires bringing in Entropy Core dependency)" ON)
-option(ENTROPY_BUILD_EXAMPLES "True to build example projects" ON)
-option(ENTROPY_BUILD_TESTS "True to build tests" OFF)
+option(ENTROPY_REFLECTION_BUILD_EXAMPLES "True to build example projects" ON)
+option(ENTROPY_REFLECTION_BUILD_TESTS "True to build tests" OFF)
 
 # Configuration Options
 option (ENTROPY_REFLECTION_INCLUDE_DEFAULT_MODULES "False to exclude the default modules" ON)
@@ -47,10 +47,10 @@ if (${ENTROPY_REFLECTION_ENABLE_RUNTIME})
     target_compile_definitions(entropy-reflection PUBLIC ENTROPY_RUNTIME_REFLECTION_ENABLED)
 endif()
 
-if (${ENTROPY_BUILD_EXAMPLES})
+if (${ENTROPY_REFLECTION_BUILD_EXAMPLES})
     add_subdirectory(Examples)
 endif()
 
-if (${ENTROPY_BUILD_TESTS})
+if (${ENTROPY_REFLECTION_BUILD_TESTS})
     add_subdirectory(Tests)
 endif()
