@@ -85,8 +85,8 @@ public:
     inline bool operator!=(std::nullptr_t) const { return (_container != nullptr); }
     inline operator bool() const { return _container != nullptr; }
 
-    inline DataObject& operator=(const DataObject& other);
-    inline DataObject& operator=(DataObject&& other);
+    DataObject& operator=(const DataObject& other);
+    DataObject& operator=(DataObject&& other);
 
 private:
     DataObjectContainer* _container{};
@@ -96,3 +96,5 @@ private:
 };
 
 } // namespace Entropy
+
+#include "DataObject.inl"

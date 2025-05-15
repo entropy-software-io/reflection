@@ -17,16 +17,16 @@ class TypeInfoRef final
 {
 public:
     constexpr TypeInfoRef() noexcept = default;
-    inline TypeInfoRef(const TypeInfo* ptr);
-    inline TypeInfoRef(const TypeInfoRef& other);
-    inline TypeInfoRef(TypeInfoRef&& other);
+    TypeInfoRef(const TypeInfo* ptr);
+    TypeInfoRef(const TypeInfoRef& other);
+    TypeInfoRef(TypeInfoRef&& other);
     ~TypeInfoRef();
 
     inline operator const TypeInfo*() const { return _ptr; }
     inline const TypeInfo* operator->() const { return _ptr; }
 
-    inline TypeInfoRef& operator=(const TypeInfoRef& other);
-    inline TypeInfoRef& operator=(TypeInfoRef&& other);
+    TypeInfoRef& operator=(const TypeInfoRef& other);
+    TypeInfoRef& operator=(TypeInfoRef&& other);
 
     inline operator bool() const { return _ptr != nullptr; }
     inline bool operator==(const TypeInfo* ptr) const { return _ptr == ptr; }

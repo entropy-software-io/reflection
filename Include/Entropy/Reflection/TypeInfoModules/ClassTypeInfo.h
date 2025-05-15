@@ -5,10 +5,10 @@
 #pragma once
 
 #include "Entropy/Core/Details/MapOps.h"
+#include "Entropy/Core/Details/TypeId.h"
 #include "Entropy/Core/Details/VectorOps.h"
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/AttributeCollection.h"
-#include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
 #include "TypeInfoModule.h"
 
@@ -136,7 +136,7 @@ private:
     void AddTemplateParameter(const TypeInfo* templateParameter);
     void SetBaseClass(const TypeInfo* baseClass);
     void AddMember(const char* name, MemberDescription&& memberInfo);
-    void SetIsReflectedClass(bool isReflectedClass) { _isReflectedClass = isReflectedClass; }
+    inline void SetIsReflectedClass(bool isReflectedClass) { _isReflectedClass = isReflectedClass; }
 
     const TypeInfo* _baseClassTypeInfo = nullptr;
     MapOps::MapType<const char*, MemberDescription> _members{};
@@ -159,7 +159,7 @@ public:
     inline const ClassDescription* GetClassDescription() const { return _classDesc; }
 
 private:
-    inline ClassDescription* GetOrAddClassDescription();
+    ClassDescription* GetOrAddClassDescription();
 
     ClassDescription* _classDesc = nullptr;
 
@@ -212,3 +212,5 @@ struct FillModuleTypeInfo<ClassTypeInfo, T> : public DefaultFillModuleTypeInfo<C
 
 } // namespace Reflection
 } // namespace Entropy
+
+#include "ClassTypeInfo.inl"

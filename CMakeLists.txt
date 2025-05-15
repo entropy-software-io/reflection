@@ -23,7 +23,12 @@ configure_file(Config/TypeInfoModuleList.h.in Include/Entropy/Reflection/TypeInf
 
 set(ENTROPY_NAMESPACE entropy)
 
-set(REFLECTION_SRC "src/Test.cpp")
+set(REFLECTION_SRC
+    Src/DataObject/DataObject.cpp
+    Src/TypeInfo/TypeInfo.cpp
+    Src/TypeInfo/TypeInfoRef.cpp
+    Src/TypeInfoModules/ClassTypeInfo.cpp
+)
 add_library(entropy-reflection OBJECT ${REFLECTION_SRC})
 add_library(${ENTROPY_NAMESPACE}::reflection ALIAS entropy-reflection)
 

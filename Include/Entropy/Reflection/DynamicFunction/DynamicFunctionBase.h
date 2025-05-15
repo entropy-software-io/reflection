@@ -32,7 +32,7 @@ struct DynamicFuncParam
 public:
     DynamicFuncParam(std::nullptr_t) {}
 
-    StringOps::StringType GetTypeName() const;
+    inline StringOps::StringType GetTypeName() const;
 
     inline bool IsValid() const { return _dataObj; }
 

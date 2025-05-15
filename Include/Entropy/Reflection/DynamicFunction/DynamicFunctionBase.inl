@@ -7,7 +7,7 @@ namespace Entropy
 namespace details
 {
 
-StringOps::StringType DynamicFuncParam::GetTypeName() const
+inline StringOps::StringType DynamicFuncParam::GetTypeName() const
 {
     if (ENTROPY_LIKELY(_dataObj))
     {

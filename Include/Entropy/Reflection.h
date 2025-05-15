@@ -13,11 +13,4 @@
 #include "Entropy/Reflection/DataObject/DataObjectFactory.h"
 #include "Entropy/Reflection/TypeInfo/RuntimeReflectionMethods.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfo.h"
-
-// These must be included after TypeInfo.h
-#include "Entropy/Reflection/DataObject/DataObject.inl"
-#include "Entropy/Reflection/Details/TypeId.inl"
-#include "Entropy/Reflection/TypeInfo/TypeInfo.inl"
-#include "Entropy/Reflection/TypeInfo/TypeInfoRef.inl"
-#include "Entropy/Reflection/TypeInfoModules/ClassTypeInfo.inl"
 #endif

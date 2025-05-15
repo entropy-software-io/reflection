@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Entropy/Core/Details/AllocatorTraits.h"
-#include "Entropy/Reflection/Details/TypeId.h"
+#include "Entropy/Core/Details/TypeId.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
 #include "TypeInfo.h"
 

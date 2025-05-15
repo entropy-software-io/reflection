@@ -2,15 +2,18 @@
 // This file is licensed under the MIT License.
 // See the LICENSE file in the project root for more information.
 
+#include "Entropy/Reflection/TypeInfo/TypeInfo.h"
+#include "Entropy/Core/Details/AllocatorTraits.h"
+
 namespace Entropy
 {
 
 namespace details
 {
 
-inline TypeInfo* CreateTypeInfo() noexcept { return AllocatorOps::CreateInstance<TypeInfo>(); }
+TypeInfo* CreateTypeInfo() noexcept { return AllocatorOps::CreateInstance<TypeInfo>(); }
 
-inline void DestroyTypeInfo(const TypeInfo* typeInfo) noexcept
+void DestroyTypeInfo(const TypeInfo* typeInfo) noexcept
 {
     AllocatorOps::DestroyInstance(const_cast<TypeInfo*>(typeInfo));
 }
@@ -19,11 +22,11 @@ inline void DestroyTypeInfo(const TypeInfo* typeInfo) noexcept
 
 //================
 
-inline TypeInfo::~TypeInfo() { _modules.~ModuleTypes(); }
+TypeInfo::~TypeInfo() { _modules.~ModuleTypes(); }
 
-inline void TypeInfo::AddRef() const { ++_refCount; }
+void TypeInfo::AddRef() const { ++_refCount; }
 
-inline void TypeInfo::Release() const
+void TypeInfo::Release() const
 {
     int count = --_refCount;
     if (count == 0)
@@ -32,13 +35,13 @@ inline void TypeInfo::Release() const
     }
 }
 
-inline void TypeInfo::SetTypeName(StringOps::StringType&& name) { _typeName = std::move(name); }
+void TypeInfo::SetTypeName(StringOps::StringType&& name) { _typeName = std::move(name); }
 
-inline void TypeInfo::SetTypeId(TypeId typeId) { _typeId = typeId; }
+void TypeInfo::SetTypeId(TypeId typeId) { _typeId = typeId; }
 
-inline bool TypeInfo::CanConstruct() const { return (_constructionFn != nullptr); }
+bool TypeInfo::CanConstruct() const { return (_constructionFn != nullptr); }
 
-inline DataObject TypeInfo::Construct() const
+DataObject TypeInfo::Construct() const
 {
     if (ENTROPY_LIKELY(CanConstruct()))
     {
@@ -51,9 +54,9 @@ inline DataObject TypeInfo::Construct() const
     return nullptr;
 }
 
-inline bool TypeInfo::CanCopyConstruct() const { return (_copyConstructionFn != nullptr); }
+bool TypeInfo::CanCopyConstruct() const { return (_copyConstructionFn != nullptr); }
 
-inline DataObject TypeInfo::DangerousCopyConstruct(const void* src) const
+DataObject TypeInfo::DangerousCopyConstruct(const void* src) const
 {
     if (ENTROPY_LIKELY(CanCopyConstruct()))
     {
@@ -66,9 +69,9 @@ inline DataObject TypeInfo::DangerousCopyConstruct(const void* src) const
     return nullptr;
 }
 
-inline bool TypeInfo::CanMoveConstruct() const { return (_moveConstructionFn != nullptr); }
+bool TypeInfo::CanMoveConstruct() const { return (_moveConstructionFn != nullptr); }
 
-inline DataObject TypeInfo::DangerousMoveConstruct(void* src) const
+DataObject TypeInfo::DangerousMoveConstruct(void* src) const
 {
     if (ENTROPY_LIKELY(CanMoveConstruct()))
     {
@@ -81,7 +84,7 @@ inline DataObject TypeInfo::DangerousMoveConstruct(void* src) const
     return nullptr;
 }
 
-inline void TypeInfo::Destruct(void* dataPtr) const
+void TypeInfo::Destruct(void* dataPtr) const
 {
     if (ENTROPY_LIKELY(_destructionFn != nullptr))
     {
@@ -89,50 +92,47 @@ inline void TypeInfo::Destruct(void* dataPtr) const
     }
 }
 
-inline void TypeInfo::SetConstructionHandler(ConstructionHandler&& handler) { _constructionFn = std::move(handler); }
+void TypeInfo::SetConstructionHandler(ConstructionHandler&& handler) { _constructionFn = std::move(handler); }
 
-inline void TypeInfo::SetCopyConstructionHandler(CopyConstructionHandler&& handler)
+void TypeInfo::SetCopyConstructionHandler(CopyConstructionHandler&& handler)
 {
     _copyConstructionFn = std::move(handler);
 }
 
-inline void TypeInfo::SetMoveConstructionHandler(MoveConstructionHandler&& handler)
+void TypeInfo::SetMoveConstructionHandler(MoveConstructionHandler&& handler)
 {
     _moveConstructionFn = std::move(handler);
 }
 
-inline void TypeInfo::SetDestructionHandler(DestructionHandler&& handler) { _destructionFn = std::move(handler); }
+void TypeInfo::SetDestructionHandler(DestructionHandler&& handler) { _destructionFn = std::move(handler); }
 
-inline bool TypeInfo::IsConst() const { return (_flags & Flags::IsConst) != Flags::None; }
+bool TypeInfo::IsConst() const { return (_flags & Flags::IsConst) != Flags::None; }
 
-inline bool TypeInfo::IsPointer() const { return (_flags & Flags::IsPointer) != Flags::None; }
+bool TypeInfo::IsPointer() const { return (_flags & Flags::IsPointer) != Flags::None; }
 
-inline bool TypeInfo::IsArray() const { return (_flags & Flags::IsArray) != Flags::None; }
+bool TypeInfo::IsArray() const { return (_flags & Flags::IsArray) != Flags::None; }
 
-inline bool TypeInfo::IsPointerOrArray() const { return (_flags & (Flags::IsPointer | Flags::IsArray)) != Flags::None; }
+bool TypeInfo::IsPointerOrArray() const { return (_flags & (Flags::IsPointer | Flags::IsArray)) != Flags::None; }
 
-inline bool TypeInfo::IsLValueReference() const { return (_flags & Flags::IsLReference) != Flags::None; }
+bool TypeInfo::IsLValueReference() const { return (_flags & Flags::IsLReference) != Flags::None; }
 
-inline bool TypeInfo::IsRValueReference() const { return (_flags & Flags::IsRReference) != Flags::None; }
+bool TypeInfo::IsRValueReference() const { return (_flags & Flags::IsRReference) != Flags::None; }
 
-inline bool TypeInfo::IsReference() const
-{
-    return (_flags & (Flags::IsLReference | Flags::IsRReference)) != Flags::None;
-}
+bool TypeInfo::IsReference() const { return (_flags & (Flags::IsLReference | Flags::IsRReference)) != Flags::None; }
 
-inline void TypeInfo::SetIsConst() { _flags |= Flags::IsConst; }
+void TypeInfo::SetIsConst() { _flags |= Flags::IsConst; }
 
-inline void TypeInfo::SetIsPointer() { _flags |= Flags::IsPointer; }
+void TypeInfo::SetIsPointer() { _flags |= Flags::IsPointer; }
 
-inline void TypeInfo::SetIsLReference() { _flags |= Flags::IsLReference; }
+void TypeInfo::SetIsLReference() { _flags |= Flags::IsLReference; }
 
-inline void TypeInfo::SetIsRReference() { _flags |= Flags::IsRReference; }
+void TypeInfo::SetIsRReference() { _flags |= Flags::IsRReference; }
 
-inline void TypeInfo::SetIsArray() { _flags |= Flags::IsArray; }
+void TypeInfo::SetIsArray() { _flags |= Flags::IsArray; }
 
-inline bool TypeInfo::IsQualifiedType() const { return _nextUnqualifiedType; }
+bool TypeInfo::IsQualifiedType() const { return _nextUnqualifiedType; }
 
-inline const TypeInfo* TypeInfo::GetNextUnqualifiedType() const
+const TypeInfo* TypeInfo::GetNextUnqualifiedType() const
 {
     if (_nextUnqualifiedType)
     {
@@ -141,7 +141,7 @@ inline const TypeInfo* TypeInfo::GetNextUnqualifiedType() const
     return this;
 }
 
-inline const TypeInfo* TypeInfo::GetFullyUnqualifiedType() const
+const TypeInfo* TypeInfo::GetFullyUnqualifiedType() const
 {
     const TypeInfo* ret = this;
     while (ret->IsQualifiedType())
@@ -151,9 +151,9 @@ inline const TypeInfo* TypeInfo::GetFullyUnqualifiedType() const
     return ret;
 }
 
-inline void TypeInfo::SetNextUnqualifiedType(const TypeInfo* typeInfo) { _nextUnqualifiedType = typeInfo; }
+void TypeInfo::SetNextUnqualifiedType(const TypeInfo* typeInfo) { _nextUnqualifiedType = typeInfo; }
 
-inline bool TypeInfo::CanCastTo(const TypeInfo* other) const noexcept
+bool TypeInfo::CanCastTo(const TypeInfo* other) const noexcept
 {
     if (ENTROPY_UNLIKELY(other == nullptr))
     {

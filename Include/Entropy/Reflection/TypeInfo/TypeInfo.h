@@ -6,8 +6,8 @@
 
 #include "Entropy/Core/Details/FunctionTraits.h"
 #include "Entropy/Core/Details/StringOps.h"
+#include "Entropy/Core/Details/TypeId.h"
 #include "Entropy/Reflection/DataObject/DataObject.h"
-#include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoModuleList.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
 #include <atomic>
@@ -155,7 +155,7 @@ public:
     /// <summary>
     /// Returns true if we have any qualifiers, like const, *, &, etc...
     /// </summary>
-    inline bool IsQualifiedType() const;
+    bool IsQualifiedType() const;
 
     /// <summary>
     /// Returns the type with one layer of qualifiers removed. If this type is not qualified, this object is returned.
@@ -166,7 +166,7 @@ public:
     /// const T* -> const T
     /// T* const -> T (both const and * are at the same level in this case)
     /// </remarks>
-    inline const TypeInfo* GetNextUnqualifiedType() const;
+    const TypeInfo* GetNextUnqualifiedType() const;
 
     /// <summary>
     /// Returns the type with all qualifiers removed. If this type is not qualified, this object is returned.
@@ -206,7 +206,7 @@ private:
 
     void SetNextUnqualifiedType(const TypeInfo* typeInfo);
 
-    inline void Destruct(void* dataPtr) const;
+    void Destruct(void* dataPtr) const;
 
     StringOps::StringType _typeName{};
 
