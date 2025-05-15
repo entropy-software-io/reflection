@@ -16,7 +16,7 @@ namespace Entropy
 namespace details
 {
 
-inline ReflectionContainerTraits<TypeId>::StringType MakeTypeNameFromRawName(const char* rawTypeName)
+inline StringOps::StringType MakeTypeNameFromRawName(const char* rawTypeName)
 {
 #ifdef ENTROPY_MSVC
     StringOps::StringType ret = rawTypeName;
@@ -36,7 +36,7 @@ inline ReflectionContainerTraits<TypeId>::StringType MakeTypeNameFromRawName(con
 #endif
 }
 
-inline ReflectionContainerTraits<TypeId>::StringType MakeTypeNameNoTemplateParamsFromRawName(const char* rawTypeName)
+inline StringOps::StringType MakeTypeNameNoTemplateParamsFromRawName(const char* rawTypeName)
 {
     auto ret = MakeTypeNameFromRawName(rawTypeName);
 

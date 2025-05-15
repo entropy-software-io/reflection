@@ -57,14 +57,14 @@ inline void AttributeContainer::AddAttributes(AttributeCollection<TAttrTypes...>
 
 inline void ClassDescription::AddTemplateParameter(const TypeInfo* templateParameter)
 {
-    _templateParameters.push_back(templateParameter);
+    VectorOps::Add(_templateParameters, templateParameter);
 }
 
 inline void ClassDescription::SetBaseClass(const TypeInfo* baseClass) { _baseClassTypeInfo = baseClass; }
 
 inline void ClassDescription::AddMember(const char* name, MemberDescription&& memberInfo)
 {
-    _members.emplace(name, std::move(memberInfo));
+    MapOps::AddUnique(_members, name, std::move(memberInfo));
 }
 
 //=======================

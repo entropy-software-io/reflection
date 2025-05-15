@@ -18,10 +18,6 @@ namespace details
 template <typename T, typename = void>
 struct ReflectionContainerTraits
 {
-    template <typename TKey, typename TValue>
-    using MapType = std::unordered_map<TKey, TValue, std::hash<TKey>, std::equal_to<TKey>,
-                                       typename Traits::AllocatorTraits<std::pair<const TKey, TValue>>::Allocator>;
-
     template <typename TValue>
     using VectorType = std::vector<TValue, typename Traits::AllocatorTraits<TValue>::Allocator>;
 

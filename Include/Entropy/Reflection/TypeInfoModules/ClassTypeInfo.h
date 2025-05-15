@@ -4,9 +4,10 @@
 
 #pragma once
 
+#include "Entropy/Core/Details/MapOps.h"
+#include "Entropy/Core/Details/VectorOps.h"
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/AttributeCollection.h"
-#include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
 #include "TypeInfoModule.h"
@@ -63,11 +64,8 @@ private:
 
 class AttributeContainer
 {
-private:
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<AttributeContainer>;
-
 public:
-    inline const ContainerTraits::MapType<TypeId, AttributeData>& GetAllAttributes() const { return _attributes; }
+    inline const MapOps::MapType<TypeId, AttributeData>& GetAllAttributes() const { return _attributes; }
 
     template <typename T>
     inline const T* TryGetAttribute() const
@@ -95,7 +93,7 @@ private:
     template <typename... TAttrTypes>
     inline void AddAttributes(AttributeCollection<TAttrTypes...>&& attr);
 
-    ContainerTraits::MapType<TypeId, AttributeData> _attributes;
+    MapOps::MapType<TypeId, AttributeData> _attributes;
 
     template <typename, typename, typename>
     friend struct FillModuleTypeInfo;
@@ -129,17 +127,11 @@ private:
 /// </summary>
 class ClassDescription : public AttributeContainer
 {
-private:
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<ClassDescription>;
-
 public:
     inline bool IsReflectedClass() const { return _isReflectedClass; }
-    inline const ContainerTraits::VectorType<const TypeInfo*>& GetTemplateParameters() const
-    {
-        return _templateParameters;
-    }
+    inline const VectorOps::VectorType<const TypeInfo*>& GetTemplateParameters() const { return _templateParameters; }
     inline const TypeInfo* GetBaseClassTypeInfo() const { return _baseClassTypeInfo; }
-    inline const ContainerTraits::MapType<const char*, MemberDescription>& GetMembers() const { return _members; }
+    inline const MapOps::MapType<const char*, MemberDescription>& GetMembers() const { return _members; }
 
 private:
     void AddTemplateParameter(const TypeInfo* templateParameter);
@@ -148,8 +140,8 @@ private:
     void SetIsReflectedClass(bool isReflectedClass) { _isReflectedClass = isReflectedClass; }
 
     const TypeInfo* _baseClassTypeInfo = nullptr;
-    ContainerTraits::MapType<const char*, MemberDescription> _members{};
-    ContainerTraits::VectorType<const TypeInfo*> _templateParameters{};
+    MapOps::MapType<const char*, MemberDescription> _members{};
+    VectorOps::VectorType<const TypeInfo*> _templateParameters{};
     bool _isReflectedClass = false;
 
     template <typename, typename, typename>
