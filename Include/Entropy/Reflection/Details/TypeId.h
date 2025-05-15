@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "Entropy/Core/Details/StringOps.h"
 #include "Entropy/Core/Details/StrongAlias.h"
-#include "Entropy/Reflection/Details/ContainerTypes.h"
 
 namespace Entropy
 {
@@ -17,13 +17,13 @@ static constexpr TypeId cInvalidTypeId = TypeId(0);
 namespace details
 {
 
-ReflectionContainerTraits<TypeId>::StringType MakeTypeNameFromRawName(const char* rawTypeName);
-ReflectionContainerTraits<TypeId>::StringType MakeTypeNameNoTemplateParamsFromRawName(const char* rawTypeName);
+StringOps::StringType MakeTypeNameFromRawName(const char* rawTypeName);
+StringOps::StringType MakeTypeNameNoTemplateParamsFromRawName(const char* rawTypeName);
 
 template <typename TFn, typename T, typename = void>
 struct MakeTypeNameFn
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const { return fn(typeid(T).name()); }
+    StringOps::StringType operator()(TFn fn) const { return fn(typeid(T).name()); }
 };
 
 template <typename TFn, typename T>
@@ -31,14 +31,10 @@ struct MakeTypeNameFn<
     TFn, T,
     typename std::enable_if<std::is_const<T>::value && !std::is_pointer<T>::value && !std::is_array<T>::value>::type>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
-        ReflectionContainerTraits<TypeId>::StringType ret =
-            MakeTypeNameFn<TFn, typename std::remove_const<T>::type>{}(fn);
-        StrOps::Append(ret, " const");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, typename std::remove_const<T>::type>{}(fn);
+        StringOps::Append(ret, " const");
         return ret;
     }
 };
@@ -46,14 +42,10 @@ struct MakeTypeNameFn<
 template <typename TFn, typename T>
 struct MakeTypeNameFn<TFn, T, typename std::enable_if<!std::is_const<T>::value && std::is_pointer<T>::value>::type>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
-        ReflectionContainerTraits<TypeId>::StringType ret =
-            MakeTypeNameFn<TFn, typename std::remove_pointer<T>::type>{}(fn);
-        StrOps::Append(ret, "*");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, typename std::remove_pointer<T>::type>{}(fn);
+        StringOps::Append(ret, "*");
         return ret;
     }
 };
@@ -61,15 +53,11 @@ struct MakeTypeNameFn<TFn, T, typename std::enable_if<!std::is_const<T>::value &
 template <typename TFn, typename T>
 struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_const<T>::value && std::is_pointer<T>::value>::type>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
         // remove_pointer removes const too
-        ReflectionContainerTraits<TypeId>::StringType ret =
-            MakeTypeNameFn<TFn, typename std::remove_pointer<T>::type>{}(fn);
-        StrOps::Append(ret, "*const");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, typename std::remove_pointer<T>::type>{}(fn);
+        StringOps::Append(ret, "*const");
         return ret;
     }
 };
@@ -77,14 +65,10 @@ struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_const<T>::value &&
 template <typename TFn, typename T>
 struct MakeTypeNameFn<TFn, T[]>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
-        ReflectionContainerTraits<TypeId>::StringType ret =
-            MakeTypeNameFn<TFn, typename std::remove_extent<T[I]>::type>{}(fn);
-        StrOps::Append(ret, "[]");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, typename std::remove_extent<T[]>::type>{}(fn);
+        StringOps::Append(ret, "[]");
         return ret;
     }
 };
@@ -92,18 +76,15 @@ struct MakeTypeNameFn<TFn, T[]>
 template <typename TFn, typename T, std::size_t I>
 struct MakeTypeNameFn<TFn, T[I]>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
         char iBuf[20] = {0};
-        std::snprintf(iBuf, sizeof(iBuf) / sizeof(char), "%llo", I);
+        std::snprintf(iBuf, sizeof(iBuf) / sizeof(char), "%to", I);
 
-        ReflectionContainerTraits<TypeId>::StringType ret = MakeTypeNameFn<TFn, T>{}(fn);
-        StrOps::Append(ret, "[");
-        StrOps::Append(ret, iBuf);
-        StrOps::Append(ret, "]");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, T>{}(fn);
+        StringOps::Append(ret, "[");
+        StringOps::Append(ret, iBuf);
+        StringOps::Append(ret, "]");
         return ret;
     }
 };
@@ -113,23 +94,20 @@ struct MakeTypeNameFn<TFn, T[I]>
 template <typename TFn, typename T, std::size_t I, std::size_t J>
 struct MakeTypeNameFn<TFn, T[I][J]>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
         char iBuf[20] = {0};
-        std::snprintf(iBuf, sizeof(iBuf) / sizeof(char), "%llo", I);
+        std::snprintf(iBuf, sizeof(iBuf) / sizeof(char), "%to", I);
 
         char jBuf[20] = {0};
-        std::snprintf(jBuf, sizeof(jBuf) / sizeof(char), "%llo", J);
+        std::snprintf(jBuf, sizeof(jBuf) / sizeof(char), "%to", J);
 
-        ReflectionContainerTraits<TypeId>::StringType ret = MakeTypeNameFn<TFn, T>{}(fn);
-        StrOps::Append(ret, "[");
-        StrOps::Append(ret, iBuf);
-        StrOps::Append(ret, "][");
-        StrOps::Append(ret, jBuf);
-        StrOps::Append(ret, "]");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, T>{}(fn);
+        StringOps::Append(ret, "[");
+        StringOps::Append(ret, iBuf);
+        StringOps::Append(ret, "][");
+        StringOps::Append(ret, jBuf);
+        StringOps::Append(ret, "]");
         return ret;
     }
 };
@@ -139,28 +117,25 @@ struct MakeTypeNameFn<TFn, T[I][J]>
 template <typename TFn, typename T, std::size_t I, std::size_t J, std::size_t K>
 struct MakeTypeNameFn<TFn, T[I][J][K]>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
         char iBuf[20] = {0};
-        std::snprintf(iBuf, sizeof(iBuf) / sizeof(char), "%llo", I);
+        std::snprintf(iBuf, sizeof(iBuf) / sizeof(char), "%to", I);
 
         char jBuf[20] = {0};
-        std::snprintf(jBuf, sizeof(jBuf) / sizeof(char), "%llo", J);
+        std::snprintf(jBuf, sizeof(jBuf) / sizeof(char), "%to", J);
 
         char kBuf[20] = {0};
-        std::snprintf(kBuf, sizeof(kBuf) / sizeof(char), "%llo", K);
+        std::snprintf(kBuf, sizeof(kBuf) / sizeof(char), "%to", K);
 
-        ReflectionContainerTraits<TypeId>::StringType ret = MakeTypeNameFn<TFn, T>{}(fn);
-        StrOps::Append(ret, "[");
-        StrOps::Append(ret, iBuf);
-        StrOps::Append(ret, "][");
-        StrOps::Append(ret, jBuf);
-        StrOps::Append(ret, "][");
-        StrOps::Append(ret, kBuf);
-        StrOps::Append(ret, "]");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, T>{}(fn);
+        StringOps::Append(ret, "[");
+        StringOps::Append(ret, iBuf);
+        StringOps::Append(ret, "][");
+        StringOps::Append(ret, jBuf);
+        StringOps::Append(ret, "][");
+        StringOps::Append(ret, kBuf);
+        StringOps::Append(ret, "]");
         return ret;
     }
 };
@@ -168,14 +143,10 @@ struct MakeTypeNameFn<TFn, T[I][J][K]>
 template <typename TFn, typename T>
 struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_lvalue_reference<T>::value>::type>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
-        ReflectionContainerTraits<TypeId>::StringType ret =
-            MakeTypeNameFn<TFn, typename std::remove_reference<T>::type>{}(fn);
-        StrOps::Append(ret, "&");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, typename std::remove_reference<T>::type>{}(fn);
+        StringOps::Append(ret, "&");
         return ret;
     }
 };
@@ -183,14 +154,10 @@ struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_lvalue_reference<T
 template <typename TFn, typename T>
 struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_rvalue_reference<T>::value>::type>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
-        ReflectionContainerTraits<TypeId>::StringType ret =
-            MakeTypeNameFn<TFn, typename std::remove_reference<T>::type>{}(fn);
-        StrOps::Append(ret, "&&");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, typename std::remove_reference<T>::type>{}(fn);
+        StringOps::Append(ret, "&&");
         return ret;
     }
 };
@@ -198,14 +165,10 @@ struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_rvalue_reference<T
 template <typename TFn, typename T>
 struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_volatile<T>::value>::type>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
-        ReflectionContainerTraits<TypeId>::StringType ret =
-            MakeTypeNameFn<TFn, typename std::remove_volatile<T>::type>{}(fn);
-        StrOps::Append(ret, " volatile");
+        StringOps::StringType ret = MakeTypeNameFn<TFn, typename std::remove_volatile<T>::type>{}(fn);
+        StringOps::Append(ret, " volatile");
         return ret;
     }
 };
@@ -213,25 +176,19 @@ struct MakeTypeNameFn<TFn, T, typename std::enable_if<std::is_volatile<T>::value
 template <typename TFn, typename... T>
 struct MakeTypeNameTemplateParamFn
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
-    {
-        return ReflectionContainerTraits<TypeId>::StringType();
-    }
+    StringOps::StringType operator()(TFn fn) const { return StringOps::StringType(); }
 };
 
 template <typename TFn, typename TFirst, typename... TRest>
 struct MakeTypeNameTemplateParamFn<TFn, TFirst, TRest...>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
-        ReflectionContainerTraits<TypeId>::StringType ret = MakeTypeNameFn<TFn, TFirst>{}(fn);
+        StringOps::StringType ret = MakeTypeNameFn<TFn, TFirst>{}(fn);
         if ENTROPY_CONSTEXPR (sizeof...(TRest) > 0)
         {
-            StrOps::Append(ret, ", ");
-            StrOps::Append(ret, MakeTypeNameTemplateParamFn<TFn, TRest...>{}(fn));
+            StringOps::Append(ret, ", ");
+            StringOps::Append(ret, MakeTypeNameTemplateParamFn<TFn, TRest...>{}(fn));
         }
         return ret;
     }
@@ -240,17 +197,14 @@ struct MakeTypeNameTemplateParamFn<TFn, TFirst, TRest...>
 template <typename TFn, template <typename...> class T, typename... Tn>
 struct MakeTypeNameFn<TFn, T<Tn...>>
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()(TFn fn) const
+    StringOps::StringType operator()(TFn fn) const
     {
-        using ContainerTraits = ReflectionContainerTraits<TypeId>;
-        using StrOps          = StringOps<ContainerTraits::StringType>;
-
         auto baseFn = &MakeTypeNameNoTemplateParamsFromRawName;
 
-        ReflectionContainerTraits<TypeId>::StringType ret = baseFn(typeid(T<Tn...>).name());
-        StrOps::Append(ret, "<");
-        StrOps::Append(ret, MakeTypeNameTemplateParamFn<TFn, Tn...>{}(fn));
-        StrOps::Append(ret, ">");
+        StringOps::StringType ret = baseFn(typeid(T<Tn...>).name());
+        StringOps::Append(ret, "<");
+        StringOps::Append(ret, MakeTypeNameTemplateParamFn<TFn, Tn...>{}(fn));
+        StringOps::Append(ret, ">");
         return ret;
     }
 };
@@ -258,14 +212,14 @@ struct MakeTypeNameFn<TFn, T<Tn...>>
 template <typename T, typename = void>
 struct MakeTypeName
 {
-    ReflectionContainerTraits<TypeId>::StringType operator()() const
+    StringOps::StringType operator()() const
     {
         auto fn = &MakeTypeNameFromRawName;
         return MakeTypeNameFn<decltype(fn), T>{}(fn);
     }
 };
 
-TypeId MakeTypeIdFromTypeName(const ReflectionContainerTraits<TypeId>::StringType& typeName);
+TypeId MakeTypeIdFromTypeName(const StringOps::StringType& typeName);
 
 template <typename T>
 TypeId MakeTypeIdFromTypeName()
@@ -291,11 +245,9 @@ struct TypeIdOf
 template <typename T, typename = void>
 struct TypeNameOf
 {
-    using ContainerTraits = ::Entropy::details::ReflectionContainerTraits<TypeId>;
-
-    inline ContainerTraits::StringType operator()() const
+    inline StringOps::StringType operator()() const
     {
-        static ContainerTraits::StringType name = Entropy::details::MakeTypeName<T>{}();
+        static StringOps::StringType name = Entropy::details::MakeTypeName<T>{}();
         return name;
     }
 };

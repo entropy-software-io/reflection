@@ -7,7 +7,7 @@ namespace Entropy
 namespace details
 {
 
-DynamicFuncParam::StringType DynamicFuncParam::GetTypeName() const
+StringOps::StringType DynamicFuncParam::GetTypeName() const
 {
     if (ENTROPY_LIKELY(_dataObj))
     {
@@ -272,44 +272,16 @@ bool TDynamicFunction<TFn, ReturnValue (TClass::*)(Args...) const>::DoInvoke(
 template <template <typename> class TFn, typename T>
 DynamicFunctionBase* MakeDynamicFunction(const TFn<T>& func)
 {
-    using ContainerTraits = ReflectionContainerTraits<DynamicFunction>;
-
-    ContainerTraits::Allocator<TDynamicFunction<TFn, T>> alloc;
-    auto ptr = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
-    if (ptr)
-    {
-        std::allocator_traits<decltype(alloc)>::construct(alloc, ptr, func);
-    }
-
-    return ptr;
+    return AllocatorOps::CreateInstance<TDynamicFunction<TFn, T>>(func);
 }
 
 template <template <typename> class TFn, typename T>
 DynamicFunctionBase* MakeDynamicFunction(TFn<T>&& func)
 {
-    using ContainerTraits = ReflectionContainerTraits<DynamicFunction>;
-
-    ContainerTraits::Allocator<TDynamicFunction<TFn, T>> alloc;
-    auto ptr = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
-    if (ptr)
-    {
-        std::allocator_traits<decltype(alloc)>::construct(alloc, ptr, std::move(func));
-    }
-
-    return ptr;
+    return AllocatorOps::CreateInstance<TDynamicFunction<TFn, T>>(std::move(func));
 }
 
-void DestroyDynamicFunction(DynamicFunctionBase* func)
-{
-    using ContainerTraits = ReflectionContainerTraits<DynamicFunction>;
-
-    if (func)
-    {
-        ContainerTraits::Allocator<DynamicFunctionBase> alloc;
-        std::allocator_traits<decltype(alloc)>::destroy(alloc, func);
-        std::allocator_traits<decltype(alloc)>::deallocate(alloc, func, 1);
-    }
-}
+void DestroyDynamicFunction(DynamicFunctionBase* func) { return AllocatorOps::DestroyInstance(func); }
 
 } // namespace details
 } // namespace Entropy

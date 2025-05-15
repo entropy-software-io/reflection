@@ -30,7 +30,7 @@ struct AttributeData
     template <typename T>
     inline bool IsType() const
     {
-        return _dataObj.IsType<T>();
+        return _dataObj.IsExactType<T>();
     }
 
     template <typename T>
@@ -71,11 +71,13 @@ public:
     inline const T* TryGetAttribute() const
     {
         TypeId typeId = Traits::TypeIdOf<T>{}();
-        auto it       = _attributes.find(typeId);
-        if (it != _attributes.end())
+
+        const AttributeData* data = nullptr;
+        if (MapOps::TryGetValue(_attributes, typeId, &data))
         {
-            return it->second.GetData<T>();
+            return data->GetData<T>();
         }
+
         return nullptr;
     }
 

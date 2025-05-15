@@ -31,7 +31,7 @@ inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type Attribu
             DataObject obj = DataObjectFactory::Create<TAttr>(std::move(attr.template GetAt<Idx>()));
             if (ENTROPY_LIKELY(obj != nullptr))
             {
-                _attributes[Entropy::Traits::TypeIdOf<TAttr>{}()] = AttributeData(std::move(obj));
+                MapOps::AddOrUpdate(_attributes, Entropy::Traits::TypeIdOf<TAttr>{}(), AttributeData(std::move(obj)));
             }
         }
         else if (typeInfo->CanCopyConstruct())
@@ -39,7 +39,7 @@ inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type Attribu
             DataObject obj = DataObjectFactory::Create<TAttr>(attr.template GetAt<Idx>());
             if (ENTROPY_LIKELY(obj != nullptr))
             {
-                _attributes[Entropy::Traits::TypeIdOf<TAttr>{}()] = AttributeData(std::move(obj));
+                MapOps::AddOrUpdate(_attributes, Entropy::Traits::TypeIdOf<TAttr>{}(), AttributeData(std::move(obj)));
             }
         }
     }

@@ -4,11 +4,12 @@
 
 #pragma once
 
+#include "Entropy/Core/Details/StringOps.h"
 #include "Entropy/Reflection/DataObject/DataObject.h"
 #include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeId.h"
-#include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoModuleList.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
 #include <atomic>
 
 namespace Entropy
@@ -99,7 +100,7 @@ private:
 public:
     ~TypeInfo();
 
-    inline const ContainerTraits::StringType& GetTypeName() const { return _typeName; }
+    inline const StringOps::StringType& GetTypeName() const { return _typeName; }
     inline TypeId GetTypeId() const { return _typeId; }
 
     template <typename TModule>
@@ -191,7 +192,7 @@ private:
     void AddRef() const;
     void Release() const;
 
-    void SetTypeName(ContainerTraits::StringType&& name);
+    void SetTypeName(StringOps::StringType&& name);
     void SetTypeId(TypeId typeId);
 
     void SetConstructionHandler(ConstructionHandler&& handler);
@@ -209,7 +210,7 @@ private:
 
     inline void Destruct(void* dataPtr) const;
 
-    ContainerTraits::StringType _typeName{};
+    StringOps::StringType _typeName{};
 
     ConstructionHandler _constructionFn{};
     CopyConstructionHandler _copyConstructionFn{};

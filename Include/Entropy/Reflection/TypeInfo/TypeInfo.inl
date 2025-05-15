@@ -32,7 +32,7 @@ inline void TypeInfo::Release() const
     }
 }
 
-inline void TypeInfo::SetTypeName(ContainerTraits::StringType&& name) { _typeName = std::move(name); }
+inline void TypeInfo::SetTypeName(StringOps::StringType&& name) { _typeName = std::move(name); }
 
 inline void TypeInfo::SetTypeId(TypeId typeId) { _typeId = typeId; }
 

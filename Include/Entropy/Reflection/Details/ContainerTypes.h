@@ -18,11 +18,6 @@ namespace details
 template <typename T, typename = void>
 struct ReflectionContainerTraits
 {
-    template <typename TValue>
-    using VectorType = std::vector<TValue, typename Traits::AllocatorTraits<TValue>::Allocator>;
-
-    using StringType = std::string;
-
     template <typename TFn>
     using FunctionType = std::function<TFn>;
 };
