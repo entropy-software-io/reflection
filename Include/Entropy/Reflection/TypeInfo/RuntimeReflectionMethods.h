@@ -246,7 +246,7 @@ struct HandleIsConstructible<
 
     inline void operator()(TypeInfo* typeInfo) const
     {
-        typeInfo->SetConstructionHandler([]() { return AllocatorOps::CreateInstance<T>(); });
+        typeInfo->SetConstructionHandler([]() { return AllocatorOps::CreateInstance<NonConstT>(); });
     }
 };
 
@@ -280,8 +280,9 @@ struct HandleIsCopyConstructible<
 
     inline void operator()(TypeInfo* typeInfo) const
     {
-        typeInfo->SetCopyConstructionHandler(
-            [](const void* data) { return AllocatorOps::CreateInstance<T>(*reinterpret_cast<const T*>(data)); });
+        typeInfo->SetCopyConstructionHandler([](const void* data) {
+            return AllocatorOps::CreateInstance<NonConstT>(*reinterpret_cast<const T*>(data));
+        });
     }
 };
 
@@ -315,8 +316,9 @@ struct HandleIsMoveConstructible<
 
     inline void operator()(TypeInfo* typeInfo) const
     {
-        typeInfo->SetMoveConstructionHandler(
-            [](void* data) { return AllocatorOps::CreateInstance<T>(std::move(*reinterpret_cast<NonConstT*>(data))); });
+        typeInfo->SetMoveConstructionHandler([](void* data) {
+            return AllocatorOps::CreateInstance<NonConstT>(std::move(*reinterpret_cast<NonConstT*>(data)));
+        });
     }
 };
 
