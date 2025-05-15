@@ -106,9 +106,6 @@ private:
 /// </summary>
 class MemberDescription : public AttributeContainer
 {
-private:
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<MemberDescription>;
-
 public:
     MemberDescription(const char* memberName, const TypeInfo* memberType)
         : _memberName(memberName)
@@ -155,9 +152,6 @@ private:
 /// </summary>
 class ClassTypeInfo
 {
-private:
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<ClassTypeInfo>;
-
 public:
     ~ClassTypeInfo();
 

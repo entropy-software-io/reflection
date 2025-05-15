@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "Entropy/Core/Details/FunctionTraits.h"
 #include "Entropy/Core/Details/StringOps.h"
 #include "Entropy/Reflection/DataObject/DataObject.h"
-#include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoModuleList.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
@@ -75,12 +75,10 @@ public:
     using ModuleTypes = Reflection::TypeInfoModuleTraits::ModuleTypes;
 
 private:
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<TypeInfo>;
-
-    using ConstructionHandler     = ContainerTraits::FunctionType<void*()>;
-    using CopyConstructionHandler = ContainerTraits::FunctionType<void*(const void*)>;
-    using MoveConstructionHandler = ContainerTraits::FunctionType<void*(void*)>;
-    using DestructionHandler      = ContainerTraits::FunctionType<void(void*)>;
+    using ConstructionHandler     = Traits::FunctionTraits<void*()>::Function;
+    using CopyConstructionHandler = Traits::FunctionTraits<void*(const void*)>::Function;
+    using MoveConstructionHandler = Traits::FunctionTraits<void*(void*)>::Function;
+    using DestructionHandler      = Traits::FunctionTraits<void(void*)>::Function;
 
     template <typename TModule, typename TModuleTypes, std::size_t Index = 0>
     struct ModuleIndexHelper;

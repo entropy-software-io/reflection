@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Entropy/Core/Details/AllocatorTraits.h"
+#include "Entropy/Core/Log.h"
 #include "Entropy/Reflection/TypeInfo/RuntimeReflectionMethods.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfo.h"
 

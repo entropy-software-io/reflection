@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Entropy/Core/Details/Defines.h"
-#include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
 #include <atomic>
 
@@ -21,8 +20,6 @@ struct DataObjectFactory;
 class DataObject final
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<DataObject>;
-
     struct DataObjectContainer
     {
         TypeInfoRef _typeInfo{};

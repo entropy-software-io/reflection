@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Entropy/Core/Details/AllocatorTraits.h"
 #include "Entropy/Reflection/Details/TypeId.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
 #include "TypeInfo.h"
@@ -242,7 +243,6 @@ struct HandleIsConstructible<
                                IsAllocatorConstructible<typename std::remove_const<T>::type>::value>::type>
 {
     using NonConstT       = typename std::remove_const<T>::type;
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
@@ -276,7 +276,6 @@ struct HandleIsCopyConstructible<
                                IsAllocatorCopyConstructible<typename std::remove_const<T>::type>::value>::type>
 {
     using NonConstT       = typename std::remove_const<T>::type;
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
@@ -312,7 +311,6 @@ struct HandleIsMoveConstructible<
                                IsAllocatorMoveConstructible<typename std::remove_const<T>::type>::value>::type>
 {
     using NonConstT       = typename std::remove_const<T>::type;
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
@@ -338,7 +336,6 @@ struct HandleIsDestructible<
                                 (IsAllocatorMoveConstructible<typename std::remove_const<T>::type>::value))>::type>
 {
     using NonConstT       = typename std::remove_const<T>::type;
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<NonConstT>;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
