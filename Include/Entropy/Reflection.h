@@ -8,7 +8,6 @@
 #include "Entropy/Reflection/Details/ClassCounter.h"
 #include "Entropy/Reflection/Details/MemberEnumeration.h"
 #include "Entropy/Reflection/Details/ReflectionMacros.h"
-#include "Entropy/Reflection/Details/ReflectionUtilityFunctions.h"
 
 #ifdef ENTROPY_RUNTIME_REFLECTION_ENABLED
 #include "Entropy/Reflection/DataObject/DataObjectFactory.h"

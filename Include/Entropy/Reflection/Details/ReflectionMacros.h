@@ -128,7 +128,7 @@
     ENTROPY_CLASS_TYPE_OPERATOR_FUNCTION({                                                                             \
         /* Note: the extra parens around src.memberName preserve the current const-ness of this object */              \
         ::Entropy::details::InvokeClassTypeFunction<ThisReflectedType, TFunc>(                                         \
-            ::Entropy::details::MakeAttributeCollection(__VA_ARGS__), callbackObj);                                  \
+            ::Entropy::details::MakeAttributeCollection(__VA_ARGS__), callbackObj);                                    \
     })                                                                                                                 \
     ENTROPY_DECLARE_MEMBER_TYPE_OPERATOR_FUNCTION                                                                      \
     ENTROPY_MEMBER_TYPE_OPERATOR_FUNCTION()                                                                            \
@@ -139,8 +139,7 @@
     ENTROPY_DECLARE_MEMBER_OFFSET_OF_FUNCTION                                                                          \
     ENTROPY_NULL_MEMBER_OFFSET_OF_FUNCTION()                                                                           \
     ENTROPY_REFLECT_ON_LOAD(className)                                                                                 \
-    template <typename TC, typename TM>                                                                                \
-    friend struct ::Entropy::details::MemberVariableHelper;
+    template <typename TC, typename TM>
 
 #define ENTROPY_REFLECT_INTERFACE(className, ...) ENTROPY_REFLECT_OBJECT_CLASS(className, ##__VA_ARGS__)
 
