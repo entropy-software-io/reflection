@@ -7,6 +7,7 @@ option (ENTROPY_REFLECTION_INCLUDE_DEFAULT_MODULES "False to exclude the default
 
 # Example config values
 # set(ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST_INCLUDES "#include \"Entropy/Reflection/TypeInfoModules/ClassTypeInfo.h\"")
+# set(ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST_IMPL_INCLUDES "#include \"Entropy/Reflection/TypeInfoModules/ClassTypeInfo.inl\"")
 # set(ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST "ClassTypeInfo")
 # set(ENTROPY_REFLECTION_EXTRA_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/Include")
 # set(ENTROPY_REFLECTION_EXTRA_LINK_LIBRARIES "")
@@ -20,6 +21,7 @@ endif()
 add_subdirectory(Dependencies)
 
 configure_file(Config/TypeInfoModuleList.h.in Include/Entropy/Reflection/TypeInfo/TypeInfoModuleList.h)
+configure_file(Config/TypeInfoModuleListImpl.h.in Include/Entropy/Reflection/TypeInfo/TypeInfoModuleListImpl.h)
 
 set(ENTROPY_NAMESPACE entropy)
 

@@ -1,0 +1,11 @@
+// Copyright (c) Entropy Software LLC
+// This file is licensed under the MIT License.
+// See the LICENSE file in the project root for more information.
+
+#pragma once
+
+#ifdef ENTROPY_REFLECTION_INCLUDE_DEFAULT_MODULES
+#include "Entropy/Reflection/TypeInfoModules/ClassTypeInfo.inl"
+#endif
+
+@ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST_IMPL_INCLUDES@

@@ -6,6 +6,9 @@ namespace Entropy
 {
 
 template <typename T>
+const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
+
+template <typename T>
 inline bool DataObject::IsExactType() const
 {
     if (ENTROPY_LIKELY(_container))
@@ -20,7 +23,8 @@ inline bool DataObject::CanCastTo() const
 {
     if (ENTROPY_LIKELY(_container))
     {
-        return _container->_typeInfo->CanCastTo(ReflectTypeAndGetTypeInfo<T>());
+        const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
+        return CanCastTo(typeInfo);
     }
     return false;
 }

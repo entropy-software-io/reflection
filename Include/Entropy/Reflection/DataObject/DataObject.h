@@ -89,6 +89,8 @@ public:
     DataObject& operator=(DataObject&& other);
 
 private:
+    bool CanCastTo(const TypeInfo* typeInfo) const;
+
     DataObjectContainer* _container{};
 
     friend class TypeInfo;

@@ -2,10 +2,32 @@
 // This file is licensed under the MIT License.
 // See the LICENSE file in the project root for more information.
 
+#include "Entropy/Reflection/DataObject/DataObjectFactory.h"
+
 namespace Entropy
 {
 namespace Reflection
 {
+
+namespace details
+{
+
+template <typename TAttr, typename = void>
+struct AllocateAttribute
+{
+    inline DataObject operator()(TAttr&& attrData) const { return Entropy::DataObjectFactory::Create<TAttr>(attrData); }
+};
+
+template <typename TAttr>
+struct AllocateAttribute<TAttr, typename std::enable_if<Traits::IsAllocatorMoveConstructible<TAttr>::value>::type>
+{
+    inline DataObject operator()(TAttr&& attrData) const
+    {
+        return Entropy::DataObjectFactory::Create<TAttr>(std::move(attrData));
+    }
+};
+
+} // namespace details
 
 template <std::size_t Idx, typename... TAttrTypes>
 inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type AttributeContainer::AddAttribute(
@@ -14,24 +36,17 @@ inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type Attribu
     using TAttr = Entropy::Traits::UnqualifiedType_t<decltype(attr.template GetAt<Idx>())>;
 
     const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TAttr>();
-
-    if (typeInfo)
+    if (ENTROPY_LIKELY(typeInfo))
     {
-        if (typeInfo->CanMoveConstruct())
+        DataObject obj = details::AllocateAttribute<TAttr>{}(std::move(attr.template GetAt<Idx>()));
+        if (ENTROPY_LIKELY(obj))
         {
-            DataObject obj = DataObjectFactory::Create<TAttr>(std::move(attr.template GetAt<Idx>()));
-            if (ENTROPY_LIKELY(obj != nullptr))
-            {
-                MapOps::AddOrUpdate(_attributes, Entropy::Traits::TypeIdOf<TAttr>{}(), AttributeData(std::move(obj)));
-            }
+            MapOps::AddOrUpdate(_attributes, Entropy::Traits::TypeIdOf<TAttr>{}(), AttributeData(std::move(obj)));
         }
-        else if (typeInfo->CanCopyConstruct())
+        else
         {
-            DataObject obj = DataObjectFactory::Create<TAttr>(attr.template GetAt<Idx>());
-            if (ENTROPY_LIKELY(obj != nullptr))
-            {
-                MapOps::AddOrUpdate(_attributes, Entropy::Traits::TypeIdOf<TAttr>{}(), AttributeData(std::move(obj)));
-            }
+            ENTROPY_LOG_ERROR("Failed to create DataObject for attribute [Attr Name: " << Traits::TypeNameOf<TAttr>{}()
+                                                                                       << "]");
         }
     }
 

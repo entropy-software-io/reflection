@@ -75,4 +75,9 @@ DataObject& DataObject::operator=(DataObject&& other)
     return *this;
 }
 
+bool DataObject::CanCastTo(const TypeInfo* typeInfo) const
+{
+    return _container->_typeInfo->CanCastTo(typeInfo);
+}
+
 } // namespace Entropy

@@ -6,6 +6,7 @@
 
 #include "Entropy/Core/Details/AllocatorTraits.h"
 #include "Entropy/Core/Details/TypeId.h"
+#include "Entropy/Reflection/Details/MemberEnumeration.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
 #include "TypeInfo.h"
 
@@ -208,30 +209,6 @@ struct FillModuleTypes<TType, std::tuple<TFirstModule, TOtherModules...>>
 //------------------------
 
 template <typename T, typename = void>
-struct IsAllocatorDestructible : public std::false_type
-{
-};
-
-template <typename T>
-struct IsAllocatorDestructible<T,
-                               typename std::enable_if<decltype(std::declval<T>().~T(), std::true_type())::value>::type>
-    : public std::true_type
-{
-};
-
-template <typename T, typename = void>
-struct IsAllocatorConstructible : public std::false_type
-{
-};
-
-template <typename T>
-struct IsAllocatorConstructible<
-    T, typename std::enable_if<decltype(new (std::declval<T*>()) T(), std::true_type())::value>::type>
-    : public std::true_type
-{
-};
-
-template <typename T, typename = void>
 struct HandleIsConstructible
 {
     inline void operator()(TypeInfo* typeInfo) const {}
@@ -239,10 +216,10 @@ struct HandleIsConstructible
 
 template <typename T>
 struct HandleIsConstructible<
-    T, typename std::enable_if<IsAllocatorDestructible<typename std::remove_const<T>::type>::value &&
-                               IsAllocatorConstructible<typename std::remove_const<T>::type>::value>::type>
+    T, typename std::enable_if<Traits::IsAllocatorDestructible<typename std::remove_const<T>::type>::value &&
+                               Traits::IsAllocatorConstructible<typename std::remove_const<T>::type>::value>::type>
 {
-    using NonConstT       = typename std::remove_const<T>::type;
+    using NonConstT = typename std::remove_const<T>::type;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
@@ -253,18 +230,6 @@ struct HandleIsConstructible<
 //------------------------
 
 template <typename T, typename = void>
-struct IsAllocatorCopyConstructible : public std::false_type
-{
-};
-
-template <typename T>
-struct IsAllocatorCopyConstructible<
-    T, typename std::enable_if<decltype(new (std::declval<T*>()) T(std::declval<const T&>()),
-                                        std::true_type())::value>::type> : public std::true_type
-{
-};
-
-template <typename T, typename = void>
 struct HandleIsCopyConstructible
 {
     inline void operator()(TypeInfo* typeInfo) const {}
@@ -272,10 +237,10 @@ struct HandleIsCopyConstructible
 
 template <typename T>
 struct HandleIsCopyConstructible<
-    T, typename std::enable_if<IsAllocatorDestructible<typename std::remove_const<T>::type>::value &&
-                               IsAllocatorCopyConstructible<typename std::remove_const<T>::type>::value>::type>
+    T, typename std::enable_if<Traits::IsAllocatorDestructible<typename std::remove_const<T>::type>::value &&
+                               Traits::IsAllocatorCopyConstructible<typename std::remove_const<T>::type>::value>::type>
 {
-    using NonConstT       = typename std::remove_const<T>::type;
+    using NonConstT = typename std::remove_const<T>::type;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
@@ -288,18 +253,6 @@ struct HandleIsCopyConstructible<
 //------------------------
 
 template <typename T, typename = void>
-struct IsAllocatorMoveConstructible : public std::false_type
-{
-};
-
-template <typename T>
-struct IsAllocatorMoveConstructible<T, typename std::enable_if<decltype(new (std::declval<T*>()) T(std::declval<T&&>()),
-                                                                        std::true_type())::value>::type>
-    : public std::true_type
-{
-};
-
-template <typename T, typename = void>
 struct HandleIsMoveConstructible
 {
     inline void operator()(TypeInfo* typeInfo) const {}
@@ -307,10 +260,10 @@ struct HandleIsMoveConstructible
 
 template <typename T>
 struct HandleIsMoveConstructible<
-    T, typename std::enable_if<IsAllocatorDestructible<typename std::remove_const<T>::type>::value &&
-                               IsAllocatorMoveConstructible<typename std::remove_const<T>::type>::value>::type>
+    T, typename std::enable_if<Traits::IsAllocatorDestructible<typename std::remove_const<T>::type>::value &&
+                               Traits::IsAllocatorMoveConstructible<typename std::remove_const<T>::type>::value>::type>
 {
-    using NonConstT       = typename std::remove_const<T>::type;
+    using NonConstT = typename std::remove_const<T>::type;
 
     inline void operator()(TypeInfo* typeInfo) const
     {
@@ -330,12 +283,13 @@ struct HandleIsDestructible
 
 template <typename T>
 struct HandleIsDestructible<
-    T, typename std::enable_if<IsAllocatorDestructible<typename std::remove_const<T>::type>::value &&
-                               (IsAllocatorConstructible<typename std::remove_const<T>::type>::value ||
-                                (IsAllocatorCopyConstructible<typename std::remove_const<T>::type>::value) ||
-                                (IsAllocatorMoveConstructible<typename std::remove_const<T>::type>::value))>::type>
+    T,
+    typename std::enable_if<Traits::IsAllocatorDestructible<typename std::remove_const<T>::type>::value &&
+                            (Traits::IsAllocatorConstructible<typename std::remove_const<T>::type>::value ||
+                             (Traits::IsAllocatorCopyConstructible<typename std::remove_const<T>::type>::value) ||
+                             (Traits::IsAllocatorMoveConstructible<typename std::remove_const<T>::type>::value))>::type>
 {
-    using NonConstT       = typename std::remove_const<T>::type;
+    using NonConstT = typename std::remove_const<T>::type;
 
     inline void operator()(TypeInfo* typeInfo) const
     {

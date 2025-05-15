@@ -10,7 +10,6 @@
 #include "Entropy/Reflection/Details/ReflectionMacros.h"
 
 #ifdef ENTROPY_RUNTIME_REFLECTION_ENABLED
-#include "Entropy/Reflection/DataObject/DataObjectFactory.h"
 #include "Entropy/Reflection/TypeInfo/RuntimeReflectionMethods.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfo.h"
 #endif

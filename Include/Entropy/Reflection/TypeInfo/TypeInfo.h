@@ -252,3 +252,6 @@ private:
 };
 
 } // namespace Entropy
+
+#include "Entropy/Reflection/DataObject/DataObjectFactory.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoModuleListImpl.h"

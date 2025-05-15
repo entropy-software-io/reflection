@@ -4,34 +4,36 @@
 
 #include "Entropy/Reflection/TypeInfoModules/ClassTypeInfo.h"
 #include "Entropy/Core/Details/AllocatorTraits.h"
+#include "Entropy/Core/Details/MapOps.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfo.h"
 
 namespace Entropy
 {
 namespace Reflection
 {
 
- AttributeData::AttributeData(DataObject&& dataObj)
+AttributeData::AttributeData(DataObject&& dataObj)
     : _dataObj(std::move(dataObj))
 {
 }
 
 //=======================
 
- void ClassDescription::AddTemplateParameter(const TypeInfo* templateParameter)
+void ClassDescription::AddTemplateParameter(const TypeInfo* templateParameter)
 {
     VectorOps::Add(_templateParameters, templateParameter);
 }
 
- void ClassDescription::SetBaseClass(const TypeInfo* baseClass) { _baseClassTypeInfo = baseClass; }
+void ClassDescription::SetBaseClass(const TypeInfo* baseClass) { _baseClassTypeInfo = baseClass; }
 
- void ClassDescription::AddMember(const char* name, MemberDescription&& memberInfo)
+void ClassDescription::AddMember(const char* name, MemberDescription&& memberInfo)
 {
     MapOps::AddUnique(_members, name, std::move(memberInfo));
 }
 
 //=======================
 
- ClassTypeInfo::~ClassTypeInfo()
+ClassTypeInfo::~ClassTypeInfo()
 {
     if (_classDesc)
     {
@@ -40,7 +42,7 @@ namespace Reflection
     }
 }
 
- ClassDescription* ClassTypeInfo::GetOrAddClassDescription()
+ClassDescription* ClassTypeInfo::GetOrAddClassDescription()
 {
     if (!_classDesc)
     {

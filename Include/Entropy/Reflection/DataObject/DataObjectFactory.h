@@ -5,11 +5,14 @@
 #pragma once
 
 #include "Entropy/Reflection/DataObject/DataObject.h"
-#include "Entropy/Reflection/TypeInfo/RuntimeReflectionMethods.h"
+
 #include <type_traits>
 
 namespace Entropy
 {
+
+template <typename T>
+const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
 
 struct DataObjectFactory
 {
