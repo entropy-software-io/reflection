@@ -67,7 +67,7 @@ struct MyVariableTemplateStruct
 {
 };
 
-void PrintClassInfo(const Entropy::TypeInfo* typeInfo) noexcept
+void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 {
     using namespace Entropy;
     using namespace Entropy::Reflection;
@@ -139,7 +139,7 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo) noexcept
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char* argv[]) noexcept(false)
 {
     using namespace Entropy;
     using namespace Entropy::Reflection;
