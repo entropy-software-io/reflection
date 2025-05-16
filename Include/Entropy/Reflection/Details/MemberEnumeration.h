@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Entropy/Reflection/Details/AttributeCollection.h"
+#include "Entropy/Reflection/Details/ReflectionMacros.h"
 #include "Entropy/Reflection/Details/TypeTraits.h"
 
 namespace Entropy
@@ -191,14 +192,15 @@ inline typename std::enable_if<
 
 // There is a reflected member for this counter
 template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter>
-struct MemberTypeOperation<TClass, TFunc, TIncludeSubclasses, TCounter,
-                           typename std::enable_if<Traits::RemoveConstRef_t<
-                               TClass>::template __MemberTypeOperatorExists<TCounter>::value>::type>
+struct MemberTypeOperation<
+    TClass, TFunc, TIncludeSubclasses, TCounter,
+    typename std::enable_if<Traits::RemoveConstRef_t<TClass>::template __MemberTypeOperatorExists<
+        ENTROPY_FAKE_INT_CONSTANT(TCounter)>::value>::type>
 {
     inline void operator()(TFunc callbackObject) const
     {
-        Traits::RemoveConstRef_t<TClass>::template __MemberTypeOperator<TClass, TFunc, TCounter>::Execute(
-            callbackObject);
+        Traits::RemoveConstRef_t<TClass>::template __MemberTypeOperator<
+            TClass, TFunc, ENTROPY_FAKE_INT_CONSTANT(TCounter)>::Execute(callbackObject);
         MemberTypeOperation<TClass, TFunc, TIncludeSubclasses, TCounter + 1>{}(callbackObject);
     }
 };
@@ -207,7 +209,8 @@ struct MemberTypeOperation<TClass, TFunc, TIncludeSubclasses, TCounter,
 template <typename TClass, typename TFunc, int TCounter>
 struct MemberTypeOperation<
     TClass, TFunc, true /* TIncludeSubclasses */, TCounter,
-    typename std::enable_if<!Traits::RemoveConstRef_t<TClass>::template __MemberTypeOperatorExists<TCounter>::value &&
+    typename std::enable_if<!Traits::RemoveConstRef_t<TClass>::template __MemberTypeOperatorExists<
+                                ENTROPY_FAKE_INT_CONSTANT(TCounter)>::value &&
                             Traits::HasBaseClass<TClass>::value>::type>
 {
     inline void operator()(TFunc callbackObject) const
@@ -221,7 +224,8 @@ struct MemberTypeOperation<
 template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter>
 struct MemberTypeOperation<
     TClass, TFunc, TIncludeSubclasses, TCounter,
-    typename std::enable_if<!Traits::RemoveConstRef_t<TClass>::template __MemberTypeOperatorExists<TCounter>::value &&
+    typename std::enable_if<!Traits::RemoveConstRef_t<TClass>::template __MemberTypeOperatorExists<
+                                ENTROPY_FAKE_INT_CONSTANT(TCounter)>::value &&
                             (!TIncludeSubclasses || !Traits::HasBaseClass<TClass>::value)>::type>
 {
     inline void operator()(TFunc callbackObject) const {}
@@ -253,14 +257,15 @@ inline typename std::enable_if<Traits::IsInvocable<TFunc, TMember>::value>::type
 
 // There is a reflected member for this counter
 template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter>
-struct UnaryMemberOperation<TClass, TFunc, TIncludeSubclasses, TCounter,
-                            typename std::enable_if<Traits::RemoveConstRef_t<
-                                TClass>::template __UnaryMemberOperatorExists<TCounter>::value>::type>
+struct UnaryMemberOperation<
+    TClass, TFunc, TIncludeSubclasses, TCounter,
+    typename std::enable_if<Traits::RemoveConstRef_t<TClass>::template __UnaryMemberOperatorExists<
+        ENTROPY_FAKE_INT_CONSTANT(TCounter)>::value>::type>
 {
     inline void operator()(TClass& sourceObject, TFunc callbackObject) const
     {
-        Traits::RemoveConstRef_t<TClass>::template __UnaryMemberOperator<TClass, TFunc, TCounter>::Execute(
-            sourceObject, callbackObject);
+        Traits::RemoveConstRef_t<TClass>::template __UnaryMemberOperator<
+            TClass, TFunc, ENTROPY_FAKE_INT_CONSTANT(TCounter)>::Execute(sourceObject, callbackObject);
         UnaryMemberOperation<TClass, TFunc, TIncludeSubclasses, TCounter + 1>{}(sourceObject, callbackObject);
     }
 };
@@ -269,7 +274,8 @@ struct UnaryMemberOperation<TClass, TFunc, TIncludeSubclasses, TCounter,
 template <typename TClass, typename TFunc, int TCounter>
 struct UnaryMemberOperation<
     TClass, TFunc, true /* TIncludeSubclasses */, TCounter,
-    typename std::enable_if<!Traits::RemoveConstRef_t<TClass>::template __UnaryMemberOperatorExists<TCounter>::value &&
+    typename std::enable_if<!Traits::RemoveConstRef_t<TClass>::template __UnaryMemberOperatorExists<
+                                ENTROPY_FAKE_INT_CONSTANT(TCounter)>::value &&
                             Traits::HasBaseClass<TClass>::value>::type>
 {
     inline void operator()(TClass& sourceObject, TFunc callbackObject) const
@@ -283,7 +289,8 @@ struct UnaryMemberOperation<
 template <typename TClass, typename TFunc, bool TIncludeSubclasses, int TCounter>
 struct UnaryMemberOperation<
     TClass, TFunc, TIncludeSubclasses, TCounter,
-    typename std::enable_if<!Traits::RemoveConstRef_t<TClass>::template __UnaryMemberOperatorExists<TCounter>::value &&
+    typename std::enable_if<!Traits::RemoveConstRef_t<TClass>::template __UnaryMemberOperatorExists<
+                                ENTROPY_FAKE_INT_CONSTANT(TCounter)>::value &&
                             (!TIncludeSubclasses || !Traits::HasBaseClass<TClass>::value)>::type>
 {
     inline void operator()(TClass& sourceObject, TFunc callbackObject) const {}
@@ -300,14 +307,16 @@ InvokeBinaryMemberFunction(const char* memberName, TMemberA& memberA, TMemberB& 
 
 // There is a reflected member for this counter
 template <typename TClassA, typename TClassB, typename TFunc, bool TIncludeSubclasses, int TCounter>
-struct BinaryMemberOperation<TClassA, TClassB, TFunc, TIncludeSubclasses, TCounter,
-                             typename std::enable_if<Traits::RemoveConstRef_t<
-                                 TClassA>::template __BinaryMemberOperatorExists<TCounter>::value>::type>
+struct BinaryMemberOperation<
+    TClassA, TClassB, TFunc, TIncludeSubclasses, TCounter,
+    typename std::enable_if<Traits::RemoveConstRef_t<TClassA>::template __BinaryMemberOperatorExists<
+        ENTROPY_FAKE_INT_CONSTANT(TCounter)>::value>::type>
 {
     inline void operator()(TClassA& sourceObjectA, TClassB& sourceObjectB, TFunc callbackObject) const
     {
-        Traits::RemoveConstRef_t<TClassA>::template __BinaryMemberOperator<TClassA, TClassB, TFunc, TCounter>::Execute(
-            sourceObjectA, sourceObjectB, callbackObject);
+        Traits::RemoveConstRef_t<TClassA>::template __BinaryMemberOperator<
+            TClassA, TClassB, TFunc, ENTROPY_FAKE_INT_CONSTANT(TCounter)>::Execute(sourceObjectA, sourceObjectB,
+                                                                                   callbackObject);
         BinaryMemberOperation<TClassA, TClassB, TFunc, TIncludeSubclasses, TCounter + 1>{}(sourceObjectA, sourceObjectB,
                                                                                            callbackObject);
     }
@@ -317,9 +326,9 @@ struct BinaryMemberOperation<TClassA, TClassB, TFunc, TIncludeSubclasses, TCount
 template <typename TClassA, typename TClassB, typename TFunc, bool TIncludeSubclasses, int TCounter>
 struct BinaryMemberOperation<
     TClassA, TClassB, TFunc, TIncludeSubclasses, TCounter,
-    typename std::enable_if<
-        !Traits::RemoveConstRef_t<TClassA>::template __BinaryMemberOperatorExists<TCounter>::value &&
-        Traits::HasBaseClass<TClassA>::value>::type>
+    typename std::enable_if<!Traits::RemoveConstRef_t<TClassA>::template __BinaryMemberOperatorExists<
+                                ENTROPY_FAKE_INT_CONSTANT(TCounter)>::value &&
+                            Traits::HasBaseClass<TClassA>::value>::type>
 {
     inline void operator()(TClassA& sourceObjectA, TClassB& sourceObjectB, TFunc callbackObject) const
     {
@@ -332,9 +341,9 @@ struct BinaryMemberOperation<
 template <typename TClassA, typename TClassB, typename TFunc, bool TIncludeSubclasses, int TCounter>
 struct BinaryMemberOperation<
     TClassA, TClassB, TFunc, TIncludeSubclasses, TCounter,
-    typename std::enable_if<
-        !Traits::RemoveConstRef_t<TClassA>::template __BinaryMemberOperatorExists<TCounter>::value &&
-        (!TIncludeSubclasses || !Traits::HasBaseClass<TClassA>::value)>::type>
+    typename std::enable_if<!Traits::RemoveConstRef_t<TClassA>::template __BinaryMemberOperatorExists<
+                                ENTROPY_FAKE_INT_CONSTANT(TCounter)>::value &&
+                            (!TIncludeSubclasses || !Traits::HasBaseClass<TClassA>::value)>::type>
 {
     inline void operator()(TClassA& sourceObjectA, TClassB& sourceObjectB, TFunc callbackObject) const {}
 };
