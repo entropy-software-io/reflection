@@ -2,19 +2,32 @@
 // This file is licensed under the MIT License.
 // See the LICENSE file in the project root for more information.
 
-// Code normally in a cpp file is inlined because member types can be changed via type traits by the user.
+#include "Entropy/Reflection/DataObject/DataObjectFactory.h"
 
 namespace Entropy
 {
 namespace Reflection
 {
 
-inline AttributeData::AttributeData(DataObject&& dataObj)
-    : _dataObj(std::move(dataObj))
+namespace details
 {
-}
 
-//=======================
+template <typename TAttr, typename = void>
+struct AllocateAttribute
+{
+    inline DataObject operator()(TAttr&& attrData) const { return Entropy::DataObjectFactory::Create<TAttr>(attrData); }
+};
+
+template <typename TAttr>
+struct AllocateAttribute<TAttr, typename std::enable_if<Traits::IsAllocatorMoveConstructible<TAttr>::value>::type>
+{
+    inline DataObject operator()(TAttr&& attrData) const
+    {
+        return Entropy::DataObjectFactory::Create<TAttr>(std::move(attrData));
+    }
+};
+
+} // namespace details
 
 template <std::size_t Idx, typename... TAttrTypes>
 inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type AttributeContainer::AddAttribute(
@@ -23,24 +36,17 @@ inline typename std::enable_if<Idx != sizeof...(TAttrTypes), void>::type Attribu
     using TAttr = Entropy::Traits::UnqualifiedType_t<decltype(attr.template GetAt<Idx>())>;
 
     const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<TAttr>();
-
-    if (typeInfo)
+    if (ENTROPY_LIKELY(typeInfo))
     {
-        if (typeInfo->CanMoveConstruct())
+        DataObject obj = details::AllocateAttribute<TAttr>{}(std::move(attr.template GetAt<Idx>()));
+        if (ENTROPY_LIKELY(obj))
         {
-            DataObject obj = DataObjectFactory::Create<TAttr>(std::move(attr.template GetAt<Idx>()));
-            if (ENTROPY_LIKELY(obj != nullptr))
-            {
-                _attributes[Entropy::Traits::TypeIdOf<TAttr>{}()] = AttributeData(std::move(obj));
-            }
+            MapOps::AddOrUpdate(_attributes, Entropy::Traits::TypeIdOf<TAttr>{}(), AttributeData(std::move(obj)));
         }
-        else if (typeInfo->CanCopyConstruct())
+        else
         {
-            DataObject obj = DataObjectFactory::Create<TAttr>(attr.template GetAt<Idx>());
-            if (ENTROPY_LIKELY(obj != nullptr))
-            {
-                _attributes[Entropy::Traits::TypeIdOf<TAttr>{}()] = AttributeData(std::move(obj));
-            }
+            ENTROPY_LOG_ERROR("Failed to create DataObject for attribute [Attr Name: " << Traits::TypeNameOf<TAttr>{}()
+                                                                                       << "]");
         }
     }
 
@@ -51,48 +57,6 @@ template <typename... TAttrTypes>
 inline void AttributeContainer::AddAttributes(AttributeCollection<TAttrTypes...>&& attr)
 {
     AddAttribute<0>(attr);
-}
-
-//=======================
-
-inline void ClassDescription::AddTemplateParameter(const TypeInfo* templateParameter)
-{
-    _templateParameters.push_back(templateParameter);
-}
-
-inline void ClassDescription::SetBaseClass(const TypeInfo* baseClass) { _baseClassTypeInfo = baseClass; }
-
-inline void ClassDescription::AddMember(const char* name, MemberDescription&& memberInfo)
-{
-    _members.emplace(name, std::move(memberInfo));
-}
-
-//=======================
-
-inline ClassTypeInfo::~ClassTypeInfo()
-{
-    if (_classDesc)
-    {
-        ContainerTraits::Allocator<ClassDescription> alloc;
-        std::allocator_traits<decltype(alloc)>::destroy(alloc, _classDesc);
-        std::allocator_traits<decltype(alloc)>::deallocate(alloc, _classDesc, 1);
-        _classDesc = nullptr;
-    }
-}
-
-inline ClassDescription* ClassTypeInfo::GetOrAddClassDescription()
-{
-    if (!_classDesc)
-    {
-        ContainerTraits::Allocator<ClassDescription> alloc;
-        _classDesc = std::allocator_traits<decltype(alloc)>::allocate(alloc, 1);
-        if (ENTROPY_LIKELY(_classDesc))
-        {
-            std::allocator_traits<decltype(alloc)>::construct(alloc, _classDesc);
-        }
-    }
-
-    return _classDesc;
 }
 
 } // namespace Reflection

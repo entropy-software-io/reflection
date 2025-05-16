@@ -53,6 +53,56 @@ template <typename T>
 constexpr bool IsReflectedType_v = IsReflectedType<T>::value;
 #endif
 
+//--------------
+
+template <typename T, typename = void>
+struct IsAllocatorDestructible : public std::false_type
+{
+};
+
+template <typename T>
+struct IsAllocatorDestructible<T,
+                               typename std::enable_if<decltype(std::declval<T>().~T(), std::true_type())::value>::type>
+    : public std::true_type
+{
+};
+
+template <typename T, typename = void>
+struct IsAllocatorConstructible : public std::false_type
+{
+};
+
+template <typename T>
+struct IsAllocatorConstructible<
+    T, typename std::enable_if<decltype(new (std::declval<T*>()) T(), std::true_type())::value>::type>
+    : public std::true_type
+{
+};
+
+template <typename T, typename = void>
+struct IsAllocatorCopyConstructible : public std::false_type
+{
+};
+
+template <typename T>
+struct IsAllocatorCopyConstructible<
+    T, typename std::enable_if<decltype(new (std::declval<T*>()) T(std::declval<const T&>()),
+                                        std::true_type())::value>::type> : public std::true_type
+{
+};
+
+template <typename T, typename = void>
+struct IsAllocatorMoveConstructible : public std::false_type
+{
+};
+
+template <typename T>
+struct IsAllocatorMoveConstructible<T, typename std::enable_if<decltype(new (std::declval<T*>()) T(std::declval<T&&>()),
+                                                                        std::true_type())::value>::type>
+    : public std::true_type
+{
+};
+
 } // namespace Traits
 
 } // namespace Entropy

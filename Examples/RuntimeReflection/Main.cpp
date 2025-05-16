@@ -67,7 +67,7 @@ struct MyVariableTemplateStruct
 {
 };
 
-void PrintClassInfo(const Entropy::TypeInfo* typeInfo) noexcept
+void PrintClassInfo(const Entropy::TypeInfo* typeInfo)
 {
     using namespace Entropy;
     using namespace Entropy::Reflection;
@@ -85,7 +85,7 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo) noexcept
         const ClassDescription* classDesc = classInfo.GetClassDescription();
 
         const auto& classAttrs = classDesc->GetAllAttributes();
-        if (classAttrs.size() > 0)
+        if (MapOps::GetCount(classAttrs) > 0)
         {
             std::cout << "Attribute list for '" << typeInfo->GetTypeName() << "':" << std::endl;
             for (const auto& kvp : classAttrs)
@@ -101,7 +101,7 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo) noexcept
                       << std::endl;
 
             const auto& memberAttrs = memberKvp.second.GetAllAttributes();
-            if (memberAttrs.size() > 0)
+            if (MapOps::GetCount(memberAttrs) > 0)
             {
                 std::cout << "   Attribute list for member '" << memberKvp.first << "':" << std::endl;
                 for (const auto& kvp : memberAttrs)
@@ -112,14 +112,14 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo) noexcept
         }
 
         const auto& templateParams = classDesc->GetTemplateParameters();
-        if (templateParams.size() > 0)
+        if (VectorOps::GetCount(templateParams) > 0)
         {
             std::cout << "Template Parameters Types: ";
 
-            for (int i = 0, count = (int)templateParams.size(); i < count; ++i)
+            for (int i = 0, count = VectorOps::GetCount(templateParams); i < count; ++i)
             {
-                std::cout << templateParams[i]->GetTypeName();
-                if (i < templateParams.size() - 1)
+                std::cout << VectorOps::At(templateParams, i)->GetTypeName();
+                if (i < count - 1)
                 {
                     std::cout << ", ";
                 }
@@ -139,7 +139,7 @@ void PrintClassInfo(const Entropy::TypeInfo* typeInfo) noexcept
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char* argv[]) noexcept(false)
 {
     using namespace Entropy;
     using namespace Entropy::Reflection;

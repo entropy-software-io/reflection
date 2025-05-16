@@ -2,12 +2,13 @@
 // This file is licensed under the MIT License.
 // See the LICENSE file in the project root for more information.
 
-#include "TypeInfo.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfo.h"
 
 namespace Entropy
 {
 
-inline TypeInfoRef::TypeInfoRef(const TypeInfo* ptr)
+TypeInfoRef::TypeInfoRef(const TypeInfo* ptr)
     : _ptr(ptr)
 {
     if (_ptr)
@@ -16,18 +17,18 @@ inline TypeInfoRef::TypeInfoRef(const TypeInfo* ptr)
     }
 }
 
-inline TypeInfoRef::TypeInfoRef(const TypeInfoRef& other)
+TypeInfoRef::TypeInfoRef(const TypeInfoRef& other)
     : TypeInfoRef(other._ptr)
 {
 }
 
-inline TypeInfoRef::TypeInfoRef(TypeInfoRef&& other)
+TypeInfoRef::TypeInfoRef(TypeInfoRef&& other)
     : _ptr(other._ptr)
 {
     other._ptr = nullptr;
 }
 
-inline TypeInfoRef::~TypeInfoRef()
+TypeInfoRef::~TypeInfoRef()
 {
     if (_ptr)
     {
@@ -36,14 +37,14 @@ inline TypeInfoRef::~TypeInfoRef()
     }
 }
 
-inline TypeInfoRef& TypeInfoRef::operator=(const TypeInfoRef& other)
+TypeInfoRef& TypeInfoRef::operator=(const TypeInfoRef& other)
 {
     this->~TypeInfoRef();
     new (this) TypeInfoRef(other);
     return *this;
 }
 
-inline TypeInfoRef& TypeInfoRef::operator=(TypeInfoRef&& other)
+TypeInfoRef& TypeInfoRef::operator=(TypeInfoRef&& other)
 {
     this->~TypeInfoRef();
     new (this) TypeInfoRef(std::move(other));

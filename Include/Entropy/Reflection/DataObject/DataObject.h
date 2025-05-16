@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Entropy/Core/Details/Defines.h"
-#include "Entropy/Reflection/Details/ContainerTypes.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
 #include <atomic>
 
@@ -21,17 +20,44 @@ struct DataObjectFactory;
 class DataObject final
 {
 private:
-    using ContainerTraits = details::ReflectionContainerTraits<DataObject>;
+    // These helpers grab the correct void* value to convert.
+    // Normally, we just want to return what we have, but there is a special case with wrapped pointer type. There, we
+    // store the pointer value directly, so we return the address of our data member to de-reference the right value.
+    //
+    // See DataObjectFactory::Wrap for the other end of this.
+    template <bool TIsWrapped, typename T, typename = void>
+    struct GetVoidPtr
+    {
+        void* operator()(void*& data) const { return data; }
+    };
+
+    template <typename T>
+    struct GetVoidPtr<true, T, typename std::enable_if<std::is_pointer<T>::value>::type>
+    {
+        void* operator()(void*& data) const { return &data; }
+    };
+
+    template <bool TIsWrapped, typename T, typename = void>
+    struct GetConstVoidPtr
+    {
+        const void* operator()(const void*& data) const { return data; }
+    };
+
+    template <typename T>
+    struct GetConstVoidPtr<true, T, typename std::enable_if<std::is_pointer<T>::value>::type>
+    {
+        const void* operator()(const void*& data) const { return &data; }
+    };
 
     struct DataObjectContainer
     {
         TypeInfoRef _typeInfo{};
         void* _data{};
         std::atomic_int _refCount{1};
-        bool deallocate = false;
+        bool _wrapped = false;
     };
 
-    DataObject(const TypeInfo* typeInfo, void* data, bool deallocate);
+    DataObject(const TypeInfo* typeInfo, void* data, bool wrapped);
 
     void Release();
 
@@ -39,7 +65,7 @@ public:
     DataObject() = default;
     DataObject(std::nullptr_t);
     DataObject(const DataObject& other);
-    DataObject(DataObject&& other);
+    DataObject(DataObject&& other) noexcept;
 
     ~DataObject();
 
@@ -50,7 +76,14 @@ public:
     template <typename T>
     inline const T& GetData() const
     {
-        return *reinterpret_cast<const T*>(_container->_data);
+        if (_container->_wrapped)
+        {
+            return *reinterpret_cast<const T*>(GetConstVoidPtr<true, T>{}(_container->_data));
+        }
+        else
+        {
+            return *reinterpret_cast<const T*>(GetConstVoidPtr<false, T>{}(_container->_data));
+        }
     }
 
     /// <summary>
@@ -60,7 +93,14 @@ public:
     template <typename T>
     inline T& GetData()
     {
-        return *reinterpret_cast<T*>(_container->_data);
+        if (_container->_wrapped)
+        {
+            return *reinterpret_cast<T*>(GetVoidPtr<true, T>{}(_container->_data));
+        }
+        else
+        {
+            return *reinterpret_cast<T*>(GetVoidPtr<false, T>{}(_container->_data));
+        }
     }
 
     inline const TypeInfo* GetTypeInfo() const
@@ -88,10 +128,12 @@ public:
     inline bool operator!=(std::nullptr_t) const { return (_container != nullptr); }
     inline operator bool() const { return _container != nullptr; }
 
-    inline DataObject& operator=(const DataObject& other);
-    inline DataObject& operator=(DataObject&& other);
+    DataObject& operator=(const DataObject& other);
+    DataObject& operator=(DataObject&& other);
 
 private:
+    bool CanCastTo(const TypeInfo* typeInfo) const;
+
     DataObjectContainer* _container{};
 
     friend class TypeInfo;
@@ -99,3 +141,5 @@ private:
 };
 
 } // namespace Entropy
+
+#include "DataObject.inl"

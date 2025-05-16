@@ -3,4 +3,4 @@ set (SRC_FILES
 
 add_executable(entropy-compile-time-reflection-example ${SRC_FILES})
 
-target_link_libraries(entropy-compile-time-reflection-example entropy::reflection)
+target_link_libraries(entropy-compile-time-reflection-example entropy::core::common entropy::reflection)

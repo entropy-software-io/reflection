@@ -21,8 +21,6 @@ class TypeInfo;
 /// </summary>
 class DynamicFunction
 {
-    using ContainerTraits = details::ReflectionContainerTraits<DynamicFunction>;
-
 public:
     DynamicFunction() noexcept                             = default;
     DynamicFunction(const DynamicFunction& other) noexcept = default;

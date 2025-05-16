@@ -4,11 +4,12 @@
 
 #pragma once
 
+#include "Entropy/Core/Details/FunctionTraits.h"
+#include "Entropy/Core/Details/StringOps.h"
+#include "Entropy/Core/Details/TypeId.h"
 #include "Entropy/Reflection/DataObject/DataObject.h"
-#include "Entropy/Reflection/Details/ContainerTypes.h"
-#include "Entropy/Reflection/Details/TypeId.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoModuleList.h"
 #include "Entropy/Reflection/TypeInfo/TypeInfoRef.h"
-#include "Entropy/Reflection/TypeInfo/TypeInfoTraits.h"
 #include <atomic>
 
 namespace Entropy
@@ -71,15 +72,13 @@ class TypeInfo final
     // NOLINTEND(clang-analyzer-optin.core.EnumCastOutOfRange)
 
 public:
-    using ModuleTypes = Reflection::TypeInfoTraits<>::ModuleTypes;
+    using ModuleTypes = Reflection::TypeInfoModuleTraits::ModuleTypes;
 
 private:
-    using ContainerTraits = Entropy::details::ReflectionContainerTraits<TypeInfo>;
-
-    using ConstructionHandler     = ContainerTraits::FunctionType<void*()>;
-    using CopyConstructionHandler = ContainerTraits::FunctionType<void*(const void*)>;
-    using MoveConstructionHandler = ContainerTraits::FunctionType<void*(void*)>;
-    using DestructionHandler      = ContainerTraits::FunctionType<void(void*)>;
+    using ConstructionHandler     = Traits::FunctionTraits<void*()>::Function;
+    using CopyConstructionHandler = Traits::FunctionTraits<void*(const void*)>::Function;
+    using MoveConstructionHandler = Traits::FunctionTraits<void*(void*)>::Function;
+    using DestructionHandler      = Traits::FunctionTraits<void(void*)>::Function;
 
     template <typename TModule, typename TModuleTypes, std::size_t Index = 0>
     struct ModuleIndexHelper;
@@ -99,7 +98,7 @@ private:
 public:
     ~TypeInfo();
 
-    inline const ContainerTraits::StringType& GetTypeName() const { return _typeName; }
+    inline const StringOps::StringType& GetTypeName() const { return _typeName; }
     inline TypeId GetTypeId() const { return _typeId; }
 
     template <typename TModule>
@@ -156,7 +155,7 @@ public:
     /// <summary>
     /// Returns true if we have any qualifiers, like const, *, &, etc...
     /// </summary>
-    inline bool IsQualifiedType() const;
+    bool IsQualifiedType() const;
 
     /// <summary>
     /// Returns the type with one layer of qualifiers removed. If this type is not qualified, this object is returned.
@@ -167,7 +166,7 @@ public:
     /// const T* -> const T
     /// T* const -> T (both const and * are at the same level in this case)
     /// </remarks>
-    inline const TypeInfo* GetNextUnqualifiedType() const;
+    const TypeInfo* GetNextUnqualifiedType() const;
 
     /// <summary>
     /// Returns the type with all qualifiers removed. If this type is not qualified, this object is returned.
@@ -191,7 +190,7 @@ private:
     void AddRef() const;
     void Release() const;
 
-    void SetTypeName(ContainerTraits::StringType&& name);
+    void SetTypeName(StringOps::StringType&& name);
     void SetTypeId(TypeId typeId);
 
     void SetConstructionHandler(ConstructionHandler&& handler);
@@ -207,9 +206,9 @@ private:
 
     void SetNextUnqualifiedType(const TypeInfo* typeInfo);
 
-    inline void Destruct(void* dataPtr) const;
+    void Destruct(void* dataPtr) const;
 
-    ContainerTraits::StringType _typeName{};
+    StringOps::StringType _typeName{};
 
     ConstructionHandler _constructionFn{};
     CopyConstructionHandler _copyConstructionFn{};
@@ -253,3 +252,6 @@ private:
 };
 
 } // namespace Entropy
+
+#include "Entropy/Reflection/DataObject/DataObjectFactory.h"
+#include "Entropy/Reflection/TypeInfo/TypeInfoModuleListImpl.h"
