@@ -48,7 +48,7 @@ DataObject TypeInfo::Construct() const
         void* data = _constructionFn();
         if (ENTROPY_LIKELY(data))
         {
-            return DataObject(this, data, true /* deallocate */);
+            return DataObject(this, data, false /* wrapped */);
         }
     }
     return nullptr;
@@ -63,7 +63,7 @@ DataObject TypeInfo::DangerousCopyConstruct(const void* src) const
         void* data = _copyConstructionFn(src);
         if (ENTROPY_LIKELY(data))
         {
-            return DataObject(this, data, true /* deallocate */);
+            return DataObject(this, data, false /* wrapped */);
         }
     }
     return nullptr;
@@ -78,7 +78,7 @@ DataObject TypeInfo::DangerousMoveConstruct(void* src) const
         void* data = _moveConstructionFn(src);
         if (ENTROPY_LIKELY(data))
         {
-            return DataObject(this, data, true /* deallocate */);
+            return DataObject(this, data, false /* wrapped */);
         }
     }
     return nullptr;

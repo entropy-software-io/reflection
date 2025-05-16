@@ -13,16 +13,16 @@ namespace Entropy
 
 DataObject::DataObject(std::nullptr_t) {}
 
-DataObject::DataObject(const TypeInfo* typeInfo, void* data, bool deallocate)
+DataObject::DataObject(const TypeInfo* typeInfo, void* data, bool wrapped)
 {
     _container = AllocatorOps::CreateInstance<DataObjectContainer>();
     ENTROPY_ASSERT(_container)
 
     if (ENTROPY_LIKELY(_container != nullptr))
     {
-        _container->_typeInfo  = typeInfo;
-        _container->_data      = data;
-        _container->deallocate = deallocate;
+        _container->_typeInfo = typeInfo;
+        _container->_data     = data;
+        _container->_wrapped  = wrapped;
     }
 }
 
@@ -35,7 +35,7 @@ DataObject::DataObject(const DataObject& other)
     }
 }
 
-DataObject::DataObject(DataObject&& other)
+DataObject::DataObject(DataObject&& other) noexcept
     : _container(other._container)
 {
     other._container = nullptr;
@@ -49,7 +49,7 @@ void DataObject::Release()
     {
         if (--_container->_refCount == 0)
         {
-            if (_container->deallocate)
+            if (!_container->_wrapped)
             {
                 _container->_typeInfo->Destruct(_container->_data);
             }
@@ -75,9 +75,6 @@ DataObject& DataObject::operator=(DataObject&& other)
     return *this;
 }
 
-bool DataObject::CanCastTo(const TypeInfo* typeInfo) const
-{
-    return _container->_typeInfo->CanCastTo(typeInfo);
-}
+bool DataObject::CanCastTo(const TypeInfo* typeInfo) const { return _container->_typeInfo->CanCastTo(typeInfo); }
 
 } // namespace Entropy

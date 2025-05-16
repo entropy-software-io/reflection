@@ -17,10 +17,27 @@ const TypeInfo* ReflectTypeAndGetTypeInfo() noexcept;
 struct DataObjectFactory
 {
 private:
+    // These methods take the value to wrap and stuff it into the pointer that the data object holds.
+    // If the value is itself a pointer, we hold on to that value directly. Otherwise, we grab a reference to what was
+    // passed in.
     template <typename T, typename = void>
     struct ToVoid
     {
         void* operator()(T&& param) const { return reinterpret_cast<void*>(&param); }
+    };
+
+    template <typename T>
+    struct ToVoid<T, typename std::enable_if<!std::is_const<typename std::remove_pointer<T>::type>::value &&
+                                             std::is_pointer<T>::value>::type>
+    {
+        void* operator()(T&& param) const { return reinterpret_cast<void*>(param); }
+    };
+
+    template <typename T>
+    struct ToVoid<T, typename std::enable_if<std::is_const<typename std::remove_pointer<T>::type>::value &&
+                                             std::is_pointer<T>::value>::type>
+    {
+        void* operator()(T&& param) const { return const_cast<void*>(reinterpret_cast<const void*>(param)); }
     };
 
     template <typename T>
@@ -70,7 +87,7 @@ public:
     inline static DataObject Wrap(T&& value)
     {
         const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
-        return DataObject(typeInfo, ToVoid<T>{}(std::forward<T>(value)), false /* deallocate */);
+        return DataObject(typeInfo, ToVoid<T>{}(std::forward<T>(value)), true /* wrapped */);
     }
 };
 
