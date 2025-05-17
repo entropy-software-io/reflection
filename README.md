@@ -53,7 +53,7 @@ public:
 }
 ```
 
-## Recommended Make Integration
+## Recommended CMake Integration
 ```
 include(FetchContent)
 
@@ -124,6 +124,8 @@ When used with ```TypeInfo```, this class allows for a fully automated UI proper
 ## Extending
 This library does not box you in to a certain set of containers, allocators, and features. It was designed to fit into your code; not have your code fit around it.
 
+See the [Custom Reflection Example](https://github.com/entropy-software-io/custom-reflection) for a complete end-to-end of implementing a custom TypeInfo module and overriding containers.
+
 ### Custom TypeInfo Modules
 ```TypeInfo``` can be extended with custom modules, allowing you to specify custom data per type.
 
@@ -148,6 +150,24 @@ Set ```ENTROPY_REFLECTION_EXTRA_INCLUDE_DIRECTORIES``` to any directories you wa
 
 Set ```ENTROPY_REFLECTION_EXTRA_LINK_LIBRARIES``` to any targets you want linked to the CMake build via ```target_link_libraries```.
 
+To receive callbacks for your type, implement the struct:
+```
+namespace Entropy
+{
+namespace Reflection
+{
+
+template <typename TType>
+struct FillModuleTypeInfo<MyModuleType, TType> : public DefaultFillModuleTypeInfo<MyModuleType>
+{
+    ...
+};
+
+}
+}
+```
+
+See ```Include/Entropy/Reflection/TypeInfoModules/TypeInfoModule.h``` for the list of functions that can be implemented.
+
 ### Changing Allocators and Containers
 You can change how objects are allocated and the containers used within the entire library. For instructions, see [Entropy Common Core Components](https://github.com/entropy-software-io/core-common?tab=readme-ov-file#customization).
-
