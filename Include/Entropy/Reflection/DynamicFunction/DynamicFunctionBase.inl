@@ -270,18 +270,18 @@ bool TDynamicFunction<TFn, ReturnValue (TClass::*)(Args...) const>::DoInvoke(
 //==================
 
 template <template <typename> class TFn, typename T>
-DynamicFunctionBase* MakeDynamicFunction(const TFn<T>& func)
+inline DynamicFunctionBase* MakeDynamicFunction(const TFn<T>& func)
 {
     return AllocatorOps::CreateInstance<TDynamicFunction<TFn, T>>(func);
 }
 
 template <template <typename> class TFn, typename T>
-DynamicFunctionBase* MakeDynamicFunction(TFn<T>&& func)
+inline DynamicFunctionBase* MakeDynamicFunction(TFn<T>&& func)
 {
     return AllocatorOps::CreateInstance<TDynamicFunction<TFn, T>>(std::move(func));
 }
 
-void DestroyDynamicFunction(DynamicFunctionBase* func) { return AllocatorOps::DestroyInstance(func); }
+inline void DestroyDynamicFunction(DynamicFunctionBase* func) { return AllocatorOps::DestroyInstance(func); }
 
 } // namespace details
 } // namespace Entropy
