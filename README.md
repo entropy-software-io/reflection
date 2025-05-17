@@ -138,9 +138,16 @@ When a ```TypeInfo``` is first created via ```Entropy::ReflectType...<>()```, yo
 > [!TIP]
 > When keeping a ```TypeInfo``` object in a module, use the ```TypeInfoRef``` class to ensure the ```TypeInfo``` will exist during module destruction.
 
-> [!TIP]
-> See the _Examples/CustomTypeInfoModule_ folder for how to set up a basic custom module.
+Set ```ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST``` to the types of the modules you want to add.
+
+Set ```ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST_INCLUDES``` to any #include statements you need for your type.
+
+Set ```ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST_IMPL_INCLUDES``` for a list of includes that will be inserted after TypeInfo is defined. These headers should have any code implementation that requires ```Entropy::ReflectTypeAndGetTypeInfo<>()``` or accesses the ```TypeInfo``` object.
+
+Set ```ENTROPY_REFLECTION_EXTRA_INCLUDE_DIRECTORIES``` to any directories you want added to the CMake build via ```target_include_directories```.
+
+Set ```ENTROPY_REFLECTION_EXTRA_LINK_LIBRARIES``` to any targets you want linked to the CMake build via ```target_link_libraries```.
 
 ### Changing Allocators and Containers
-You can change how objects are allocated and the containers used within the entire library.
+You can change how objects are allocated and the containers used within the entire library. For instructions, see [Entropy Common Core Components](https://github.com/entropy-software-io/core-common?tab=readme-ov-file#customization).
 
