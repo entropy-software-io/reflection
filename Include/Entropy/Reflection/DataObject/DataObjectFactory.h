@@ -23,26 +23,39 @@ private:
     template <typename T, typename = void>
     struct ToVoid
     {
+        static constexpr DataObject::DataPointerType PointerType = DataObject::DataPointerType::AddressOf;
+
         void* operator()(T&& param) const { return reinterpret_cast<void*>(&param); }
     };
 
     template <typename T>
-    struct ToVoid<T, typename std::enable_if<!std::is_const<typename std::remove_pointer<T>::type>::value &&
-                                             std::is_pointer<T>::value>::type>
+    struct ToVoid<
+        T, typename std::enable_if<
+               std::is_array<typename std::remove_reference<T>::type>::value &&
+               !std::is_const<typename std::remove_extent<typename std::remove_reference<T>::type>::type>::value>::type>
     {
+        static constexpr DataObject::DataPointerType PointerType = DataObject::DataPointerType::Direct;
+
         void* operator()(T&& param) const { return reinterpret_cast<void*>(param); }
     };
 
     template <typename T>
-    struct ToVoid<T, typename std::enable_if<std::is_const<typename std::remove_pointer<T>::type>::value &&
-                                             std::is_pointer<T>::value>::type>
+    struct ToVoid<
+        T, typename std::enable_if<
+               std::is_array<typename std::remove_reference<T>::type>::value &&
+               std::is_const<typename std::remove_extent<typename std::remove_reference<T>::type>::type>::value>::type>
     {
+        static constexpr DataObject::DataPointerType PointerType = DataObject::DataPointerType::Direct;
+
         void* operator()(T&& param) const { return const_cast<void*>(reinterpret_cast<const void*>(param)); }
     };
 
     template <typename T>
-    struct ToVoid<T, typename std::enable_if<std::is_const<typename std::remove_reference<T>::type>::value>::type>
+    struct ToVoid<T, typename std::enable_if<!std::is_array<typename std::remove_reference<T>::type>::value &&
+                                             std::is_const<typename std::remove_reference<T>::type>::value>::type>
     {
+        static constexpr DataObject::DataPointerType PointerType = DataObject::DataPointerType::AddressOf;
+
         void* operator()(T&& param) const { return const_cast<void*>(reinterpret_cast<const void*>(&param)); }
     };
 
@@ -86,8 +99,14 @@ public:
     template <typename T>
     inline static DataObject Wrap(T&& value)
     {
+        bool is_rvalue_ref = std::is_rvalue_reference<decltype((value))>::value;
+        bool is_lvalue_ref = std::is_lvalue_reference<decltype((value))>::value;
+
+        bool is_t_rvalue_ref = std::is_rvalue_reference<T&&>::value;
+        bool is_t_lvalue_ref = std::is_lvalue_reference<T>::value;
+
         const TypeInfo* typeInfo = ReflectTypeAndGetTypeInfo<T>();
-        return DataObject(typeInfo, ToVoid<T>{}(std::forward<T>(value)), true /* wrapped */);
+        return DataObject(typeInfo, ToVoid<T>{}(std::forward<T>(value)), true /* wrapped */, ToVoid<T>::PointerType);
     }
 };
 
