@@ -25,9 +25,7 @@ DynamicFuncParam DynamicFuncParam::Create(T&& param)
     // The type will always have a reference qualifier. This is okay because
     // when we pass in as a parameter, it will also be a reference.
 
-    using TDecay = typename std::decay<T>::type;
-
-    return DynamicFuncParam(MakeDataObject<TDecay, TIsReturnValue>{}(std::forward<TDecay>(param)));
+    return DynamicFuncParam(MakeDataObject<T, TIsReturnValue>{}(std::forward<T>(param)));
 }
 
 //==================
@@ -118,6 +116,56 @@ typename std::enable_if<std::is_same<ReturnValue, void>::value, bool>::type Dyna
     return true;
 }
 
+template <typename TClass, typename ReturnValue, typename TCallFn, typename TVoid>
+bool DynamicFunctionBase::DoCallWithReturnValue<TClass, ReturnValue, TCallFn, TVoid>::operator()(
+    const DynamicFunctionBase* dynFn, const DynamicFuncParam& classObj, const DynamicFuncParam& outRet,
+    TCallFn&& callFn, const DynamicFuncParam* firstParam, int paramCount) const
+{
+    if (dynFn->IsParameterConvertible<ReturnValue>(outRet))
+    {
+        dynFn->ConvertType<0, ReturnValue>(&outRet) = callFn(&classObj, firstParam);
+
+        return true;
+    }
+
+    if (dynFn->IsParameterConvertible<ReturnValue*>(outRet))
+    {
+        *dynFn->ConvertType<0, ReturnValue*>(&outRet) = callFn(&classObj, firstParam);
+
+        return true;
+    }
+
+    ENTROPY_LOG_ERROR("Return value is incorrect type. [Expected Compatibility With: "
+                      << Traits::TypeNameOf<ReturnValue>{}() << "] [Got: " << outRet.GetTypeName() << "]");
+    return false;
+}
+
+template <typename TClass, typename ReturnValue, typename TCallFn>
+bool DynamicFunctionBase::DoCallWithReturnValue<TClass, ReturnValue, TCallFn,
+                                                typename std::enable_if<std::is_reference<ReturnValue>::value>::type>::
+operator()(const DynamicFunctionBase* dynFn, const DynamicFuncParam& classObj, const DynamicFuncParam& outRet,
+           TCallFn&& callFn, const DynamicFuncParam* firstParam, int paramCount) const
+{
+    if (dynFn->IsParameterConvertible<typename std::remove_reference<ReturnValue>::type*>(outRet))
+    {
+        dynFn->ConvertType<0, typename std::remove_reference<ReturnValue>::type*>(&outRet) =
+            &callFn(&classObj, firstParam);
+
+        return true;
+    }
+
+    if (dynFn->IsParameterConvertible<ReturnValue>(outRet))
+    {
+        dynFn->ConvertType<0, ReturnValue>(&outRet) = callFn(&classObj, firstParam);
+
+        return true;
+    }
+
+    ENTROPY_LOG_ERROR("Return value is incorrect type. [Expected Compatibility With: "
+                      << Traits::TypeNameOf<ReturnValue>{}() << "] [Got: " << outRet.GetTypeName() << "]");
+    return false;
+}
+
 template <typename TClass, typename ReturnValue, typename TCallFn, typename... Args>
 typename std::enable_if<!std::is_same<ReturnValue, void>::value, bool>::type DynamicFunctionBase::_InvokeImpl(
     const DynamicFuncParam& classObj, const DynamicFuncParam& outRet, TCallFn&& callFn,
@@ -127,10 +175,10 @@ typename std::enable_if<!std::is_same<ReturnValue, void>::value, bool>::type Dyn
 
     ENTROPY_CHECK_RETURN_VAL(outRet.IsValid(), false, "A return value is expected, but none was provided");
 
-    if ENTROPY_CONSTEXPR (std::is_copy_assignable<typename std::remove_const<
+    /*if ENTROPY_CONSTEXPR (std::is_copy_assignable<typename std::remove_const<
                               typename std::remove_reference<ReturnValue>::type>::type>::value)
     {
-        if (this->IsReturnValueConvertible<
+        if (this->IsParameterConvertible<
                 typename std::remove_const<typename std::remove_reference<ReturnValue>::type>::type>(outRet))
         {
             this->ConvertType<0, typename std::remove_const<typename std::remove_reference<ReturnValue>::type>::type>(
@@ -142,9 +190,9 @@ typename std::enable_if<!std::is_same<ReturnValue, void>::value, bool>::type Dyn
 
     if ENTROPY_CONSTEXPR (std::is_reference<ReturnValue>::value)
     {
-        if (this->IsReturnValueConvertible<ReturnValue>(outRet))
+        if (this->IsParameterConvertible<ReturnValue*>(outRet))
         {
-            this->ConvertType<0, ReturnValue>(&outRet) = callFn(&classObj, firstParam);
+            this->ConvertType<0, ReturnValue*>(&outRet) = &callFn(&classObj, firstParam);
 
             return true;
         }
@@ -152,7 +200,10 @@ typename std::enable_if<!std::is_same<ReturnValue, void>::value, bool>::type Dyn
 
     ENTROPY_LOG_ERROR("Return value is incorrect type. [Expected Compatibility With: "
                       << Traits::TypeNameOf<ReturnValue>{}() << "] [Got: " << outRet.GetTypeName() << "]");
-    return false;
+    return false;*/
+
+    return DoCallWithReturnValue<TClass, ReturnValue, TCallFn>{}(this, classObj, outRet, std::forward<TCallFn>(callFn),
+                                                                 firstParam, paramCount);
 }
 
 template <typename TClass, typename ReturnValue, typename TCallFn, typename... Args>
