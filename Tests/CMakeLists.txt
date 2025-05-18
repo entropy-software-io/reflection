@@ -1,7 +1,8 @@
 enable_testing()
 
 set (TEST_LIST
-    DynamicFunction/TestDynamicFunction.cpp
+    DynamicFunction/TestDynamicFunctionParams.cpp
+    DynamicFunction/TestDynamicFunctionRetVal.cpp
     TypeInfo/TestCanCastTo.cpp
 )
 create_test_sourcelist (TEST_SOURCELIST TestsMain.cpp ${TEST_LIST})

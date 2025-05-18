@@ -14,6 +14,11 @@ enum class MethodCalledState
 
 static MethodCalledState sMethodCalledState = MethodCalledState::InvalidParam;
 
+struct MyStruct
+{
+    int x{123};
+};
+
 //---------------------
 
 void EmptyVoidFunction() { sMethodCalledState = MethodCalledState::SuccessfullyCalled; }
@@ -25,6 +30,19 @@ void OverloadedVoidFunction(int x)
     if (x == 123456789)
     {
         sMethodCalledState = MethodCalledState::SuccessfullyCalled;
+    }
+}
+
+void OverloadedVoidFunction(MyStruct* pStruct, int count)
+{
+    sMethodCalledState = MethodCalledState::SuccessfullyCalled;
+
+    for (int i = 0; i < count; ++i)
+    {
+        if (pStruct[i].x != 123)
+        {
+            sMethodCalledState = MethodCalledState::InvalidParam;
+        }
     }
 }
 
@@ -192,7 +210,7 @@ bool TestCallVoidClassMethod(TMethod method, TArgs&&... args)
     return true;
 }
 
-int DynamicFunction_TestDynamicFunction(int argc, char** const argv)
+int DynamicFunction_TestDynamicFunctionParams(int argc, char** const argv)
 {
     ENTROPY_VERIFY_FUNC(TestCallVoidFunction(&EmptyVoidFunction));
     ENTROPY_VERIFY_FUNC(TestCallVoidFunction<void(int)>(&OverloadedVoidFunction, 123456789));
@@ -200,10 +218,16 @@ int DynamicFunction_TestDynamicFunction(int argc, char** const argv)
     // The method takes in an int that we cannot convert to from an int64
     ENTROPY_VERIFY_NOT_FUNC(TestCallVoidFunction<void(int)>(&OverloadedVoidFunction, 123456789LL));
 
+    MyStruct m[] = {MyStruct{}, MyStruct{}, MyStruct{}};
+    ENTROPY_VERIFY_FUNC(TestCallVoidFunction<void(MyStruct*, int)>(&OverloadedVoidFunction, m, 3));
+
     ENTROPY_VERIFY_FUNC(TestCallVoidFunction<void(const std::string&)>(&OverloadedVoidFunction, std::string("Foo")));
 
     // Conversion from string constant to std::string is not allowed
     ENTROPY_VERIFY_NOT_FUNC(TestCallVoidFunction<void(const std::string&)>(&OverloadedVoidFunction, "Foo"));
+
+    const char* foo = "Foo";
+    ENTROPY_VERIFY_FUNC(TestCallVoidFunction<void(const char*)>(&OverloadedVoidFunction, foo));
 
     // We can convert from const char[4] to const char*
     ENTROPY_VERIFY_FUNC(TestCallVoidFunction<void(const char*)>(&OverloadedVoidFunction, "Foo"));
