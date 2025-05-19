@@ -65,12 +65,22 @@ int TypeInfo_TestTypeName(int argc, char** const argv)
 
     ENTROPY_VERIFY_FUNC(CheckTypeName<const char*>("char const*"));
     ENTROPY_VERIFY_FUNC(CheckTypeName<const char*&>("char const*&"));
+    ENTROPY_VERIFY_FUNC(CheckTypeName<int* const>("int* const"));
 
     ENTROPY_VERIFY_FUNC(CheckTypeName<MyType>("MyNamespace::MyType"));
     ENTROPY_VERIFY_FUNC(CheckTypeName<MyType&>("MyNamespace::MyType&"));
 
     ENTROPY_VERIFY_FUNC(CheckTypeName<MyTemplate<float&, const MyType*>>(
         "MyNamespace::MyTemplate<float&, MyNamespace::MyType const*>"));
+
+    ENTROPY_VERIFY_FUNC(CheckTypeName<const float[]>("float const[]"));
+    ENTROPY_VERIFY_FUNC(CheckTypeName<const float[3]>("float const[3]"));
+    ENTROPY_VERIFY_FUNC(CheckTypeName<const float[3][4]>("float const[3][4]"));
+
+    ENTROPY_VERIFY_FUNC(CheckTypeName<void()>("void ()"));
+
+    // For some reason, the compiler is dropping the const on "MyType* const"
+    ENTROPY_VERIFY_FUNC(CheckTypeName<const char*(int&, MyType* const)>("char const* (int&, MyNamespace::MyType*)"));
 
     ENTROPY_VERIFY_FUNC(CheckTypeName<decltype(&MyFunction)>("float const& (*)(__int64 const&, double)"));
     ENTROPY_VERIFY_FUNC(CheckTypeName<decltype(&MyType::MyMethod)>(
