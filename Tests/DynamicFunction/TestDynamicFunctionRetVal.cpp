@@ -156,6 +156,29 @@ int DynamicFunction_TestDynamicFunctionRetVal(int argc, char** const argv)
                                       "Failed to modify class value");
     }
 
+    // Can store in a regular float too.
+    {
+        MyDynFnTestClass myTestClassObj;
+
+        TestCallClassMethod<float>(
+            &MyDynFnTestClass::GetMyFloat,
+            [](float& ret) {
+                if (ret != 123.456f)
+                {
+                    return false;
+                }
+
+                // Does not change myTestClassObj
+                ret += 100.0f;
+
+                return true;
+            },
+            &myTestClassObj);
+
+        ENTROPY_CHECK_RETURN_VAL_FUNC(myTestClassObj._myFloat == 123.456f, 1,
+                                      "Class value modified when it shouldn't be modified");
+    }
+
     // Regular pointers can be returned normally.
     {
         MyDynFnTestClass myTestClassObj;

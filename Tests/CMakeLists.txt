@@ -4,6 +4,7 @@ set (TEST_LIST
     DynamicFunction/TestDynamicFunctionParams.cpp
     DynamicFunction/TestDynamicFunctionRetVal.cpp
     TypeInfo/TestCanCastTo.cpp
+    TypeInfo/TestTypeName.cpp
 )
 create_test_sourcelist (TEST_SOURCELIST TestsMain.cpp ${TEST_LIST})
 
