@@ -61,14 +61,10 @@ struct IsAllocatorDestructible : public std::false_type
 };
 
 template <typename T>
-struct IsAllocatorDestructible<T, typename std::enable_if<std::is_reference<T>::value>::type> : public std::false_type
-{
-};
-
-template <typename T>
 struct IsAllocatorDestructible<
     T, typename std::enable_if<!std::is_reference<T>::value &&
-                               decltype(std::declval<typename std::remove_reference<T>::type>().T(),
+                               decltype(std::declval<Alias<typename std::remove_reference<T>::type>>()
+                                            .~Alias<typename std::remove_reference<T>::type>(),
                                         std::true_type())::value>::type> : public std::true_type
 {
 };
