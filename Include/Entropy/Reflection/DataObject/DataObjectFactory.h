@@ -60,6 +60,13 @@ private:
     };
 
 public:
+    /// <summary>
+    /// Attempts to allocate an object of the specified type. The type must have a public constructor taking zero
+    /// arguments.
+    /// </summary>
+    /// <remarks>
+    /// The allocated object will be cleaned up when the DataObject's ref count reaches zero.
+    /// </remarks>
     template <typename T>
     inline static DataObject Create()
     {
@@ -72,6 +79,12 @@ public:
         return typeInfo->Construct();
     }
 
+    /// <summary>
+    /// Attempts to allocate an object of the specified type. The type must have a public copy constructor.
+    /// </summary>
+    /// <remarks>
+    /// The allocated object will be cleaned up when the DataObject's ref count reaches zero.
+    /// </remarks>
     template <typename T>
     inline static DataObject Create(const T& copy)
     {
@@ -84,6 +97,12 @@ public:
         return typeInfo->DangerousCopyConstruct(static_cast<const void*>(&copy));
     }
 
+    /// <summary>
+    /// Attempts to allocate an object of the specified type. The type must have a public move constructor.
+    /// </summary>
+    /// <remarks>
+    /// The allocated object will be cleaned up when the DataObject's ref count reaches zero.
+    /// </remarks>
     template <typename T>
     inline static DataObject Create(T&& move)
     {
@@ -96,6 +115,13 @@ public:
         return typeInfo->DangerousMoveConstruct(static_cast<void*>(&move));
     }
 
+    /// <summary>
+    /// Wraps a pointer to an existing object in a DataObject.
+    /// </summary>
+    /// <remarks>
+    /// The value passed in is referenced, but never copied. It is extremely important that the DataObject not live
+    /// passed the lifetime of the value.
+    /// </remarks>
     template <typename T>
     inline static DataObject Wrap(T&& value)
     {

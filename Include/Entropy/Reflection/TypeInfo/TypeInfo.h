@@ -115,32 +115,26 @@ public:
         return std::get<idx>(_modules);
     }
 
-    inline bool RequireInitialization()
-    {
-        bool required = true;
-
-        // Returns "exchanged = true" exactly once when we flip from the value from true -> false
-        return _requireInitialization.compare_exchange_strong(required, false);
-    }
-
     bool CanConstruct() const;
     DataObject Construct() const;
 
     bool CanCopyConstruct() const;
+
     /// <summary>
     /// src _must_ be the same type as what is being represented by this type info.
     /// </summary>
     /// <remarks>
-    /// Use CreateDataObject<> for the safe version
+    /// Use DataObjectFactory::Create<> for the safe version
     /// </remarks>
     DataObject DangerousCopyConstruct(const void* src) const;
 
     bool CanMoveConstruct() const;
+
     /// <summary>
     /// src _must_ be the same type as what is being represented by this type info.
     /// </summary>
     /// <remarks>
-    /// Use CreateDataObject<> for the safe version
+    /// Use DataObjectFactory::Create<> for the safe version
     /// </remarks>
     DataObject DangerousMoveConstruct(void* src) const;
 
@@ -187,6 +181,14 @@ public:
     bool CanCastTo(const TypeInfo* other) const noexcept;
 
 private:
+    inline bool RequireInitialization()
+    {
+        bool required = true;
+
+        // Returns "exchanged = true" exactly once when we flip from the value from true -> false
+        return _requireInitialization.compare_exchange_strong(required, false);
+    }
+
     void AddRef() const;
     void Release() const;
 
