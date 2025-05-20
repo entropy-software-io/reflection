@@ -84,7 +84,7 @@ bool DynamicFunctionBase::AreParametersConvertible(const DynamicFuncParam* param
     {
         ENTROPY_LOG_ERROR_FUNC("Parameter is incorrect type. [Index: "
                                << index << "] [Expected: " << Traits::TypeNameOf<T>{}()
-                               << "] [Got: " << params[index].GetTypeName() << "]")
+                               << "] [Got: " << params[index].GetTypeName() << "]");
         return false;
     }
 
