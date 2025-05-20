@@ -5,6 +5,7 @@
 #include "Entropy/Core/Log.h"
 #include "Entropy/Reflection.h"
 #include "TestMacros.h"
+#include <cstring>
 
 namespace MyNamespace
 {
