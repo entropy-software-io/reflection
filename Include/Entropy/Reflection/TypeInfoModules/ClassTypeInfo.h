@@ -132,8 +132,6 @@ private:
 class ClassDescription : public AttributeContainer
 {
 public:
-    ~ClassDescription();
-
     inline const VectorOps::VectorType<const TypeInfo*>& GetTemplateParameters() const { return _templateParameters; }
     inline const TypeInfo* GetBaseClassTypeInfo() const { return _baseClassTypeInfo; }
     inline const MapOps::MapType<const char*, MemberDescription>& GetMembers() const { return _members; }
