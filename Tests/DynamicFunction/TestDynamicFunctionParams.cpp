@@ -4,6 +4,7 @@
 
 #include "Entropy/DynamicFunction.h"
 #include "TestMacros.h"
+#include <cstring>
 
 enum class MethodCalledState
 {

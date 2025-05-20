@@ -54,7 +54,6 @@ struct Conversion
         dest = src;
     }
 
-    template <>
     void operator()(const char* name, const Vector3& src, Array3& dest)
     {
         std::cout << "Copying Vector3 value [Name: " << name << "] [Value: " << src.x << ", " << src.y << ", " << src.z
