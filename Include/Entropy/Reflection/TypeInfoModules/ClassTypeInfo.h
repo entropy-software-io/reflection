@@ -59,12 +59,17 @@ struct AttributeData
     }
 
 private:
-    DataObject _dataObj;
+    DataObject _dataObj{};
 };
 
 class AttributeContainer
 {
 public:
+    AttributeContainer()                          = default;
+    AttributeContainer(const AttributeContainer&) = delete;
+    AttributeContainer(AttributeContainer&&)      = default;
+    virtual ~AttributeContainer();
+
     inline const MapOps::MapType<TypeId, AttributeData>& GetAllAttributes() const { return _attributes; }
 
     template <typename T>
@@ -95,7 +100,7 @@ private:
     template <typename... TAttrTypes>
     inline void AddAttributes(AttributeCollection<TAttrTypes...>&& attr);
 
-    MapOps::MapType<TypeId, AttributeData> _attributes;
+    MapOps::MapType<TypeId, AttributeData> _attributes{};
 
     template <typename, typename, typename>
     friend struct FillModuleTypeInfo;
@@ -117,8 +122,8 @@ public:
     inline const TypeInfo* GetMemberType() const { return _memberType; }
 
 private:
-    const char* _memberName;
-    const TypeInfo* _memberType;
+    const char* _memberName{};
+    const TypeInfo* _memberType{};
 };
 
 /// <summary>
@@ -127,7 +132,8 @@ private:
 class ClassDescription : public AttributeContainer
 {
 public:
-    inline bool IsReflectedClass() const { return _isReflectedClass; }
+    ~ClassDescription();
+
     inline const VectorOps::VectorType<const TypeInfo*>& GetTemplateParameters() const { return _templateParameters; }
     inline const TypeInfo* GetBaseClassTypeInfo() const { return _baseClassTypeInfo; }
     inline const MapOps::MapType<const char*, MemberDescription>& GetMembers() const { return _members; }
@@ -136,12 +142,10 @@ private:
     void AddTemplateParameter(const TypeInfo* templateParameter);
     void SetBaseClass(const TypeInfo* baseClass);
     void AddMember(const char* name, MemberDescription&& memberInfo);
-    inline void SetIsReflectedClass(bool isReflectedClass) { _isReflectedClass = isReflectedClass; }
 
     const TypeInfo* _baseClassTypeInfo = nullptr;
     MapOps::MapType<const char*, MemberDescription> _members{};
     VectorOps::VectorType<const TypeInfo*> _templateParameters{};
-    bool _isReflectedClass = false;
 
     template <typename, typename, typename>
     friend struct FillModuleTypeInfo;

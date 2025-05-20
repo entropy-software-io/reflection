@@ -19,6 +19,10 @@ AttributeData::AttributeData(DataObject&& dataObj)
 
 //=======================
 
+AttributeContainer::~AttributeContainer() {}
+
+//=======================
+
 void ClassDescription::AddTemplateParameter(const TypeInfo* templateParameter)
 {
     VectorOps::Add(_templateParameters, templateParameter);
@@ -35,10 +39,12 @@ void ClassDescription::AddMember(const char* name, MemberDescription&& memberInf
 
 ClassTypeInfo::~ClassTypeInfo()
 {
-    if (_classDesc)
+    ClassDescription* classDesc = nullptr;
+    std::swap(_classDesc, classDesc);
+
+    if (classDesc)
     {
-        AllocatorOps::DestroyInstance(_classDesc);
-        _classDesc = nullptr;
+        AllocatorOps::DestroyInstance(classDesc);
     }
 }
 
