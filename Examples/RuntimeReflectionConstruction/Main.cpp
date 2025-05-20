@@ -17,8 +17,8 @@ struct MyStruct
     float MyFloatValue = 1.23f;
 };
 
-static_assert(Entropy::Traits::IsAllocatorConstructible<MyStruct>::value);
-static_assert(Entropy::Traits::IsAllocatorDestructible<MyStruct>::value);
+static_assert(Entropy::Traits::IsAllocatorConstructible<MyStruct>::value, "MyStruct is not constructible");
+static_assert(Entropy::Traits::IsAllocatorDestructible<MyStruct>::value, "MyStruct is not destructible");
 
 const Entropy::TypeInfo* GetTypeInfo() { return Entropy::ReflectTypeAndGetTypeInfo<MyStruct>(); }
 
