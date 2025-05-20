@@ -62,10 +62,11 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/entropy-software-io/reflection.git
     )
 
-# Enable Runtime Reflection
-set (ENTROPY_REFLECTION_ENABLE_RUNTIME ON)
+# Add any options & container/module overrides here
 
 FetchContent_MakeAvailable(entropy-reflection)
+
+...
 
 target_link_libraries([YOUR_LIBRARY] PRIVATE entropy::reflection)
 ```
