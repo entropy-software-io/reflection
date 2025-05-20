@@ -137,6 +137,25 @@ protected:
 
     //---------
 
+    template <typename TClass, typename ReturnValue, typename TCallFn, typename = void>
+    struct DoCallWithReturnValue
+    {
+        bool operator()(const DynamicFunctionBase* dynFn, const DynamicFuncParam& classObj,
+                        const DynamicFuncParam& outRet, TCallFn&& callFn, const DynamicFuncParam* firstParam,
+                        int paramCount) const;
+    };
+
+    template <typename TClass, typename ReturnValue, typename TCallFn>
+    struct DoCallWithReturnValue<TClass, ReturnValue, TCallFn,
+                                 typename std::enable_if<std::is_reference<ReturnValue>::value>::type>
+    {
+        bool operator()(const DynamicFunctionBase* dynFn, const DynamicFuncParam& classObj,
+                        const DynamicFuncParam& outRet, TCallFn&& callFn, const DynamicFuncParam* firstParam,
+                        int paramCount) const;
+    };
+
+    //---------
+
     template <typename T>
     static bool IsReturnValueConvertible(const DynamicFuncParam& param);
 

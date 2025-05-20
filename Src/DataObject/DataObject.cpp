@@ -13,16 +13,17 @@ namespace Entropy
 
 DataObject::DataObject(std::nullptr_t) {}
 
-DataObject::DataObject(const TypeInfo* typeInfo, void* data, bool wrapped)
+DataObject::DataObject(const TypeInfo* typeInfo, void* data, bool wrapped, DataPointerType pointerType)
 {
     _container = AllocatorOps::CreateInstance<DataObjectContainer>();
-    ENTROPY_ASSERT(_container)
+    ENTROPY_ASSERT(_container);
 
     if (ENTROPY_LIKELY(_container != nullptr))
     {
-        _container->_typeInfo = typeInfo;
-        _container->_data     = data;
-        _container->_wrapped  = wrapped;
+        _container->_typeInfo    = typeInfo;
+        _container->_data        = data;
+        _container->_wrapped     = wrapped;
+        _container->_pointerType = pointerType;
     }
 }
 

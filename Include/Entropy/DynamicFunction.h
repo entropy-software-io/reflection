@@ -16,8 +16,8 @@ class TypeInfo;
 /// <summary>
 /// Similar to a regular Function<> object, except that parameters are checked at runtime.
 ///
-/// The class is not templated and thus can refer to any Function<> object. This makes it useful for calling reflected
-/// methods in a generic way.
+/// The class is not templated and thus can refer to any function / class method. This makes it useful for calling
+/// reflected methods in a generic way. E.g. exposing class properties on the UI through getter / setter methods.
 /// </summary>
 class DynamicFunction
 {
@@ -72,7 +72,7 @@ public:
     /// Attempts to invoke the function with the specified args.
     /// </summary>
     /// <remarks>
-    /// The function must not be a class member function, nor return a value.
+    /// If this points to a class method, the class object (pointer) must be the first parameter.
     /// </remarks>
     /// <returns>true if the invocation was successful; false otherwise</returns>
     template <typename... T>
@@ -84,11 +84,11 @@ public:
     }
 
     /// <summary>
-    /// Attempts to invoke the function with the specified args. The
-    /// function is expected to return a non-void value.
+    /// Attempts to invoke the function with the specified args. The function is expected to return a non-void value.
     /// </summary>
     /// <remarks>
-    /// If the function is a method, the class object must be the second parameter
+    /// If this points to a class method, the class object (pointer) must be the second parameter (first after the
+    /// return value).
     /// </remarks>
     /// <returns>true if the invocation was successful; false otherwise</returns>
     template <typename TReturnValue, typename... TArgs>
@@ -100,9 +100,11 @@ public:
     }
 
     /// <summary>
-    /// Attempts to invoke the function with the specified args. The
-    /// function is expected to return a non-void value.
+    /// Attempts to invoke the function with the specified args. The function is expected to not have a return value.
     /// </summary>
+    /// <remarks>
+    /// If this points to a class method, the class object (pointer) must be the first parameter.
+    /// </remarks>
     /// <returns>true if the invocation was successful; false otherwise</returns>
     template <typename... T>
     inline bool operator()(T&&... args) const noexcept

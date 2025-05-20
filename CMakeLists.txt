@@ -1,9 +1,9 @@
 option(ENTROPY_REFLECTION_ENABLE_RUNTIME "True to enable runtime reflection (requires bringing in Entropy Core dependency)" ON)
-option(ENTROPY_REFLECTION_BUILD_EXAMPLES "True to build example projects" ON)
+option(ENTROPY_REFLECTION_BUILD_EXAMPLES "True to build example projects" OFF)
 option(ENTROPY_REFLECTION_BUILD_TESTS "True to build tests" OFF)
 
 # Configuration Options
-option (ENTROPY_REFLECTION_INCLUDE_DEFAULT_MODULES "False to exclude the default modules" ON)
+option (ENTROPY_REFLECTION_TYPEINFO_INCLUDE_DEFAULT_MODULES "False to exclude the default TypeInfo modules" ON)
 
 # Example config values
 # set(ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST_INCLUDES "#include \"Entropy/Reflection/TypeInfoModules/ClassTypeInfo.h\"")
@@ -13,9 +13,9 @@ option (ENTROPY_REFLECTION_INCLUDE_DEFAULT_MODULES "False to exclude the default
 # set(ENTROPY_REFLECTION_EXTRA_LINK_LIBRARIES "")
 
 if ("${ENTROPY_REFLECTION_TYPEINFO_EXTRA_MODULE_LIST}" STREQUAL "")
-    set (ENTROPY_REFLECTION_HAVE_EXTRA_MODULES OFF)
+    set (ENTROPY_REFLECTION_TYPEINFO_HAVE_EXTRA_MODULES OFF)
 else()
-    set (ENTROPY_REFLECTION_HAVE_EXTRA_MODULES ON)
+    set (ENTROPY_REFLECTION_TYPEINFO_HAVE_EXTRA_MODULES ON)
 endif()
 
 add_subdirectory(Dependencies)

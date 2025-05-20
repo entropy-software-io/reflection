@@ -20,12 +20,18 @@ struct DataObjectFactory;
 class DataObject final
 {
 private:
+    enum class DataPointerType : byte
+    {
+        AddressOf,
+        Direct
+    };
+
     // These helpers grab the correct void* value to convert.
     // Normally, we just want to return what we have, but there is a special case with wrapped pointer type. There, we
     // store the pointer value directly, so we return the address of our data member to de-reference the right value.
     //
     // See DataObjectFactory::Wrap for the other end of this.
-    template <bool TIsWrapped, typename T, typename = void>
+    template <bool TDirectDataPointer, typename T, typename = void>
     struct GetVoidPtr
     {
         void* operator()(void*& data) const { return data; }
@@ -37,7 +43,7 @@ private:
         void* operator()(void*& data) const { return &data; }
     };
 
-    template <bool TIsWrapped, typename T, typename = void>
+    template <bool TDirectDataPointer, typename T, typename = void>
     struct GetConstVoidPtr
     {
         const void* operator()(const void*& data) const { return data; }
@@ -54,10 +60,11 @@ private:
         TypeInfoRef _typeInfo{};
         void* _data{};
         std::atomic_int _refCount{1};
-        bool _wrapped = false;
+        DataPointerType _pointerType = DataPointerType::AddressOf;
+        bool _wrapped                = false;
     };
 
-    DataObject(const TypeInfo* typeInfo, void* data, bool wrapped);
+    DataObject(const TypeInfo* typeInfo, void* data, bool wrapped, DataPointerType pointerType);
 
     void Release();
 
@@ -76,7 +83,7 @@ public:
     template <typename T>
     inline const T& GetData() const
     {
-        if (_container->_wrapped)
+        if (_container->_pointerType == DataPointerType::Direct)
         {
             return *reinterpret_cast<const T*>(GetConstVoidPtr<true, T>{}(_container->_data));
         }
@@ -93,7 +100,7 @@ public:
     template <typename T>
     inline T& GetData()
     {
-        if (_container->_wrapped)
+        if (_container->_pointerType == DataPointerType::Direct)
         {
             return *reinterpret_cast<T*>(GetVoidPtr<true, T>{}(_container->_data));
         }
